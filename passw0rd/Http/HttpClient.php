@@ -35,64 +35,51 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Credentials;
+namespace passw0rd\Http;
 
-use passw0rd\Common\AvailableCredentialKeys;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
+use passw0rd\Common\AvailableEndpoints;
+use passw0rd\Common\RequestNamespace;
+use GuzzleHttp\Client as GuzzleClient;
+use passw0rd\Http\Request\BaseHttpRequest;
+use passw0rd\Protocol\ProtocolContext;
 
-/**
- * Class InputCredentialsChecker
- * @package passw0rd\credentials
- */
-class InputCredentialsChecker implements AvailableCredentialKeys
+class HttpClient implements AvailableEndpoints, RequestNamespace
 {
-    private $credentials;
+    const BASE_URI = 'https://api.passw0rd.io/phe/v1/';
+
+    private $context;
+    private $client;
 
     /**
-     * @param array $credentials
-     * @return void
+     * HttpClient constructor.
+     * @param ProtocolContext $context
      */
-    private function setCredentials(array $credentials): void
+    public function __construct(ProtocolContext $context)
     {
-        $this->credentials = $credentials;
+        $this->context = $context;
+
+        $this->client = new GuzzleClient([
+            'base_uri' => self::BASE_URI,
+        ]);
     }
 
-    /**
-     * @param array $credentials
-     * @throws InputCredentialsCheckerException
-     * @return bool
-     */
-    public function check(array $credentials): bool
+    public function endpoint(string $request): BaseHttpRequest
     {
-        $this->setCredentials($credentials);
-
-        foreach (AvailableCredentialKeys::LIST as $credentialKey)
-        {
-            if(!$this->checkKeyExists($credentialKey))
-                throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
-
-            if(!$this->checkValue($credentialKey))
-                throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
-        }
-
-        return true;
+        $className = RequestNamespace::NAMESPACE.$request."Request";
+        return new $className();
     }
 
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkKeyExists(string $credentialKey): bool
-    {
-        return array_key_exists($credentialKey, $this->credentials);
-    }
-
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkValue(string $credentialKey): bool
-    {
-        return (is_string($this->credentials[$credentialKey]) && $this->credentials[$credentialKey] !== '');
-    }
+//    public function enroll(): EnrollResponse
+//    {
+//        $response = $this->client->request('POST', $this->context->getAppId() . "/enroll",
+//            RequestParamsHelper::format(["Authorization" => $this->context->getAccessToken()]));
+//        return new EnrollResponse($response);
+//    }
+//
+//    public function verifyPassword(): VerifyPasswordResponse
+//    {
+//        $response = $this->client->request('POST', $this->context->getAppId() . "/verify-password",
+//            RequestParamsHelper::format());
+//        return new VerifyPasswordResponse($response);
+//    }
 }

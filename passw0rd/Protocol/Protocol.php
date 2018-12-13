@@ -35,64 +35,32 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Credentials;
+namespace passw0rd\Protocol;
 
-use passw0rd\Common\AvailableCredentialKeys;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
+use passw0rd\Common\AvailableEndpoints;
+use passw0rd\Common\EndpointChecker;
+use passw0rd\Exeptions\RequestException;
+use passw0rd\Http\HttpClient;
 
-/**
- * Class InputCredentialsChecker
- * @package passw0rd\credentials
- */
-class InputCredentialsChecker implements AvailableCredentialKeys
+class Protocol implements AvailableEndpoints
 {
-    private $credentials;
+    private $context;
+    private $httpClient;
 
-    /**
-     * @param array $credentials
-     * @return void
-     */
-    private function setCredentials(array $credentials): void
+    public function __construct(ProtocolContext $context)
     {
-        $this->credentials = $credentials;
+        $this->context = $context;
+        $this->httpClient = new HttpClient($context);
     }
 
-    /**
-     * @param array $credentials
-     * @throws InputCredentialsCheckerException
-     * @return bool
-     */
-    public function check(array $credentials): bool
+    public function get(string $endpoint)
     {
-        $this->setCredentials($credentials);
-
-        foreach (AvailableCredentialKeys::LIST as $credentialKey)
-        {
-            if(!$this->checkKeyExists($credentialKey))
-                throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
-
-            if(!$this->checkValue($credentialKey))
-                throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
+        try {
+            EndpointChecker::check($endpoint);
+            $this->httpClient->endpoint($endpoint);
+        } catch (RequestException $e) {
+            var_dump($e->getMessage());
+            die;
         }
-
-        return true;
-    }
-
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkKeyExists(string $credentialKey): bool
-    {
-        return array_key_exists($credentialKey, $this->credentials);
-    }
-
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkValue(string $credentialKey): bool
-    {
-        return (is_string($this->credentials[$credentialKey]) && $this->credentials[$credentialKey] !== '');
     }
 }

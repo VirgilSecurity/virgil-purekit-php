@@ -35,24 +35,83 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd;
+namespace passw0rd\Protocol;
 
-class Protocol
+use passw0rd\Credentials\InputCredentialsChecker;
+use passw0rd\Exeptions\InputCredentialsCheckerException;
+
+/**
+ * Class ProtocolContext
+ * @package passw0rd
+ */
+class ProtocolContext
 {
-    private $context;
+    private $accessToken;
+    private $appId;
+    private $publicKey;
+    private $secretKey;
 
-    public function __construct(ProtocolContext $context)
+    /**
+     * @param array $credentials
+     * @return ProtocolContext
+     */
+    public function create(array $credentials): ProtocolContext
     {
-        $this->context = $context;
+        $credentialsChecker = new InputCredentialsChecker();
+        try {
+            $credentialsChecker->check($credentials);
+        }
+        catch(InputCredentialsCheckerException $e) {
+            var_dump($e->getMessage());
+            die;
+        }
+
+        $this->setCredentials($credentials);
+
+        return $this;
     }
 
-    public function enroll()
+    /**
+     * @param array $credentials
+     * @return void
+     */
+    private function setCredentials(array $credentials): void
     {
-
+        $this->accessToken = $credentials['accessToken'];
+        $this->appId = $credentials['appId'];
+        $this->publicKey = $credentials['publicKey'];
+        $this->secretKey = $credentials['secretKey'];
     }
 
-    public function verifyPassword()
+    /**
+     * @return string
+     */
+    public function getAccessToken(): string
     {
+        return $this->accessToken;
+    }
 
+    /**
+     * @return string
+     */
+    public function getAppId(): string
+    {
+        return $this->appId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPublicKey(): string
+    {
+        return $this->publicKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSecretKey(): string
+    {
+        return $this->secretKey;
     }
 }

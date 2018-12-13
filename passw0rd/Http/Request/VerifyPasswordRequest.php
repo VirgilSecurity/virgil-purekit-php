@@ -35,64 +35,12 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Credentials;
+namespace passw0rd\Http\Request;
 
-use passw0rd\Common\AvailableCredentialKeys;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
-
-/**
- * Class InputCredentialsChecker
- * @package passw0rd\credentials
- */
-class InputCredentialsChecker implements AvailableCredentialKeys
+class VerifyPasswordRequest extends BaseHttpRequest
 {
-    private $credentials;
-
-    /**
-     * @param array $credentials
-     * @return void
-     */
-    private function setCredentials(array $credentials): void
+    public function __construct()
     {
-        $this->credentials = $credentials;
-    }
-
-    /**
-     * @param array $credentials
-     * @throws InputCredentialsCheckerException
-     * @return bool
-     */
-    public function check(array $credentials): bool
-    {
-        $this->setCredentials($credentials);
-
-        foreach (AvailableCredentialKeys::LIST as $credentialKey)
-        {
-            if(!$this->checkKeyExists($credentialKey))
-                throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
-
-            if(!$this->checkValue($credentialKey))
-                throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
-        }
-
-        return true;
-    }
-
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkKeyExists(string $credentialKey): bool
-    {
-        return array_key_exists($credentialKey, $this->credentials);
-    }
-
-    /**
-     * @param string $credentialKey
-     * @return bool
-     */
-    private function checkValue(string $credentialKey): bool
-    {
-        return (is_string($this->credentials[$credentialKey]) && $this->credentials[$credentialKey] !== '');
+        echo __CLASS__;
     }
 }

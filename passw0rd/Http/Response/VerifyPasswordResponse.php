@@ -35,83 +35,9 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd;
+namespace passw0rd\Http\Response;
 
-use passw0rd\Credentials\InputCredentialsChecker;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
-
-/**
- * Class ProtocolContext
- * @package passw0rd
- */
-class ProtocolContext
+class VerifyPasswordResponse extends BaseHttpResponse
 {
-    private $accessToken;
-    private $appId;
-    private $publicKey;
-    private $secretKey;
 
-    /**
-     * @param array $credentials
-     * @return ProtocolContext
-     */
-    public function create(array $credentials): ProtocolContext
-    {
-        $credentialsChecker = new InputCredentialsChecker();
-        try {
-            $credentialsChecker->check($credentials);
-        }
-        catch(InputCredentialsCheckerException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
-
-        $this->setCredentials($credentials);
-
-        return $this;
-    }
-
-    /**
-     * @param array $credentials
-     * @return void
-     */
-    private function setCredentials(array $credentials): void
-    {
-        $this->accessToken = $credentials['accessToken'];
-        $this->appId = $credentials['appId'];
-        $this->publicKey = $credentials['publicKey'];
-        $this->secretKey = $credentials['secretKey'];
-    }
-
-    /**
-     * @return string
-     */
-    public function getAccessToken(): string
-    {
-        return $this->accessToken;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAppId(): string
-    {
-        return $this->appId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPublicKey(): string
-    {
-        return $this->publicKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSecretKey(): string
-    {
-        return $this->secretKey;
-    }
 }
