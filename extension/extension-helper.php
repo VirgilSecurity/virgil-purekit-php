@@ -35,12 +35,26 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
-
-class EnrollRequest extends BaseHttpRequest
+function extension_helper($type)
 {
-    public function __construct()
-    {
-        echo __CLASS__;
+    if (in_array($type, ['php-v', 'php-ext-dir', 'php-ext-type', 'os-v'])) {
+        switch ($type) {
+            case 'php-v':
+                return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . "\n";
+                break;
+            case 'php-ext-dir':
+                return PHP_EXTENSION_DIR."\n";
+                break;
+            case 'os-v':
+                return substr(strtolower(PHP_OS), 0, 3)."\n";
+                break;
+        }
     }
+    return false;
 }
+
+foreach($argv as $type)
+{
+    echo extension_helper($type);
+}
+

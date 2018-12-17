@@ -37,14 +37,13 @@
 
 namespace passw0rd\Credentials;
 
-use passw0rd\Common\AvailableCredentialKeys;
 use passw0rd\Exeptions\InputCredentialsCheckerException;
 
 /**
  * Class InputCredentialsChecker
  * @package passw0rd\credentials
  */
-class InputCredentialsChecker implements AvailableCredentialKeys
+class InputCredentialsChecker implements AvailableCredentials
 {
     private $credentials;
 
@@ -66,7 +65,7 @@ class InputCredentialsChecker implements AvailableCredentialKeys
     {
         $this->setCredentials($credentials);
 
-        foreach (AvailableCredentialKeys::LIST as $credentialKey)
+        foreach (AvailableCredentials::KEYS as $credentialKey)
         {
             if(!$this->checkKeyExists($credentialKey))
                 throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");

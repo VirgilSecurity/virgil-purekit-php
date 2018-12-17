@@ -37,30 +37,49 @@
 
 namespace passw0rd\Protocol;
 
-use passw0rd\Common\AvailableEndpoints;
-use passw0rd\Common\EndpointChecker;
-use passw0rd\Exeptions\RequestException;
-use passw0rd\Http\HttpClient;
+use GuzzleHttp\Client as HttpClient;
+use passw0rd\Http\Response\Mocks\BaseHttpResponseMock;
+use passw0rd\Http\Response\Mocks\EnrollResponseMock;
+use passw0rd\Http\Response\Mocks\VerifyPasswordResponseMock;
 
-class Protocol implements AvailableEndpoints
+class Protocol
 {
     private $context;
     private $httpClient;
 
+    const BASE_URI = 'https://api.passw0rd.io/phe/v1/';
+
+    /**
+     * Protocol constructor.
+     * @param ProtocolContext $context
+     */
     public function __construct(ProtocolContext $context)
     {
         $this->context = $context;
-        $this->httpClient = new HttpClient($context);
+        $this->httpClient = new HttpClient([
+            'base_uri' => self::BASE_URI,
+        ]);
     }
 
-    public function get(string $endpoint)
+    public function enroll(string $password): string
     {
-        try {
-            EndpointChecker::check($endpoint);
-            $this->httpClient->endpoint($endpoint);
-        } catch (RequestException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        $enrollResponseMock = new EnrollResponseMock();
+        return $enrollResponseMock->enroll($password);
+
+//        $response = $this->httpClient->request('POST', $this->context->getAppId() . "/enroll",
+//            RequestParamsHelper::format(["Authorization" => $this->context->getAccessToken()]));
+//
+//        return new EnrollResponse($response);
+    }
+
+    public function verifyPassword(): string
+    {
+        $verifyPasswordResponseMock = new VerifyPasswordResponseMock();
+        return $verifyPasswordResponseMock->verifyPassword();
+
+//        $response = $this->httpClient->request('POST', $this->context->getAppId() . "/verify-password",
+//            RequestParamsHelper::format());
+//
+//        return new VerifyPasswordResponse($response);
     }
 }

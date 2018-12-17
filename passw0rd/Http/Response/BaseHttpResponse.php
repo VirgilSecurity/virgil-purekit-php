@@ -39,11 +39,5 @@ namespace passw0rd\Http\Response;
 
 class BaseHttpResponse
 {
-    private $response;
-
-    public function __construct($response)
-    {
-        $this->response = $response;
-    }
 
 }

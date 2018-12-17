@@ -14,19 +14,26 @@
   "require": {
     "php": ">=7.1",
     "vlucas/phpdotenv": "^2.5",
-    "guzzlehttp/guzzle": "~6.0"
+    "guzzlehttp/guzzle": "~6.0",
+    "google/protobuf": "^3.6.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^7"
   },
   "autoload": {
     "psr-4": {
-      "passw0rd\\": "passw0rd"
+      "passw0rd\\": "passw0rd",
+      "Passw0rd\\": "passw0rd/Core/Protobuf/build/Passw0rd",
+      "GPBMetadata\\": "passw0rd/Core/Protobuf/build/GPBMetadata"
     }
   },
   "autoload-dev": {
     "psr-4": {
       "passw0rd\\Tests\\": "passw0rd/_tests/src"
     }
+  },
+  "scripts": {
+    "setup-extension": [
+    ]
   }
 }

@@ -35,12 +35,9 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
+namespace passw0rd\Credentials;
 
-class BaseHttpRequest
+interface AvailableCredentials
 {
-    public function __construct()
-    {
-        echo __CLASS__;
-    }
+    const KEYS = ['accessToken', 'appId', 'publicKey', 'secretKey'];
 }

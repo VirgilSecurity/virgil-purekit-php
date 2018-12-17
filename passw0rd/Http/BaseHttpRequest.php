@@ -35,51 +35,9 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http;
+namespace passw0rd\Http\Request;
 
-use passw0rd\Common\AvailableEndpoints;
-use passw0rd\Common\RequestNamespace;
-use GuzzleHttp\Client as GuzzleClient;
-use passw0rd\Http\Request\BaseHttpRequest;
-use passw0rd\Protocol\ProtocolContext;
-
-class HttpClient implements AvailableEndpoints, RequestNamespace
+class BaseHttpRequest
 {
-    const BASE_URI = 'https://api.passw0rd.io/phe/v1/';
 
-    private $context;
-    private $client;
-
-    /**
-     * HttpClient constructor.
-     * @param ProtocolContext $context
-     */
-    public function __construct(ProtocolContext $context)
-    {
-        $this->context = $context;
-
-        $this->client = new GuzzleClient([
-            'base_uri' => self::BASE_URI,
-        ]);
-    }
-
-    public function endpoint(string $request): BaseHttpRequest
-    {
-        $className = RequestNamespace::NAMESPACE.$request."Request";
-        return new $className();
-    }
-
-//    public function enroll(): EnrollResponse
-//    {
-//        $response = $this->client->request('POST', $this->context->getAppId() . "/enroll",
-//            RequestParamsHelper::format(["Authorization" => $this->context->getAccessToken()]));
-//        return new EnrollResponse($response);
-//    }
-//
-//    public function verifyPassword(): VerifyPasswordResponse
-//    {
-//        $response = $this->client->request('POST', $this->context->getAppId() . "/verify-password",
-//            RequestParamsHelper::format());
-//        return new VerifyPasswordResponse($response);
-//    }
 }
