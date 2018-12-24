@@ -35,73 +35,9 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Protocol;
+namespace passw0rd\Exeptions;
 
-use passw0rd\Credentials\InputCredentialsChecker;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
-
-/**
- * Class ProtocolContext
- * @package passw0rd
- */
-class ProtocolContext
+class ProtocolException extends \Exception
 {
-    private $accessToken;
-    private $publicKey;
-    private $secretKey;
 
-    /**
-     * @param array $credentials
-     * @return ProtocolContext
-     */
-    public function create(array $credentials): ProtocolContext
-    {
-        $credentialsChecker = new InputCredentialsChecker();
-        try {
-            $credentialsChecker->check($credentials);
-        }
-        catch(InputCredentialsCheckerException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
-
-        $this->setCredentials($credentials);
-
-        return $this;
-    }
-
-    /**
-     * @param array $credentials
-     * @return void
-     */
-    private function setCredentials(array $credentials): void
-    {
-        $this->accessToken = $credentials['accessToken'];
-        $this->publicKey = $credentials['publicKey'];
-        $this->secretKey = $credentials['secretKey'];
-    }
-
-    /**
-     * @return string
-     */
-    public function getAccessToken(): string
-    {
-        return $this->accessToken;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPublicKey(): string
-    {
-        return $this->publicKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSecretKey(): string
-    {
-        return $this->secretKey;
-    }
 }

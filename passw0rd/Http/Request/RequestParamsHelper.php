@@ -37,10 +37,14 @@
 
 namespace passw0rd\Http\Request;
 
-class VerifyPasswordRequest extends BaseHttpRequest
+/**
+ * Class RequestHelper
+ * @package passw0rd\Http
+ */
+class RequestParamsHelper
 {
-    public function __construct()
+    public static function format(array $header = null, array $body = null): array
     {
-        echo __CLASS__;
+        return ["header" => $header, "body" => $body];
     }
 }

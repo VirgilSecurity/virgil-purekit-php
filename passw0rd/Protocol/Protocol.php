@@ -37,17 +37,19 @@
 
 namespace passw0rd\Protocol;
 
-use GuzzleHttp\Client as HttpClient;
-use passw0rd\Http\Response\Mocks\BaseHttpResponseMock;
-use passw0rd\Http\Response\Mocks\EnrollResponseMock;
-use passw0rd\Http\Response\Mocks\VerifyPasswordResponseMock;
+use Passw0rd\EnrollmentRequest;
+use passw0rd\Exeptions\ProtocolException;
+use passw0rd\Helpers\ArrayHelperTrait;
+use passw0rd\Http\HttpClient;
+use passw0rd\Http\Request\EnrollRequest;
+use passw0rd\Http\Response\BaseHttpResponse;
 
-class Protocol
+class Protocol implements AvailableProtocol
 {
+    use ArrayHelperTrait;
+
     private $context;
     private $httpClient;
-
-    const BASE_URI = 'https://api.passw0rd.io/phe/v1/';
 
     /**
      * Protocol constructor.
@@ -56,30 +58,24 @@ class Protocol
     public function __construct(ProtocolContext $context)
     {
         $this->context = $context;
-        $this->httpClient = new HttpClient([
-            'base_uri' => self::BASE_URI,
-        ]);
+        $this->httpClient = new HttpClient();
     }
 
-    public function enroll(string $password): string
+//    public function __call(string $name, array $arguments)
+////    {
+////        if(!in_array($name, AvailableProtocol::ENDPOINTS))
+////            throw new ProtocolException("Incorrect endpoint: $name. Correct endpoints: {$this->toString(AvailableProtocol::ENDPOINTS)}");
+////
+////        $this->setRequest($name);
+////
+////        return $this->getResponse();
+////    }
+
+
+    public function enroll()
     {
-        $enrollResponseMock = new EnrollResponseMock();
-        return $enrollResponseMock->enroll($password);
-
-//        $response = $this->httpClient->request('POST', $this->context->getAppId() . "/enroll",
-//            RequestParamsHelper::format(["Authorization" => $this->context->getAccessToken()]));
-//
-//        return new EnrollResponse($response);
-    }
-
-    public function verifyPassword(): string
-    {
-        $verifyPasswordResponseMock = new VerifyPasswordResponseMock();
-        return $verifyPasswordResponseMock->verifyPassword();
-
-//        $response = $this->httpClient->request('POST', $this->context->getAppId() . "/verify-password",
-//            RequestParamsHelper::format());
-//
-//        return new VerifyPasswordResponse($response);
+        $this->httpClient->setRequest(new EnrollRequest());
+        $response = $this->httpClient->getResponse();
+        return $response;
     }
 }

@@ -39,5 +39,5 @@ namespace passw0rd\Credentials;
 
 interface AvailableCredentials
 {
-    const KEYS = ['accessToken', 'appId', 'publicKey', 'secretKey'];
+    const KEYS = ['accessToken', 'publicKey', 'secretKey'];
 }

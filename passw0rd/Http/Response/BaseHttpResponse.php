@@ -37,7 +37,9 @@
 
 namespace passw0rd\Http\Response;
 
-class BaseHttpResponse
+use GuzzleHttp\Psr7\Response;
+
+class BaseHttpResponse extends Response
 {
 
 }

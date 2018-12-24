@@ -35,16 +35,12 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http;
+namespace passw0rd\Helpers;
 
-/**
- * Class RequestHelper
- * @package passw0rd\Http
- */
-class RequestParamsHelper
+trait ArrayHelperTrait
 {
-    public static function format(array $header = null, array $body = null): array
+    public function toString(array $array): string
     {
-        return ["header" => $header, "body" => $body];
+        return implode(", ", $array);
     }
 }

@@ -35,9 +35,23 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Common;
+namespace passw0rd\Http\Request;
 
-interface AvailableEndpoints
+use Passw0rd\EnrollmentRequest as ProtobufEnrollmentRequest;
+
+class EnrollRequest extends BaseRequest
 {
-    const LIST = ['Enroll', 'VerifyPassword'];
+    public function __construct()
+    {
+        $this->endpoint = 'enroll';
+        $this->optionsBody = $this->formatBody();
+    }
+
+    private function formatBody()
+    {
+        $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();
+        $protobufEnrollmentRequest = $protobufEnrollmentRequest->setVersion(1);
+        $body = $protobufEnrollmentRequest->serializeToString();
+        return $body;
+    }
 }

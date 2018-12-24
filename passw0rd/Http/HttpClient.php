@@ -35,9 +35,30 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Exeptions;
+namespace passw0rd\Http;
 
-class RequestException extends \Exception
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Psr7\Response;
+use passw0rd\Http\Request\BaseRequest;
+
+class HttpClient
 {
+    protected $httpClient;
+    private $request;
 
+    public function __construct()
+    {
+        $this->httpClient = new GuzzleClient();
+    }
+
+    public function setRequest(BaseRequest $request)
+    {
+        $this->request = $request;
+    }
+
+    public function getResponse(bool $debug=false): Response
+    {
+        return $this->httpClient->request($this->request->getMethod(), $this->request->getUri(),
+            ["headers" => $this->request->getOptionsHeader(), "body" => $this->request->getOptionsBody(), 'debug' => $debug]);
+    }
 }

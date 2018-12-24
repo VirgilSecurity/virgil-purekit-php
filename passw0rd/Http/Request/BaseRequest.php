@@ -35,9 +35,43 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Common;
+namespace passw0rd\Http\Request;
 
-interface RequestNamespace
+
+class BaseRequest
 {
-    const NAMESPACE = "passw0rd\Http\Request\\";
+    const POST = 'POST';
+    const GET = 'GET';
+
+    protected $method = self::POST;
+    protected $endpoint;
+    protected $optionsHeader;
+    protected $optionsBody;
+
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
+    private function getEndpoint()
+    {
+        return $this->endpoint;
+    }
+
+    public function getOptionsHeader()
+    {
+        return ["AppToken" => $_ENV['ACCESS_TOKEN']];
+    }
+
+    public function getOptionsBody()
+    {
+        return $this->optionsBody;
+    }
+
+    public function getUri(): string
+    {
+        $env = isset($_ENV['ENV']) ? $_ENV['ENV'] : 'api';
+        $uri = "https://$env.passw0rd.io/phe/v1/{$this->getEndpoint()}";
+        return $uri;
+    }
 }
