@@ -35,55 +35,9 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Protocol;
+namespace passw0rd\Exeptions;
 
-use GuzzleHttp\Psr7\Response;
-use passw0rd\Exeptions\ProtocolException;
-use passw0rd\Exeptions\RequestClassException;
-use passw0rd\Helpers\ArrayHelperTrait;
-use passw0rd\Helpers\ClassHelperTrait;
-use passw0rd\Http\HttpClient;
-
-class Protocol implements AvailableProtocol
+class RequestClassException extends \Exception
 {
-    use ArrayHelperTrait, ClassHelperTrait;
 
-    const REQUEST_CLASS_NAMESPACE = "passw0rd\\Http\\Request\\";
-    const REQUEST_CLASS_SUFFIX= "Request";
-
-    private $context;
-    private $httpClient;
-
-    /**
-     * Protocol constructor.
-     * @param ProtocolContext $context
-     */
-    public function __construct(ProtocolContext $context)
-    {
-        $this->context = $context;
-        $this->httpClient = new HttpClient();
-    }
-
-    /**
-     * @param string $name
-     * @param array $arguments
-     * @return Response
-     * @throws ProtocolException
-     * @throws RequestClassException
-     */
-    public function __call(string $name, array $arguments): Response
-    {
-        if(!in_array($name, AvailableProtocol::ENDPOINTS))
-            throw new ProtocolException("Incorrect endpoint: $name. Correct endpoints: {$this->toString(AvailableProtocol::ENDPOINTS)}");
-
-        $class = $this->toClass(self::REQUEST_CLASS_NAMESPACE, $name, self::REQUEST_CLASS_SUFFIX);
-
-        if(!$this->isClassExists($class))
-            throw new RequestClassException("Class do not exists: $class");
-
-        $this->httpClient->setRequest(new $class($name));
-        $response = $this->httpClient->getResponse(true);
-
-        return $response;
-    }
 }

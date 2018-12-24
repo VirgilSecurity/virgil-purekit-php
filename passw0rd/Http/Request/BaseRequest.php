@@ -38,7 +38,7 @@
 namespace passw0rd\Http\Request;
 
 
-class BaseRequest
+abstract class BaseRequest
 {
     const POST = 'POST';
     const GET = 'GET';
@@ -47,6 +47,12 @@ class BaseRequest
     protected $endpoint;
     protected $optionsHeader;
     protected $optionsBody;
+
+    public function __construct(string $endpoint)
+    {
+        $this->endpoint = $endpoint;
+        $this->optionsBody = $this->formatBody();
+    }
 
     public function getMethod()
     {
@@ -58,16 +64,30 @@ class BaseRequest
         return $this->endpoint;
     }
 
-    public function getOptionsHeader()
+    /**
+     * @return array
+     */
+    public function getOptionsHeader(): array
     {
         return ["AppToken" => $_ENV['ACCESS_TOKEN']];
     }
 
-    public function getOptionsBody()
+    /**
+     * @return string
+     */
+    public function getOptionsBody(): string
     {
         return $this->optionsBody;
     }
 
+    /**
+     * @return string
+     */
+    abstract protected function formatBody(): string;
+
+    /**
+     * @return string
+     */
     public function getUri(): string
     {
         $env = isset($_ENV['ENV']) ? $_ENV['ENV'] : 'api';

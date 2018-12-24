@@ -35,55 +35,24 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Protocol;
+namespace passw0rd\Http\Request;
 
-use GuzzleHttp\Psr7\Response;
-use passw0rd\Exeptions\ProtocolException;
-use passw0rd\Exeptions\RequestClassException;
-use passw0rd\Helpers\ArrayHelperTrait;
-use passw0rd\Helpers\ClassHelperTrait;
-use passw0rd\Http\HttpClient;
+use Passw0rd\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
 
-class Protocol implements AvailableProtocol
+class VerifyPasswordRequest extends BaseRequest
 {
-    use ArrayHelperTrait, ClassHelperTrait;
-
-    const REQUEST_CLASS_NAMESPACE = "passw0rd\\Http\\Request\\";
-    const REQUEST_CLASS_SUFFIX= "Request";
-
-    private $context;
-    private $httpClient;
-
-    /**
-     * Protocol constructor.
-     * @param ProtocolContext $context
-     */
-    public function __construct(ProtocolContext $context)
+    public function __construct($endpoint)
     {
-        $this->context = $context;
-        $this->httpClient = new HttpClient();
+        parent::__construct($endpoint);
+        $this->endpoint = 'verify-password';
     }
 
-    /**
-     * @param string $name
-     * @param array $arguments
-     * @return Response
-     * @throws ProtocolException
-     * @throws RequestClassException
-     */
-    public function __call(string $name, array $arguments): Response
+    protected function formatBody(): string
     {
-        if(!in_array($name, AvailableProtocol::ENDPOINTS))
-            throw new ProtocolException("Incorrect endpoint: $name. Correct endpoints: {$this->toString(AvailableProtocol::ENDPOINTS)}");
-
-        $class = $this->toClass(self::REQUEST_CLASS_NAMESPACE, $name, self::REQUEST_CLASS_SUFFIX);
-
-        if(!$this->isClassExists($class))
-            throw new RequestClassException("Class do not exists: $class");
-
-        $this->httpClient->setRequest(new $class($name));
-        $response = $this->httpClient->getResponse(true);
-
-        return $response;
+        $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();
+        $protobufVerifyPasswordRequest->setVersion(1);
+        // TODO add bytes request = 2; // phe.VerifyPasswordRequest
+        $body = $protobufVerifyPasswordRequest->serializeToString();
+        return $body;
     }
 }

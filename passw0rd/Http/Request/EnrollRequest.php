@@ -41,13 +41,12 @@ use Passw0rd\EnrollmentRequest as ProtobufEnrollmentRequest;
 
 class EnrollRequest extends BaseRequest
 {
-    public function __construct()
+    public function __construct($endpoint)
     {
-        $this->endpoint = 'enroll';
-        $this->optionsBody = $this->formatBody();
+        parent::__construct($endpoint);
     }
 
-    private function formatBody()
+    protected function formatBody(): string
     {
         $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();
         $protobufEnrollmentRequest = $protobufEnrollmentRequest->setVersion(1);
