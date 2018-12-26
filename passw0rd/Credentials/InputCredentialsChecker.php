@@ -70,8 +70,11 @@ class InputCredentialsChecker implements AvailableCredentials
             if(!$this->checkKeyExists($credentialKey))
                 throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
 
-            if(!$this->checkValue($credentialKey))
-                throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
+            if($credentialKey !== 'updateToken')
+            {
+                if(!$this->checkValue($credentialKey))
+                    throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
+            }
         }
 
         return true;

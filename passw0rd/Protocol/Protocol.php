@@ -37,53 +37,110 @@
 
 namespace passw0rd\Protocol;
 
-use GuzzleHttp\Psr7\Response;
+use passw0rd\Core\PHEClient;
+use Passw0rd\EnrollmentResponse;
 use passw0rd\Exeptions\ProtocolException;
-use passw0rd\Exeptions\RequestClassException;
 use passw0rd\Helpers\ArrayHelperTrait;
-use passw0rd\Helpers\ClassHelperTrait;
 use passw0rd\Http\HttpClient;
+use passw0rd\Http\Request\EnrollRequest;
+use passw0rd\Http\Request\VerifyPasswordRequest;
+use Passw0rd\VerifyPasswordResponse;
 
 class Protocol implements AvailableProtocol
 {
-    use ArrayHelperTrait, ClassHelperTrait;
+    use ArrayHelperTrait;
 
-    const REQUEST_CLASS_NAMESPACE = "passw0rd\\Http\\Request\\";
-    const REQUEST_CLASS_SUFFIX= "Request";
-
-    private $context;
+    private $protocolService;
     private $httpClient;
+    private $context;
+    private $client;
+    private $server;
 
     /**
      * Protocol constructor.
      * @param ProtocolContext $context
+     * @throws \Exception
      */
     public function __construct(ProtocolContext $context)
     {
-        $this->context = $context;
         $this->httpClient = new HttpClient();
+        $this->context = $context;
+
+        $this->client = new PHEClient();
+        $this->client->setKeys($this->client->generateClientPrivateKey(), $this->context->getPublicKey());
     }
 
     /**
      * @param string $name
      * @param array $arguments
-     * @return Response
      * @throws ProtocolException
-     * @throws RequestClassException
      */
-    public function __call(string $name, array $arguments): Response
+    public function __call(string $name, array $arguments)
     {
         if(!in_array($name, AvailableProtocol::ENDPOINTS))
             throw new ProtocolException("Incorrect endpoint: $name. Correct endpoints: {$this->toString(AvailableProtocol::ENDPOINTS)}");
 
-        $class = $this->toClass(self::REQUEST_CLASS_NAMESPACE, $name, self::REQUEST_CLASS_SUFFIX);
+        return;
+    }
 
-        if(!$this->isClassExists($class))
-            throw new RequestClassException("Class do not exists: $class");
+    /**
+     * @param string $password
+     * @param bool $encodeToBase64
+     * @return string
+     * @throws ProtocolException
+     */
+    public function enroll(string $password, bool $encodeToBase64 = true): string
+    {
+        $enrollRequest = new EnrollRequest('enroll');
+        $this->httpClient->setRequest($enrollRequest);
+        $response = $this->httpClient->getResponse(false);
 
-        $this->httpClient->setRequest(new $class($name));
-        $response = $this->httpClient->getResponse(true);
+        if($response->getStatusCode() !== 200)
+            throw new ProtocolException("Protocol error"); // TODO need some refactoring!
 
-        return $response;
+        $protobufResponse = $response->getBody()->getContents();
+
+        $protoEnrollmentResponse = new EnrollmentResponse();
+        $protoEnrollmentResponse->mergeFromString($protobufResponse);
+
+        $enrollmentResponse = $protoEnrollmentResponse->getResponse();
+
+        $res = $this->client->enrollAccount($enrollmentResponse, $password);
+
+        return $encodeToBase64==true ? base64_encode($res[0]) : $res[0];
+    }
+
+    /**
+     * @param string $password
+     * @param string $record
+     * @return bool
+     * @throws ProtocolException
+     */
+    public function verifyPassword(string $password, string $record): bool
+    {
+        $verifyPasswordRequest = $this->client->createVerifyPasswordRequest($password, $record);
+
+        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
+        $this->httpClient->setRequest($verifyPassword);
+        $response = $this->httpClient->getResponse(false);
+
+        if($response->getStatusCode() !== 200)
+            throw new ProtocolException("Protocol error"); // TODO need some refactoring!
+
+        $protobufResponse = $response->getBody()->getContents();
+
+        $protoVerifyPasswordResponse = new VerifyPasswordResponse();
+        $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
+
+        $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
+
+        try {
+            $this->client->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
+        }
+        catch(\Exception $e) {
+            throw new ProtocolException("Authentication failed");
+        }
+
+        return true;
     }
 }

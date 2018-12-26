@@ -39,6 +39,7 @@ namespace passw0rd\Protocol;
 
 use passw0rd\Credentials\InputCredentialsChecker;
 use passw0rd\Exeptions\InputCredentialsCheckerException;
+use passw0rd\Exeptions\ProtocolContextException;
 
 /**
  * Class ProtocolContext
@@ -49,6 +50,11 @@ class ProtocolContext
     private $accessToken;
     private $publicKey;
     private $secretKey;
+    private $updateToken;
+
+    const PK_PREFIX = "PK";
+    const SK_PREFIX = "SK";
+    const UT_PREFIX = "UT";
 
     /**
      * @param array $credentials
@@ -79,6 +85,7 @@ class ProtocolContext
         $this->accessToken = $credentials['accessToken'];
         $this->publicKey = $credentials['publicKey'];
         $this->secretKey = $credentials['secretKey'];
+        $this->updateToken = $credentials['updateToken'];
     }
 
     /**
@@ -89,12 +96,15 @@ class ProtocolContext
         return $this->accessToken;
     }
 
-    /**
-     * @return string
-     */
-    public function getPublicKey(): string
+    public function getPublicKey()
     {
-        return $this->publicKey;
+        try {
+            return $this->getParsedContext(self::PK_PREFIX, $this->publicKey);
+        }
+        catch(ProtocolContextException $e) {
+            var_dump($e->getMessage());
+            die;
+        }
     }
 
     /**
@@ -102,6 +112,50 @@ class ProtocolContext
      */
     public function getSecretKey(): string
     {
-        return $this->secretKey;
+        try {
+            return $this->getParsedContext(self::SK_PREFIX, $this->secretKey);
+        }
+        catch(ProtocolContextException $e) {
+            var_dump($e->getMessage());
+            die;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpdateToken(): string
+    {
+        try {
+            return $this->getParsedContext(self::UT_PREFIX, $this->updateToken);
+        }
+        catch(ProtocolContextException $e) {
+            var_dump($e->getMessage());
+            die;
+        }
+    }
+
+    /**
+     * @param string $prefix
+     * @param string $key
+     * @return string
+     * @throws ProtocolContextException
+     */
+    private function getParsedContext(string $prefix, string $key): string
+    {
+        $parts = explode(".", $key);
+
+        if(count($parts) !== 3 || $parts[0] !== $prefix)
+            throw new ProtocolContextException("Invalid string");
+
+        if((int) $parts[1] < 1)
+            throw new ProtocolContextException("Invalid version");
+
+        $decodedKey = base64_decode($parts[2]);
+
+        if(strlen($decodedKey) !== 65)
+            throw new ProtocolContextException("Invalid string");
+
+        return $decodedKey;
     }
 }
