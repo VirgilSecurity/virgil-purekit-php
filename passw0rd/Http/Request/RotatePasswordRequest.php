@@ -35,9 +35,26 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Protocol;
+namespace passw0rd\Http\Request;
 
-interface AvailableProtocol
+use Passw0rd\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
+
+class RotatePasswordRequest extends BaseRequest
 {
-    const ENDPOINTS = ['enroll', 'verifyPassword', 'updatePassword'];
+    private $verifyPasswordRequest;
+
+    public function __construct(string $endpoint, string $verifyPasswordRequest)
+    {
+        $this->verifyPasswordRequest = $verifyPasswordRequest;
+        parent::__construct($endpoint);
+    }
+
+    protected function formatBody(): string
+    {
+        $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();
+        $protobufVerifyPasswordRequest->setVersion(1);
+        $protobufVerifyPasswordRequest->setRequest($this->verifyPasswordRequest);
+        $body = $protobufVerifyPasswordRequest->serializeToString();
+        return $body;
+    }
 }

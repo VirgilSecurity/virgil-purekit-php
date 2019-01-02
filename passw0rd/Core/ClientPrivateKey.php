@@ -35,9 +35,41 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Protocol;
+namespace passw0rd\Core;
 
-interface AvailableProtocol
+
+class ClientPrivateKey
 {
-    const ENDPOINTS = ['enroll', 'verifyPassword', 'updatePassword'];
+    private $PHEClient;
+    private $privateKey;
+    private static $instance = null;
+
+    public static function getInstance(PHEClient $PHEClient)
+    {
+
+        if (null === self::$instance) {
+            self::$instance = new self($PHEClient);
+        }
+
+        return self::$instance;
+    }
+
+    protected function __construct(PHEClient $PHEClient)
+    {
+        $this->PHEClient = $PHEClient;
+        $this->privateKey = $this->PHEClient->generateClientPrivateKey();
+    }
+
+    private function __clone()
+    {
+    }
+
+    private function __wakeup()
+    {
+    }
+
+    public function get()
+    {
+        return $this->privateKey;
+    }
 }

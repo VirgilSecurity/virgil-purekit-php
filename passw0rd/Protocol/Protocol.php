@@ -37,6 +37,7 @@
 
 namespace passw0rd\Protocol;
 
+use passw0rd\Core\ClientPrivateKey;
 use passw0rd\Core\PHEClient;
 use Passw0rd\EnrollmentResponse;
 use passw0rd\Exeptions\ProtocolException;
@@ -66,8 +67,14 @@ class Protocol implements AvailableProtocol
         $this->httpClient = new HttpClient();
         $this->context = $context;
 
-        $this->client = new PHEClient();
-        $this->client->setKeys($this->client->generateClientPrivateKey(), $this->context->getPublicKey());
+        try {
+            $this->client = new PHEClient();
+            $clientPrivateKey = ClientPrivateKey::getInstance($this->client);
+            $this->client->setKeys($clientPrivateKey->get(), $this->context->getPublicKey());
+        }
+        catch(\Exception $e) {
+            throw new ProtocolException('Protocol error with PHE client constructor or setKeys method');
+        }
     }
 
     /**
@@ -96,7 +103,7 @@ class Protocol implements AvailableProtocol
         $response = $this->httpClient->getResponse(false);
 
         if($response->getStatusCode() !== 200)
-            throw new ProtocolException("Protocol error"); // TODO need some refactoring!
+            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
 
         $protobufResponse = $response->getBody()->getContents();
 
@@ -118,7 +125,12 @@ class Protocol implements AvailableProtocol
      */
     public function verifyPassword(string $password, string $record): bool
     {
-        $verifyPasswordRequest = $this->client->createVerifyPasswordRequest($password, $record);
+        try {
+            $verifyPasswordRequest = $this->client->createVerifyPasswordRequest($password, $record);
+        }
+        catch(\Exception $e) {
+            throw new ProtocolException('Verify password request error');
+        }
 
         $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
         $this->httpClient->setRequest($verifyPassword);
@@ -142,5 +154,10 @@ class Protocol implements AvailableProtocol
         }
 
         return true;
+    }
+
+    public function updatePassword()
+    {
+
     }
 }
