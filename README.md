@@ -194,7 +194,7 @@ $context = (new ProtocolContext)->create([
 
 try {
     $protocol = new Protocol($context);
-    $updatePassword = $protocol->updatePassword($record));
+    $updatedRecord = $protocol->updatePassword($record));
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
