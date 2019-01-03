@@ -1,0 +1,39 @@
+{
+  "name": "passw0rd/sdk-php",
+  "description": "Virgil Security introduces an implementation of the Password-Hardened Encryption (PHE) protocol that provides developers with a technology to protect users passwords from offline/online attacks and make stolen passwords useless even if your database has been compromised.",
+  "keywords": [],
+  "homepage": "https://passw0rd.io/",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Virgil Security, Inc",
+      "email": "support@virgilsecurity.com",
+      "homepage": "https://virgilsecurity.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "vlucas/phpdotenv": "^2.5",
+    "guzzlehttp/guzzle": "~6.0",
+    "google/protobuf": "^3.6.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7"
+  },
+  "autoload": {
+    "psr-4": {
+      "passw0rd\\": "passw0rd",
+      "Passw0rd\\": "passw0rd/Core/Protobuf/build/Passw0rd",
+      "GPBMetadata\\": "passw0rd/Core/Protobuf/build/GPBMetadata"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "passw0rd\\Tests\\": "passw0rd/_tests/src"
+    }
+  },
+  "scripts": {
+    "setup-extension": [
+    ]
+  }
+}
