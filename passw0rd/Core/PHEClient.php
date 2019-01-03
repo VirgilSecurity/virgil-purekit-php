@@ -91,7 +91,8 @@ class PHEClient
      * @return array
      * @throws \Exception
      */
-    public function enrollAccount(string $enrollmentResponse, string $password): array
+    public function enrollAccount(string $enrollmentResponse, string $password): array // [clientEnrollmentRecord,
+        // clientAccountKey]
     {
         return vsce_phe_client_enroll_account_php($this->c_ctx, $enrollmentResponse, $password);
     }
@@ -126,7 +127,7 @@ class PHEClient
      * @return array
      * @throws \Exception
      */
-    public function rotateKeys(string $updateToken): array
+    public function rotateKeys(string $updateToken): array // [clientNewPrivateKey, serverNewPublicKey]
     {
         return vsce_phe_client_rotate_keys_php($this->c_ctx, $updateToken);
     }
@@ -137,7 +138,8 @@ class PHEClient
      * @return string
      * @throws \Exception
      */
-    public function updateEnrollmentRecord(string $enrollmentRecord, string $updateToken): string
+    public function updateEnrollmentRecord(string $enrollmentRecord, string $updateToken): string //
+        // clientEnrollmentRecord
     {
         return vsce_phe_client_update_enrollment_record_php($this->c_ctx, $enrollmentRecord, $updateToken);
     }

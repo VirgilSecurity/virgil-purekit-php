@@ -45,34 +45,32 @@ use passw0rd\Exeptions\InputCredentialsCheckerException;
  */
 class InputCredentialsChecker implements AvailableCredentials
 {
+    /**
+     * @var array
+     */
     private $credentials;
 
     /**
+     * InputCredentialsChecker constructor.
      * @param array $credentials
-     * @return void
      */
-    private function setCredentials(array $credentials): void
+    public function __construct(array $credentials)
     {
         $this->credentials = $credentials;
     }
 
     /**
-     * @param array $credentials
-     * @throws InputCredentialsCheckerException
      * @return bool
+     * @throws InputCredentialsCheckerException
      */
-    public function check(array $credentials): bool
+    public function check(): bool
     {
-        $this->setCredentials($credentials);
-
-        foreach (AvailableCredentials::KEYS as $credentialKey)
-        {
-            if(!$this->checkKeyExists($credentialKey))
+        foreach (AvailableCredentials::KEYS as $credentialKey) {
+            if (!$this->checkKeyExists($credentialKey))
                 throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
 
-            if($credentialKey !== 'updateToken')
-            {
-                if(!$this->checkValue($credentialKey))
+            if ($credentialKey !== 'updateToken') {
+                if (!$this->checkValue($credentialKey))
                     throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
             }
         }

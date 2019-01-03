@@ -40,6 +40,7 @@ namespace passw0rd\Protocol;
 use passw0rd\Core\ClientPrivateKey;
 use passw0rd\Core\PHEClient;
 use Passw0rd\EnrollmentResponse;
+use passw0rd\Exeptions\ProtocolContextException;
 use passw0rd\Exeptions\ProtocolException;
 use passw0rd\Helpers\ArrayHelperTrait;
 use passw0rd\Http\HttpClient;
@@ -51,11 +52,8 @@ class Protocol implements AvailableProtocol
 {
     use ArrayHelperTrait;
 
-    private $protocolService;
     private $httpClient;
     private $context;
-    private $client;
-    private $server;
 
     /**
      * Protocol constructor.
@@ -66,15 +64,6 @@ class Protocol implements AvailableProtocol
     {
         $this->httpClient = new HttpClient();
         $this->context = $context;
-
-        try {
-            $this->client = new PHEClient();
-            $clientPrivateKey = ClientPrivateKey::getInstance($this->client);
-            $this->client->setKeys($clientPrivateKey->get(), $this->context->getPublicKey());
-        }
-        catch(\Exception $e) {
-            throw new ProtocolException('Protocol error with PHE client constructor or setKeys method');
-        }
     }
 
     /**
@@ -112,7 +101,7 @@ class Protocol implements AvailableProtocol
 
         $enrollmentResponse = $protoEnrollmentResponse->getResponse();
 
-        $res = $this->client->enrollAccount($enrollmentResponse, $password);
+        $res = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
 
         return $encodeToBase64==true ? base64_encode($res[0]) : $res[0];
     }
@@ -126,7 +115,7 @@ class Protocol implements AvailableProtocol
     public function verifyPassword(string $password, string $record): bool
     {
         try {
-            $verifyPasswordRequest = $this->client->createVerifyPasswordRequest($password, $record);
+            $verifyPasswordRequest = $this->getPHEClient()->createVerifyPasswordRequest($password, $record);
         }
         catch(\Exception $e) {
             throw new ProtocolException('Verify password request error');
@@ -137,7 +126,7 @@ class Protocol implements AvailableProtocol
         $response = $this->httpClient->getResponse(false);
 
         if($response->getStatusCode() !== 200)
-            throw new ProtocolException("Protocol error"); // TODO need some refactoring!
+            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
 
         $protobufResponse = $response->getBody()->getContents();
 
@@ -147,7 +136,7 @@ class Protocol implements AvailableProtocol
         $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
 
         try {
-            $this->client->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
+            $this->getPHEClient()->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
         }
         catch(\Exception $e) {
             throw new ProtocolException("Authentication failed");
@@ -156,8 +145,21 @@ class Protocol implements AvailableProtocol
         return true;
     }
 
-    public function updatePassword()
+    public function updatePassword(string $record, bool $encodeToBase64 = true)
     {
+        if(is_null($this->context->getUpdateToken()))
+            throw new ProtocolContextException("Empty update token");
 
+        $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record, $this->context->getUpdateToken());
+
+        return $encodeToBase64==true ? base64_encode($updatedRecord) : $updatedRecord;
+    }
+
+    /**
+     * @return PHEClient
+     */
+    private function getPHEClient(): PHEClient
+    {
+        return $this->context->getPHEClient();
     }
 }

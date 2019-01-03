@@ -37,9 +37,12 @@
 
 namespace passw0rd\Protocol;
 
+use passw0rd\Core\PHEClient;
+use passw0rd\Credentials\AvailableCredentials;
 use passw0rd\Credentials\InputCredentialsChecker;
 use passw0rd\Exeptions\InputCredentialsCheckerException;
 use passw0rd\Exeptions\ProtocolContextException;
+use passw0rd\Exeptions\ProtocolException;
 
 /**
  * Class ProtocolContext
@@ -47,10 +50,12 @@ use passw0rd\Exeptions\ProtocolContextException;
  */
 class ProtocolContext
 {
-    private $accessToken;
-    private $publicKey;
-    private $secretKey;
+    private $appToken;
+    private $servicePublicKey;
+    private $appSecretKey;
     private $updateToken;
+    private $version;
+    private $PHEClient;
 
     const PK_PREFIX = "PK";
     const SK_PREFIX = "SK";
@@ -62,16 +67,16 @@ class ProtocolContext
      */
     public function create(array $credentials): ProtocolContext
     {
-        $credentialsChecker = new InputCredentialsChecker();
+        $credentialsChecker = new InputCredentialsChecker($credentials);
+
         try {
-            $credentialsChecker->check($credentials);
-        }
-        catch(InputCredentialsCheckerException $e) {
+            $credentialsChecker->check();
+        } catch (InputCredentialsCheckerException $e) {
             var_dump($e->getMessage());
             die;
         }
 
-        $this->setCredentials($credentials);
+        $this->mainSetter($credentials);
 
         return $this;
     }
@@ -80,56 +85,104 @@ class ProtocolContext
      * @param array $credentials
      * @return void
      */
+    public function mainSetter(array $credentials)
+    {
+        $this->setCredentials($credentials);
+
+        try {
+            if ($this->isKeysVersionsEquals())
+                $this->version = (int) $this->getServicePublicKey(true);
+
+            if(!is_null($this->getUpdateToken()))
+            {
+                if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
+                    throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
+
+                $this->version = (int) $this->getUpdateToken(true);
+            }
+
+            try {
+                $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
+            } catch (\Exception $e) {
+                throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
+            }
+
+        } catch (ProtocolContextException $e) {
+            var_dump($e->getMessage());
+            die;
+        }
+
+    }
+
+    /**
+     * @return bool
+     * @throws ProtocolContextException
+     */
+    private function isKeysVersionsEquals(): bool
+    {
+        if ((int)$this->getAppSecretKey(true) !== (int)$this->getServicePublicKey(true))
+            throw new ProtocolContextException("Versions of appSecretKey and servicePublicKey must be equals");
+
+        return true;
+    }
+
+    /**
+     * @param array $credentials
+     * @return void
+     */
     private function setCredentials(array $credentials): void
     {
-        $this->accessToken = $credentials['accessToken'];
-        $this->publicKey = $credentials['publicKey'];
-        $this->secretKey = $credentials['secretKey'];
+        $this->appToken = $credentials['appToken'];
+        $this->servicePublicKey = $credentials['servicePublicKey'];
+        $this->appSecretKey = $credentials['appSecretKey'];
         $this->updateToken = $credentials['updateToken'];
     }
 
     /**
      * @return string
      */
-    public function getAccessToken(): string
+    public function getAppToken(): string
     {
-        return $this->accessToken;
+        return $this->appToken;
     }
 
-    public function getPublicKey()
+    /**
+     * @param bool $returnVersion
+     * @return string
+     */
+    public function getServicePublicKey(bool $returnVersion = false): string
     {
         try {
-            return $this->getParsedContext(self::PK_PREFIX, $this->publicKey);
-        }
-        catch(ProtocolContextException $e) {
+            return $this->getParsedContext(self::PK_PREFIX, $this->servicePublicKey, $returnVersion);
+        } catch (ProtocolContextException $e) {
             var_dump($e->getMessage());
             die;
         }
     }
 
     /**
+     * @param bool $returnVersion
      * @return string
      */
-    public function getSecretKey(): string
+    public function getAppSecretKey(bool $returnVersion = false): string
     {
         try {
-            return $this->getParsedContext(self::SK_PREFIX, $this->secretKey);
-        }
-        catch(ProtocolContextException $e) {
+            return $this->getParsedContext(self::SK_PREFIX, $this->appSecretKey, $returnVersion);
+        } catch (ProtocolContextException $e) {
             var_dump($e->getMessage());
             die;
         }
     }
 
     /**
-     * @return string
+     * @param bool $returnVersion
+     * @return null|string
      */
-    public function getUpdateToken(): string
+    public function getUpdateToken(bool $returnVersion = false):? string
     {
         try {
-            return $this->getParsedContext(self::UT_PREFIX, $this->updateToken);
-        }
-        catch(ProtocolContextException $e) {
+            return $this->getParsedContext(self::UT_PREFIX, $this->updateToken, $returnVersion);
+        } catch (ProtocolContextException $e) {
             var_dump($e->getMessage());
             die;
         }
@@ -138,24 +191,62 @@ class ProtocolContext
     /**
      * @param string $prefix
      * @param string $key
-     * @return string
+     * @param bool $returnVersion
+     * @return null|string
      * @throws ProtocolContextException
      */
-    private function getParsedContext(string $prefix, string $key): string
+    private function getParsedContext(string $prefix, string $key, bool $returnVersion = false): ?string
     {
+        if ($prefix == self::UT_PREFIX && $key == "")
+            return null;
+
         $parts = explode(".", $key);
 
-        if(count($parts) !== 3 || $parts[0] !== $prefix)
-            throw new ProtocolContextException("Invalid string");
+        if (count($parts) !== 3 || $parts[0] !== $prefix)
+            throw new ProtocolContextException("Invalid string: $key");
 
-        if((int) $parts[1] < 1)
-            throw new ProtocolContextException("Invalid version");
+        if ((int)$parts[1] < 1)
+            throw new ProtocolContextException("Invalid version: $key");
 
         $decodedKey = base64_decode($parts[2]);
 
-        if(strlen($decodedKey) !== 65)
-            throw new ProtocolContextException("Invalid string");
+//        if(strlen($decodedKey)!==65)
+//            throw new ProtocolContextException("Invalid string len: $key");
 
-        return $decodedKey;
+        return $returnVersion ? $parts[1] : $decodedKey;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVersion(): int
+    {
+        return (int)$this->version;
+    }
+
+    /**
+     * @return PHEClient
+     */
+    public function getPHEClient(): PHEClient
+    {
+        return $this->PHEClient;
+    }
+
+    /**
+     * @param string $appSecretKey
+     * @param string $servicePublicKey
+     * @param string|null $updateToken
+     * @throws \Exception
+     */
+    private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null)
+    {
+        $this->PHEClient = new PHEClient();
+        $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
+        if (!is_null($updateToken)) {
+
+            $newKeys = $this->PHEClient->rotateKeys($updateToken);
+            $this->PHEClient->setKeys($newKeys[0], $newKeys[1]);
+        }
+
     }
 }

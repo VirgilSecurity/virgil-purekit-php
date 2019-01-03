@@ -69,7 +69,7 @@ abstract class BaseRequest
      */
     public function getOptionsHeader(): array
     {
-        return ["AppToken" => $_ENV['ACCESS_TOKEN']];
+        return ["AppToken" => $_ENV['APP_TOKEN']];
     }
 
     /**

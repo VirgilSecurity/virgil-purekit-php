@@ -116,9 +116,9 @@ use passw0rd\Protocol\ProtocolContext;
 (new Dotenv("../"))->load(); // Load .env variables (required string)
 
 $context = (new ProtocolContext)->create([
-    'accessToken' => $_ENV['ACCESS_TOKEN'],
-    'publicKey' => $_ENV['PUBLIC_KEY'],
-    'secretKey' => $_ENV['SECRET_KEY'],
+    'appToken' => $_ENV['APP_TOKEN'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
     'updateToken' => $_ENV['UPDATE_TOKEN'],
 ]);
 
@@ -148,9 +148,9 @@ use passw0rd\Protocol\ProtocolContext;
 (new Dotenv("../"))->load(); // Load .env variables (required string)
 
 $context = (new ProtocolContext)->create([
-    'accessToken' => $_ENV['ACCESS_TOKEN'],
-    'publicKey' => $_ENV['PUBLIC_KEY'],
-    'secretKey' => $_ENV['SECRET_KEY'],
+    'appToken' => $_ENV['APP_TOKEN'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
     'updateToken' => $_ENV['UPDATE_TOKEN'],
 ]);
 
@@ -179,7 +179,27 @@ How it works:
 
 Here is an example of using the `Update` records function:
 ```php
-// php code here
+use Dotenv\Dotenv;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+
+(new Dotenv("../"))->load(); // Load .env variables (required string)
+
+$context = (new ProtocolContext)->create([
+    'appToken' => $_ENV['APP_TOKEN'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+    'updateToken' => $_ENV['UPDATE_TOKEN'],
+]);
+
+try {
+    $protocol = new Protocol($context);
+    $updatePassword = $protocol->updatePassword($record));
+}
+catch(\Exception $e) {
+    var_dump($e->getMessage());
+    die;
+}
 ```
 
 
