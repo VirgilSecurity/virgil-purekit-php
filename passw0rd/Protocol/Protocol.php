@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,7 @@
 
 namespace passw0rd\Protocol;
 
-use passw0rd\Core\ClientPrivateKey;
+use passw0rd\Core\PHECipher;
 use passw0rd\Core\PHEClient;
 use Passw0rd\EnrollmentResponse;
 use passw0rd\Exeptions\ProtocolContextException;
@@ -53,6 +53,7 @@ class Protocol implements AvailableProtocol
     use ArrayHelperTrait;
 
     private $httpClient;
+    private $PHECipher;
     private $context;
 
     /**
@@ -63,6 +64,7 @@ class Protocol implements AvailableProtocol
     public function __construct(ProtocolContext $context)
     {
         $this->httpClient = new HttpClient();
+        $this->PHECipher = new PHECipher();
         $this->context = $context;
     }
 
@@ -85,10 +87,13 @@ class Protocol implements AvailableProtocol
      * @return string
      * @throws ProtocolException
      */
-    public function enroll(string $password, bool $encodeToBase64 = true): string
+    public function enrollAccount(string $password, bool $encodeToBase64 = false): string
     {
+        // API Request
         $enrollRequest = new EnrollRequest('enroll');
         $this->httpClient->setRequest($enrollRequest);
+
+        // API Response
         $response = $this->httpClient->getResponse(false);
 
         if($response->getStatusCode() !== 200)
@@ -96,13 +101,13 @@ class Protocol implements AvailableProtocol
 
         $protobufResponse = $response->getBody()->getContents();
 
+        // Protobuf Response
         $protoEnrollmentResponse = new EnrollmentResponse();
         $protoEnrollmentResponse->mergeFromString($protobufResponse);
-
         $enrollmentResponse = $protoEnrollmentResponse->getResponse();
 
+        // PHE Response
         $res = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
-
         return $encodeToBase64==true ? base64_encode($res[0]) : $res[0];
     }
 
@@ -114,6 +119,7 @@ class Protocol implements AvailableProtocol
      */
     public function verifyPassword(string $password, string $record): bool
     {
+        // PHE Request
         try {
             $verifyPasswordRequest = $this->getPHEClient()->createVerifyPasswordRequest($password, $record);
         }
@@ -121,8 +127,11 @@ class Protocol implements AvailableProtocol
             throw new ProtocolException('Verify password request error');
         }
 
+        // API Request
         $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
         $this->httpClient->setRequest($verifyPassword);
+
+        // API Response
         $response = $this->httpClient->getResponse(false);
 
         if($response->getStatusCode() !== 200)
@@ -130,11 +139,12 @@ class Protocol implements AvailableProtocol
 
         $protobufResponse = $response->getBody()->getContents();
 
+        // Protobuf Response
         $protoVerifyPasswordResponse = new VerifyPasswordResponse();
         $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
-
         $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
 
+        // PHE Response
         try {
             $this->getPHEClient()->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
         }
@@ -145,14 +155,41 @@ class Protocol implements AvailableProtocol
         return true;
     }
 
-    public function updatePassword(string $record, bool $encodeToBase64 = true)
+    /**
+     * @param string $record
+     * @param bool $encodeToBase64
+     * @return string
+     * @throws ProtocolContextException
+     */
+    public function updatePassword(string $record, bool $encodeToBase64 = true): string
     {
         if(is_null($this->context->getUpdateToken()))
             throw new ProtocolContextException("Empty update token");
 
+        // PHE Response
         $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record, $this->context->getUpdateToken());
 
         return $encodeToBase64==true ? base64_encode($updatedRecord) : $updatedRecord;
+    }
+
+    /**
+     * @param string $plainText
+     * @param string $accountKey
+     * @return string
+     */
+    public function encrypt(string $plainText, string $accountKey): string
+    {
+        return $this->getPHECipher()->encrypt($plainText, $accountKey);
+    }
+
+    /**
+     * @param string $cipherText
+     * @param string $accountKey
+     * @return string
+     */
+    public function decrypt(string $cipherText, string $accountKey): string
+    {
+        return $this->getPHECipher()->decrypt($cipherText, $accountKey);
     }
 
     /**
@@ -161,5 +198,13 @@ class Protocol implements AvailableProtocol
     private function getPHEClient(): PHEClient
     {
         return $this->context->getPHEClient();
+    }
+
+    /**
+     * @return PHECipher
+     */
+    private function getPHECipher(): PHECipher
+    {
+        return $this->PHECipher;
     }
 }

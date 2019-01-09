@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,26 +35,25 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-function extension_helper($type)
+/**
+ * @return string
+ */
+function extension_helper(): string
 {
-    if (in_array($type, ['php-v', 'php-ext-dir', 'php-ext-type', 'os-v'])) {
-        switch ($type) {
-            case 'php-v':
-                return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . "\n";
-                break;
-            case 'php-ext-dir':
-                return PHP_EXTENSION_DIR."\n";
-                break;
-            case 'os-v':
-                return substr(strtolower(PHP_OS), 0, 3)."\n";
-                break;
-        }
+    $params = [
+        // php -v
+        'PHP Version' => PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION,
+        // php-config --extension-dir
+        'PHP Extension Dir' => PHP_EXTENSION_DIR,
+        // php -i | grep System
+        'OS Version' => PHP_OS,
+    ];
+
+    foreach ($params as $key => $value) {
+        echo $key . ": " . $value . "\n";
     }
-    return false;
+
+    return true;
 }
 
-foreach($argv as $type)
-{
-    echo extension_helper($type);
-}
-
+extension_helper();

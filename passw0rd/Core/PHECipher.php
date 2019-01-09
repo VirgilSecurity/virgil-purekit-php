@@ -35,17 +35,61 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Helpers;
+namespace passw0rd\Core;
 
-trait ClassHelperTrait
+/**
+ * Class PHECipher
+ */
+class PHECipher
 {
-    public function toClass($namespace, $name, $suffix)
+    /**
+     * @var
+     */
+    private $c_ctx;
+
+    /**
+     * PHECipher constructor.
+     * @return void
+     */
+    public function __construct()
     {
-        return $namespace.ucfirst($name).$suffix;
+        $this->c_ctx = vsce_phe_cipher_new_php();
     }
 
-    public function isClassExists($class)
+    /**
+     * PHECipher destructor.
+     * @return void
+     */
+    public function __destruct()
     {
-        return class_exists($class);
+        vsce_phe_cipher_delete_php($this->c_ctx);
+    }
+
+    /**
+     * @return void
+     */
+    public function setupDefaults()
+    {
+        vsce_phe_cipher_setup_defaults_php($this->c_ctx);
+    }
+
+    /**
+     * @param string $plainText
+     * @param string $accountKey
+     * @return string
+     */
+    public function encrypt(string $plainText, string $accountKey): string
+    {
+        return vsce_phe_cipher_encrypt_php($this->c_ctx, $plainText, $accountKey);
+    }
+
+    /**
+     * @param string $cipherText
+     * @param string $accountKey
+     * @return string
+     */
+    public function decrypt(string $cipherText, string $accountKey): string
+    {
+        return vsce_phe_cipher_decrypt_php($this->c_ctx, $cipherText, $accountKey);
     }
 }

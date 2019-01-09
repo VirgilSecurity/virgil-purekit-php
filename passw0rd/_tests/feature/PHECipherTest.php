@@ -35,17 +35,31 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Helpers;
+namespace passw0rd\_tests\feature;
 
-trait ClassHelperTrait
+use passw0rd\Core\PHECipher;
+
+class PHECipherTest extends \PHPUnit\Framework\TestCase
 {
-    public function toClass($namespace, $name, $suffix)
+    protected $cipher;
+
+    protected function setUp()
     {
-        return $namespace.ucfirst($name).$suffix;
+        $this->cipher = new PHECipher();
     }
 
-    public function isClassExists($class)
+    public function testFullFlowShouldSucceed()
     {
-        return class_exists($class);
+        $plainText = "plain text";
+        $accountKey = "Gjg-Ap7Qa5BjpuZ22FhZsairw^ZS5KjC"; // 32 bytes string
+
+        $this->assertEquals(32, strlen($accountKey));
+
+        $this->cipher->setupDefaults();
+
+        $encryptedData = $this->cipher->encrypt($plainText, $accountKey);
+        $decryptedData = $this->cipher->decrypt($encryptedData, $accountKey);
+
+        $this->assertEquals($plainText, $decryptedData);
     }
 }

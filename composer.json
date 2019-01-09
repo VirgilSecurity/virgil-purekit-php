@@ -15,7 +15,8 @@
     "php": ">=7.1",
     "vlucas/phpdotenv": "^2.5",
     "guzzlehttp/guzzle": "~6.0",
-    "google/protobuf": "^3.6.1"
+    "google/protobuf": "^3.6.1",
+    "ext-vsce_phe_php": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^7"

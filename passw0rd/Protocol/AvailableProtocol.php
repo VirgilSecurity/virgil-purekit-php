@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2018 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -39,5 +39,5 @@ namespace passw0rd\Protocol;
 
 interface AvailableProtocol
 {
-    const ENDPOINTS = ['enroll', 'verifyPassword', 'updatePassword'];
+    const ENDPOINTS = ['enrollAccount', 'verifyPassword', 'updatePassword'];
 }
