@@ -52,10 +52,10 @@ use passw0rd\Protocol\ProtocolContext;
 (new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
 
 $context = (new ProtocolContext)->create([
-    'accessToken' => $_ENV['ACCESS_TOKEN'],
-    'publicKey' => $_ENV['PUBLIC_KEY'],
-    'secretKey' => $_ENV['SECRET_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
+    'appToken' => $_ENV['APP_TOKEN'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
 ]);
 
 try {
@@ -119,7 +119,7 @@ $context = (new ProtocolContext)->create([
     'appToken' => $_ENV['APP_TOKEN'],
     'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
     'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
+    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
 ]);
 
 try {
@@ -151,7 +151,7 @@ $context = (new ProtocolContext)->create([
     'appToken' => $_ENV['APP_TOKEN'],
     'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
     'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
+    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
 ]);
 
 try {
@@ -164,20 +164,57 @@ catch(\Exception $e) {
 }
 ```
 
-### Rotate User passw0rd
+## Rotate app keys and user record
+There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this flow to get an `UPDATE_TOKEN` for updating user's passw0rd `RECORD` in your database and to get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application.
 
-This function allows you to use a special `UpdateTokens` to update users' `record` in your database.
+Also, use this flow in case your database has been COMPROMISED!
 
-> Use this flow only if your database has been COMPROMISED!
-When a user just needs to change his or her own password, use the `enroll` function to replace old user's `passw0rd_record` value in your DB with a new user's `passw0rd_record`.
+> This action doesn't require to create an additional table or to do any modification with available one. When a user just needs to change his or her own password, use the EnrollAccount function to replace user's old passw0rd record value in your DB with a new record.
 
-How it works:
-- Get your `UpdateToken` using [Passw0rd CLI](https://github.com/passw0rd/cli).
-- Specify the `UpdateToken` in the Passw0rd SDK on your Server side.
-- Then use the `Update` records function to create new user's `record` for your users (you don't need to ask your users to create a new password).
-- Finally, save the new user's `record` into your database.
+There is how it works:
 
-Here is an example of using the `Update` records function:
+**Step 1.** Get your `UPDATE_TOKEN` using [Passw0rd CLI](https://github.com/passw0rd/cli)
+
+- be sure you're logged in your account. To log in the account use the following command (2FA is required):
+
+```bash
+./passw0rd login my@email.com
+```
+
+- then, use the `rotate` command and your application token to get an `UPDATE_TOKEN`:
+
+```bash
+./passw0rd application rotate <app_token>
+```
+as a result, you get your `UPDATE_TOKEN`.
+
+**Step 2.** Initialize passw0rd SDK with the `UPDATE_TOKEN`
+Move to passw0rd SDK configuration file and specify your `UPDATE_TOKEN`:
+
+```php
+use Dotenv\Dotenv;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+
+(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
+
+$context = (new ProtocolContext)->create([
+    'appToken' => $_ENV['APP_TOKEN'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'updateToken' => $_ENV['UPDATE_TOKEN'],
+]);
+
+try {
+    $protocol = new Protocol($context);
+}
+catch(\Exception $e) {
+    var_dump($e->getMessage());
+}
+```
+
+**Step 3.** Use the `UpdateEnrollmentRecord()` SDK function to create a user's `newRECORD` (you don't need to ask your users to create a new password). The `UpdateEnrollmentRecord()` function requires the `UPDATE_TOKEN` and user's `oldRECORD` from your DB:
+
 ```php
 use Dotenv\Dotenv;
 use passw0rd\Protocol\Protocol;
@@ -194,11 +231,51 @@ $context = (new ProtocolContext)->create([
 
 try {
     $protocol = new Protocol($context);
-    $updatedRecord = $protocol->updatePassword($record));
+    $newRecord = $protocol->UpdateEnrollmentRecord($oldRecord));
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
     die;
+}
+```
+
+
+**Step 4.** Start migration. Since the SDK is able to work simultaneously with two versions of user's records (`newRECORD` and `oldRECORD`), this will not affect the backend or users.
+
+This means, if a user logs into your system when you do the migration, the passw0rd SDK will verify his password without any problems because Passw0rd Service already knows about both user's records (`newRECORD` and `oldRECORD`).
+
+So, run the `UpdateEnrollmentRecord()` function and save the new user's `record` into your database.
+
+
+**Step 5.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
+
+Use passw0rd CLI `update-keys` command and your `UPDATE_TOKEN` to update the `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY`:
+
+```bash
+./passw0rd application update-keys <service_public_key> <app_secret_key> <update_token>
+```
+
+**Step 6.** Move to passw0rd SDK configuration and replace your previous `APP_SECRET_KEY`,  `SERVICE_PUBLIC_KEY` with a new one (`APP_TOKEN` will be the same). Delete previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` and `UPDATE_TOKEN`.
+
+```php
+use Dotenv\Dotenv;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+
+(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
+
+$context = (new ProtocolContext)->create([
+    'appToken' => $_ENV['APP_TOKEN'],
+    'appSecretKey' => $_ENV['NEW_APP_SECRET_KEY'],
+    'servicePublicKey' => $_ENV['NEW_SERVICE_PUBLIC_KEY'],
+    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
+]);
+
+try {
+    $protocol = new Protocol($context);
+}
+catch(\Exception $e) {
+    var_dump($e->getMessage());
 }
 ```
 
