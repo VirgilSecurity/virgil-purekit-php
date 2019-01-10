@@ -41,21 +41,42 @@ use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\Response;
 use passw0rd\Http\Request\BaseRequest;
 
+/**
+ * Class HttpClient
+ * @package passw0rd\Http
+ */
 class HttpClient
 {
+    /**
+     * @var GuzzleClient
+     */
     protected $httpClient;
+    /**
+     * @var
+     */
     private $request;
 
+    /**
+     * HttpClient constructor.
+     */
     public function __construct()
     {
         $this->httpClient = new GuzzleClient();
     }
 
+    /**
+     * @param BaseRequest $request
+     */
     public function setRequest(BaseRequest $request)
     {
         $this->request = $request;
     }
 
+    /**
+     * @param bool $debug
+     * @return Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getResponse(bool $debug=false): Response
     {
         return $this->httpClient->request($this->request->getMethod(), $this->request->getUri(),

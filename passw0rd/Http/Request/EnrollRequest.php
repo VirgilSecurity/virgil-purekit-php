@@ -41,11 +41,18 @@ use Passw0rd\EnrollmentRequest as ProtobufEnrollmentRequest;
 
 class EnrollRequest extends BaseRequest
 {
-    public function __construct($endpoint)
+    /**
+     * EnrollRequest constructor.
+     * @param $endpoint
+     */
+    public function __construct(string $endpoint)
     {
         parent::__construct($endpoint);
     }
 
+    /**
+     * @return string
+     */
     protected function formatBody(): string
     {
         $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();

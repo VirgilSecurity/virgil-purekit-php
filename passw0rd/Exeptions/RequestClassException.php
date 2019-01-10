@@ -37,6 +37,10 @@
 
 namespace passw0rd\Exeptions;
 
+/**
+ * Class RequestClassException
+ * @package passw0rd\Exeptions
+ */
 class RequestClassException extends \Exception
 {
 

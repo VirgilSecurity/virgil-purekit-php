@@ -48,12 +48,27 @@ use passw0rd\Http\Request\EnrollRequest;
 use passw0rd\Http\Request\VerifyPasswordRequest;
 use Passw0rd\VerifyPasswordResponse;
 
+/**
+ * Class Protocol
+ * @package passw0rd\Protocol
+ */
 class Protocol implements AvailableProtocol
 {
     use ArrayHelperTrait;
 
+    /**
+     * @var HttpClient
+     */
     private $httpClient;
+
+    /**
+     * @var PHECipher
+     */
     private $PHECipher;
+
+    /**
+     * @var ProtocolContext
+     */
     private $context;
 
     /**
@@ -86,6 +101,7 @@ class Protocol implements AvailableProtocol
      * @param bool $encodeToBase64
      * @return string
      * @throws ProtocolException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function enrollAccount(string $password, bool $encodeToBase64 = false): string
     {
@@ -107,18 +123,27 @@ class Protocol implements AvailableProtocol
         $enrollmentResponse = $protoEnrollmentResponse->getResponse();
 
         // PHE Response
-        $res = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
+        try {
+            $res = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
+        }
+        catch(\Exception $e) {
+            throw new ProtocolException(__METHOD__.": {$e->getMessage()}, {$e->getCode()}");
+        }
+
         return $encodeToBase64==true ? base64_encode($res[0]) : $res[0];
     }
+
 
     /**
      * @param string $password
      * @param string $record
      * @return bool
      * @throws ProtocolException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function verifyPassword(string $password, string $record): bool
     {
+
         // PHE Request
         try {
             $verifyPasswordRequest = $this->getPHEClient()->createVerifyPasswordRequest($password, $record);
@@ -129,6 +154,7 @@ class Protocol implements AvailableProtocol
 
         // API Request
         $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
+
         $this->httpClient->setRequest($verifyPassword);
 
         // API Response
@@ -155,11 +181,13 @@ class Protocol implements AvailableProtocol
         return true;
     }
 
+
     /**
      * @param string $record
      * @param bool $encodeToBase64
      * @return string
      * @throws ProtocolContextException
+     * @throws ProtocolException
      */
     public function updatePassword(string $record, bool $encodeToBase64 = true): string
     {
@@ -167,7 +195,12 @@ class Protocol implements AvailableProtocol
             throw new ProtocolContextException("Empty update token");
 
         // PHE Response
-        $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record, $this->context->getUpdateToken());
+        try {
+            $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record, $this->context->getUpdateToken());
+        }
+        catch(\Exception $e) {
+            throw new ProtocolException(__METHOD__.": {$e->getMessage()}, {$e->getCode()}");
+        }
 
         return $encodeToBase64==true ? base64_encode($updatedRecord) : $updatedRecord;
     }

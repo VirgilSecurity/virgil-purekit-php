@@ -39,16 +39,31 @@ namespace passw0rd\Http\Request;
 
 use Passw0rd\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
 
+/**
+ * Class RotatePasswordRequest
+ * @package passw0rd\Http\Request
+ */
 class RotatePasswordRequest extends BaseRequest
 {
+    /**
+     * @var string
+     */
     private $verifyPasswordRequest;
 
+    /**
+     * RotatePasswordRequest constructor.
+     * @param string $endpoint
+     * @param string $verifyPasswordRequest
+     */
     public function __construct(string $endpoint, string $verifyPasswordRequest)
     {
         $this->verifyPasswordRequest = $verifyPasswordRequest;
         parent::__construct($endpoint);
     }
 
+    /**
+     * @return string
+     */
     protected function formatBody(): string
     {
         $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();

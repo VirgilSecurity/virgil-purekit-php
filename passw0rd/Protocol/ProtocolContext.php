@@ -212,7 +212,7 @@ class ProtocolContext
 //        if(strlen($decodedKey)!==65)
 //            throw new ProtocolContextException("Invalid string len: $key");
 
-        return $returnVersion ? $parts[1] : $decodedKey;
+        return $returnVersion==true ? $parts[1] : $decodedKey;
     }
 
     /**
@@ -237,9 +237,10 @@ class ProtocolContext
      * @param string|null $updateToken
      * @throws \Exception
      */
-    private function setPHEClient(string $clientSecretKey, string $servicePublicKey, string $updateToken = null)
+    private function setPHEClient(string $clientSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
         $this->PHEClient = new PHEClient();
+
         $this->PHEClient->setKeys($clientSecretKey, $servicePublicKey);
 
         if (!is_null($updateToken)) {

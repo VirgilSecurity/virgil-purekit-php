@@ -37,6 +37,10 @@
 
 namespace passw0rd\Exeptions;
 
+/**
+ * Class ProtocolException
+ * @package passw0rd\Exeptions
+ */
 class ProtocolException extends \Exception
 {
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2018 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,21 +35,70 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
-
-/**
- * Class RequestHelper
- * @package passw0rd\Http
- */
-class RequestParamsHelper
+class PHEServer
 {
     /**
-     * @param array|null $header
-     * @param array|null $body
-     * @return array
+     * @var
      */
-    public static function format(array $header = null, array $body = null): array
+    private $c_ctx;
+
+    /**
+     * PHEServer constructor.
+     * @return void
+     */
+    public function __construct()
     {
-        return ["header" => $header, "body" => $body];
+        $this->c_ctx = vsce_phe_server_new_php();
+    }
+
+    /**
+     * PHEServer destructor.
+     * @return void
+     */
+    public function __destruct()
+    {
+        vsce_phe_server_delete_php($this->c_ctx);
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function generateServerKeyPair(): array
+    {
+        return vsce_phe_server_generate_server_key_pair_php($this->c_ctx);
+    }
+
+    /**
+     * @param string $serverPrivateKey
+     * @param string $serverPublicKey
+     * @return string
+     * @throws Exception
+     */
+    public function getEnrollment(string $serverPrivateKey, string $serverPublicKey): string
+    {
+        return vsce_phe_server_get_enrollment_php($this->c_ctx, $serverPrivateKey, $serverPublicKey);
+    }
+
+    /**
+     * @param string $serverPrivateKey
+     * @param string $serverPublicKey
+     * @param $verifyPasswordRequest
+     * @return string
+     * @throws Exception
+     */
+    public function verifyPassword(string $serverPrivateKey, string $serverPublicKey, $verifyPasswordRequest): string
+    {
+        return vsce_phe_server_verify_password_php($this->c_ctx, $serverPrivateKey, $serverPublicKey, $verifyPasswordRequest);
+    }
+
+    /**
+     * @param string $serverPrivateKey
+     * @return array
+     * @throws Exception
+     */
+    public function rotateKeys(string $serverPrivateKey): array
+    {
+        return vsce_phe_server_rotate_keys_php($this->c_ctx, $serverPrivateKey);
     }
 }

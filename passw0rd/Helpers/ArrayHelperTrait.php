@@ -37,8 +37,16 @@
 
 namespace passw0rd\Helpers;
 
+/**
+ * Trait ArrayHelperTrait
+ * @package passw0rd\Helpers
+ */
 trait ArrayHelperTrait
 {
+    /**
+     * @param array $array
+     * @return string
+     */
     public function toString(array $array): string
     {
         return implode(", ", $array);

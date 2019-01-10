@@ -39,12 +39,22 @@ namespace passw0rd\Helpers;
 
 trait ClassHelperTrait
 {
-    public function toClass($namespace, $name, $suffix)
+    /**
+     * @param string $namespace
+     * @param string $name
+     * @param string $suffix
+     * @return string
+     */
+    public function toClass(string $namespace, string $name, string $suffix)
     {
         return $namespace.ucfirst($name).$suffix;
     }
 
-    public function isClassExists($class)
+    /**
+     * @param string $class
+     * @return bool
+     */
+    public function isClassExists(string $class)
     {
         return class_exists($class);
     }

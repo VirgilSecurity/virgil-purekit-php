@@ -37,6 +37,10 @@
 
 namespace passw0rd\Exeptions;
 
+/**
+ * Class InputCredentialsCheckerException
+ * @package passw0rd\Exeptions
+ */
 class InputCredentialsCheckerException extends \Exception
 {
 

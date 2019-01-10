@@ -48,18 +48,28 @@ abstract class BaseRequest
     protected $optionsHeader;
     protected $optionsBody;
 
+    /**
+     * BaseRequest constructor.
+     * @param string $endpoint
+     */
     public function __construct(string $endpoint)
     {
         $this->endpoint = $endpoint;
         $this->optionsBody = $this->formatBody();
     }
 
-    public function getMethod()
+    /**
+     * @return string
+     */
+    public function getMethod(): string
     {
         return $this->method;
     }
 
-    private function getEndpoint()
+    /**
+     * @return string
+     */
+    private function getEndpoint(): string
     {
         return $this->endpoint;
     }

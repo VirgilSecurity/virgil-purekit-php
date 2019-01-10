@@ -37,6 +37,10 @@
 
 namespace passw0rd\Credentials;
 
+/**
+ * Interface AvailableCredentials
+ * @package passw0rd\Credentials
+ */
 interface AvailableCredentials
 {
     const KEYS = ['appToken', 'servicePublicKey', 'clientSecretKey', 'updateToken'];

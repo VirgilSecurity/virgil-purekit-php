@@ -37,6 +37,10 @@
 
 namespace passw0rd\Protocol;
 
+/**
+ * Interface AvailableProtocol
+ * @package passw0rd\Protocol
+ */
 interface AvailableProtocol
 {
     const ENDPOINTS = ['enrollAccount', 'verifyPassword', 'updatePassword'];
