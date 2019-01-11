@@ -57,7 +57,7 @@ class PHEClientTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        if (getenv("IS_TRAVIS") !== true)
+        if ((int)getenv("IS_TRAVIS") !== 1)
             (new Dotenv("../src"))->load();
 
         $this->context = (new ProtocolContext)->create([
