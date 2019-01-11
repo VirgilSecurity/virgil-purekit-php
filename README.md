@@ -1,5 +1,5 @@
 # Passw0rd SDK PHP
-[![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=develop)](https://travis-ci.com/passw0rd/sdk-php)
+[![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=master)](https://travis-ci.com/passw0rd/sdk-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
 [![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php.svg)
@@ -111,8 +111,22 @@ Server side.
 - Then, passw0rd SDK will create user's passw0rd **record**. You need to store this unique user's `record` (recordBytes or recordBase64 format) in your database in an associated column.
 
 ```php
+use Dotenv\Dotenv;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+
+(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
+
+$context = (new ProtocolContext)->create([
+    'appToken' => $_ENV['APP_TOKEN'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'updateToken' => $_ENV['UPDATE_TOKEN'],
+]);
+
 try {
-    $enroll = $protocol->enroll($password)); // [record, enrollment key]
+    $protocol = new Protocol($context);
+    $enroll = $protocol->enrollAccount($password)); // [record, enrollment key]
     $record = $enroll[0]; //save record to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
 }
@@ -131,7 +145,21 @@ Use this flow at the "sign in" step when a user already has his or her own uniqu
 You have to pass his or her `record` from your DB into the `VerifyPassword` function:
 
 ```php
+use Dotenv\Dotenv;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+
+(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
+
+$context = (new ProtocolContext)->create([
+    'appToken' => $_ENV['APP_TOKEN'],
+    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+    'updateToken' => $_ENV['UPDATE_TOKEN'],
+]);
+
 try {
+    $protocol = new Protocol($context);
     $encryptionKey = $protocol->verifyPassword($password, $record)); //use encryption key for decrypting user data
 }
 catch(\Exception $e) {
