@@ -35,136 +35,107 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
+use Dotenv\Dotenv;
 use passw0rd\Core\PHEClient;
-require_once '../src/PHEServer.php';
+use Passw0rd\EnrollmentResponse;
+use passw0rd\Exeptions\ProtocolException;
+use passw0rd\Http\Request\EnrollRequest;
+use passw0rd\Http\Request\VerifyPasswordRequest;
+use passw0rd\Protocol\Protocol;
+use passw0rd\Protocol\ProtocolContext;
+use passw0rd\Http\HttpClient;
+use Passw0rd\VerifyPasswordResponse;
 
 
 class PHEClientTest extends \PHPUnit\Framework\TestCase
 {
     protected $client;
-    protected $server;
+    protected $context;
+    protected $protocol;
+    protected $httpClient;
+    protected $password;
 
     protected function setUp()
     {
-        $this->client = new PHEClient();
-        $this->server = new PHEServer();
+        if (getenv("IS_TRAVIS") !== true)
+            (new Dotenv("../src"))->load();
+
+        $this->context = (new ProtocolContext)->create([
+            'appToken' => getenv("APP_TOKEN"),
+            'servicePublicKey' => getenv("SERVICE_PUBLIC_KEY"),
+            'appSecretKey' => getenv("APP_SECRET_KEY"),
+            'updateToken' => getenv("UPDATE_TOKEN"),
+        ]);
+
+        $this->protocol = new Protocol($this->context);
+        $this->httpClient = new HttpClient();
+        $this->password = "password23";
+
     }
 
-    public function testCustomDataForEnrollShouldSucceed()
+    public function testProtocolEnrollAccountAndVerifyPasswordShouldSucceed()
     {
-        $password = "passw0rd";
-        $clientPrivateKey = base64_decode("VLFGws8zMxAIAU9YGaAWNihmkUsnhvdcxNpvQ62sig0=", true);
-        $serverPublicKey = base64_decode("BHvu1iVcE2kggN0cQOkHdzd20VHUfe62/KkUhqX9niJbHtcXqU/0GtjbvcJF3sp8jLhdcE1AuxZucUKswt7Jc3w=", true);
-        $serverEnrollment = base64_decode("CiBdVlePm0B5n11kOCalFdil1WCV3/G/7GAFyoQN6vIq4BJBBJ+Zc7JnO9oXV1ZEq6ZALCy46iXtiSdpELff4iDTQa1AhMGZaBpevO2moZnmBuUGj5yhW24A9Ispryzh3NuK+/4aQQTsCVyNt8PgWnOywjHIW2vS7vfUQGP/S+Q0hrdt3q0AS2MWv1b36PHVO7qxTi+6npFwQXCnfkHKkwo82wgfvfmzIusBCkEE1ksKZxvSnolCw3AiXA79OivrQVxuiNg4X8r2+j3Xr9wfuAPxcckEWzOVNCmwctmlHfAzOFW4FhHaensywzo4aRJBBLeMkHbNbJsN17NKTTJ8babY7rsf3YvnrntVoIclmk2jqMV3RAhxno8pdSUeC7WfmSjlYaO71JWAhGy1KHMBDkUaQQTMkpdkdxJoE0MUk/NUg4GfPc2nUPFR8m01DR/ZcgMrU7wwE8zCt5MIRNpNsHAjhRxuuu4WEnpcboXDDWd8Lz6aIiAF7a2GPzWsf9nXL5YGSURxNRK4Ty9INUyQT1V7FUCiVQ==", true);
+        // API Request
+        $enrollRequest = new EnrollRequest('enroll');
+        $this->httpClient->setRequest($enrollRequest);
 
-        $this->assertEquals(65, strlen($serverPublicKey));
-        $this->assertEquals(32, strlen($clientPrivateKey));
-        $this->assertEquals(406, strlen($serverEnrollment));
+        // API Response
+        $response = $this->httpClient->getResponse(false);
 
-        $this->client->setKeys($clientPrivateKey, $serverPublicKey);
+        if ($response->getStatusCode() !== 200)
+            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
 
-        $clientEnrollAccount = $this->client->enrollAccount($serverEnrollment, $password);
-        $this->assertInternalType('array', $clientEnrollAccount);
-        $this->assertCount(2, $clientEnrollAccount);
+        $protobufResponse = $response->getBody()->getContents();
 
-        $clientEnrollmentRecord = $clientEnrollAccount[0];
-        $clientAccountKey = $clientEnrollAccount[1];
-        $this->assertInternalType('string', $clientEnrollmentRecord);
-        $this->assertInternalType('string', $clientAccountKey);
+        // Protobuf Response
+        $protoEnrollmentResponse = new EnrollmentResponse();
+        $protoEnrollmentResponse->mergeFromString($protobufResponse);
+        $enrollmentResponse = $protoEnrollmentResponse->getResponse();
 
-        $this->assertEquals(202, strlen($clientEnrollmentRecord));
-        $this->assertEquals(32, strlen($clientAccountKey));
-    }
+        // PHE Response
+        try {
+            $res = $this->context->getPHEClient()->enrollAccount($enrollmentResponse, $this->password);
+        } catch (\Exception $e) {
+            throw new ProtocolException(__METHOD__ . ": {$e->getMessage()}, {$e->getCode()}");
+        }
 
-    public function testFullFlowRandomCorrectPwdShouldSucceed()
-    {
-        $password = "password";
+        $this->assertEquals(202, strlen($res[0]));
 
-        $serverKeyPair = $this->server->generateServerKeyPair(); // [{privateKey}, {publicKey}]
-        $this->assertInternalType('array', $serverKeyPair);
-        $this->assertCount(2, $serverKeyPair);
+        // PHE Request
+        try {
+            $verifyPasswordRequest = $this->context->getPHEClient()->createVerifyPasswordRequest($this->password,
+                $res[0]);
+        } catch (\Exception $e) {
+            throw new ProtocolException('Verify password request error');
+        }
 
-        $serverPrivateKey = $serverKeyPair[0];
-        $serverPublicKey = $serverKeyPair[1];
+        // API Request
+        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
 
-        $this->assertInternalType('string', $serverPrivateKey);
-        $this->assertInternalType('string', $serverPublicKey);
+        $this->httpClient->setRequest($verifyPassword);
 
-        $this->assertEquals(65, strlen($serverPublicKey));
-        $this->assertEquals(32, strlen($serverPrivateKey));
+        // API Response
+        $response = $this->httpClient->getResponse(false);
 
-        $clientPrivateKey = $this->client->generateClientPrivateKey(); // {privateKey}
-        $this->assertInternalType('string', $clientPrivateKey);
+        if ($response->getStatusCode() !== 200)
+            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
 
-        $this->client->setKeys($clientPrivateKey, $serverPublicKey); // void
+        $protobufResponse = $response->getBody()->getContents();
 
-        $serverEnrollment = $this->server->getEnrollment($serverPrivateKey, $serverPublicKey);
-        $this->assertNotEmpty($serverEnrollment);
-        $this->assertInternalType('string', $serverEnrollment);
-        $this->assertEquals(406, strlen($serverEnrollment));
+        // Protobuf Response
+        $protoVerifyPasswordResponse = new VerifyPasswordResponse();
+        $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
+        $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
 
-        $clientEnrollAccount = $this->client->enrollAccount($serverEnrollment, $password);
-        $this->assertInternalType('array', $clientEnrollAccount);
-        $this->assertCount(2, $clientEnrollAccount);
+        $checkResponseAndDecrypt = $this->context->getPHEClient()->checkResponseAndDecrypt($this->password, $res[0],
+            $verifyPasswordResponse);
 
-        $clientEnrollmentRecord = $clientEnrollAccount[0];
-        $clientAccountKey = $clientEnrollAccount[1];
-        $this->assertInternalType('string', $clientEnrollmentRecord);
-        $this->assertInternalType('string', $clientAccountKey);
+        $this->assertInternalType('string', $checkResponseAndDecrypt);
+        $this->assertEquals(32, strlen($checkResponseAndDecrypt));
 
-        $this->assertEquals(202, strlen($clientEnrollmentRecord));
-
-        $clientCreateVerifyPasswordRequest = $this->client->createVerifyPasswordRequest($password,
-            $clientEnrollmentRecord);
-        $this->assertNotEmpty($clientCreateVerifyPasswordRequest);
-        $this->assertInternalType('string', $clientCreateVerifyPasswordRequest);
-
-        $serverVerifyPassword = $this->server->verifyPassword($serverPrivateKey, $serverPublicKey,
-            $clientCreateVerifyPasswordRequest);
-        $this->assertInternalType('string', $serverVerifyPassword);
-
-        $clientCheckResponseAndDecrypt = $this->client->checkResponseAndDecrypt($password,
-            $clientEnrollmentRecord, $serverVerifyPassword);
-        $this->assertInternalType('string', $clientCheckResponseAndDecrypt);
-        $this->assertEquals(32, strlen($clientAccountKey));
-        $this->assertEquals(32, strlen($clientCheckResponseAndDecrypt));
-        $this->assertEquals($clientAccountKey, $clientCheckResponseAndDecrypt);
-    }
-
-    public function testRotationRandomRotationServerPublicKeysMatch()
-    {
-        $serverKeyPair = $this->server->generateServerKeyPair(); // [{privateKey}, {publicKey}]
-        $this->assertInternalType('array', $serverKeyPair);
-        $this->assertCount(2, $serverKeyPair);
-        $serverPrivateKey = $serverKeyPair[0];
-        $serverPublicKey = $serverKeyPair[1];
-        $this->assertInternalType('string', $serverPrivateKey);
-        $this->assertInternalType('string', $serverPublicKey);
-
-        $serverRotateKeys = $this->server->rotateKeys($serverPrivateKey);
-        $this->assertInternalType('array', $serverRotateKeys);
-        $serverRotatedPrivateKey = $serverRotateKeys[0];
-        $serverRotatedPublicKey = $serverRotateKeys[1];
-        $serverUpdateToken = $serverRotateKeys[2];
-        $this->assertInternalType('string', $serverRotatedPrivateKey);
-        $this->assertInternalType('string', $serverRotatedPublicKey);
-        $this->assertInternalType('string', $serverUpdateToken);
-        $this->assertNotEmpty($serverUpdateToken);
-
-        $clientPrivateKey = $this->client->generateClientPrivateKey(); // {privateKey}
-        $this->assertInternalType('string', $clientPrivateKey);
-        $this->assertNotEmpty($clientPrivateKey);
-
-        $this->client->setKeys($clientPrivateKey, $serverRotatedPublicKey);
-
-        $clientRotateKeys = $this->client->rotateKeys($serverUpdateToken);
-        $this->assertInternalType('array', $clientRotateKeys);
-        $clientNewPrivateKey = $clientRotateKeys[0];
-        $serverNewPublicKey = $clientRotateKeys[1];
-        $this->assertInternalType('string', $clientNewPrivateKey);
-        $this->assertInternalType('string', $serverNewPublicKey);
-
-        $this->assertEquals(strlen($serverPublicKey), strlen($serverNewPublicKey));
-        $this->assertEquals(strlen($clientPrivateKey), strlen($clientNewPrivateKey));
+        $wrongPassword = "wrong-password";
+        $this->expectException(\Exception::class);
+        $this->context->getPHEClient()->checkResponseAndDecrypt($wrongPassword, $res[0],
+            $verifyPasswordResponse);
     }
 }

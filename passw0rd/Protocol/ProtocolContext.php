@@ -51,7 +51,7 @@ class ProtocolContext
 {
     private $appToken;
     private $servicePublicKey;
-    private $clientSecretKey;
+    private $appSecretKey;
     private $updateToken;
     private $version;
     private $PHEClient;
@@ -101,7 +101,7 @@ class ProtocolContext
             }
 
             try {
-                $this->setPHEClient($this->getClientSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
+                $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
             } catch (\Exception $e) {
                 throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
             }
@@ -119,7 +119,7 @@ class ProtocolContext
      */
     private function isKeysVersionsEquals(): bool
     {
-        if ((int)$this->getClientSecretKey(true) !== (int)$this->getServicePublicKey(true))
+        if ((int)$this->getAppSecretKey(true) !== (int)$this->getServicePublicKey(true))
             throw new ProtocolContextException("Versions of appSecretKey and servicePublicKey must be equals");
 
         return true;
@@ -133,7 +133,7 @@ class ProtocolContext
     {
         $this->appToken = $credentials['appToken'];
         $this->servicePublicKey = $credentials['servicePublicKey'];
-        $this->clientSecretKey = $credentials['clientSecretKey'];
+        $this->appSecretKey = $credentials['appSecretKey'];
         $this->updateToken = $credentials['updateToken'];
     }
 
@@ -163,10 +163,10 @@ class ProtocolContext
      * @param bool $returnVersion
      * @return string
      */
-    public function getClientSecretKey(bool $returnVersion = false): string
+    public function getAppSecretKey(bool $returnVersion = false): string
     {
         try {
-            return $this->getParsedContext(self::SK_PREFIX, $this->clientSecretKey, $returnVersion);
+            return $this->getParsedContext(self::SK_PREFIX, $this->appSecretKey, $returnVersion);
         } catch (ProtocolContextException $e) {
             var_dump($e->getMessage());
             die;
@@ -232,16 +232,16 @@ class ProtocolContext
     }
 
     /**
-     * @param string $clientSecretKey
+     * @param string $appSecretKey
      * @param string $servicePublicKey
      * @param string|null $updateToken
      * @throws \Exception
      */
-    private function setPHEClient(string $clientSecretKey, string $servicePublicKey, string $updateToken = null): void
+    private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
         $this->PHEClient = new PHEClient();
 
-        $this->PHEClient->setKeys($clientSecretKey, $servicePublicKey);
+        $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);

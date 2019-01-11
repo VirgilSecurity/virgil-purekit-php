@@ -1,6 +1,8 @@
 # Passw0rd SDK PHP
 [![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=develop)](https://travis-ci.com/passw0rd/sdk-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
+[![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php.svg)
 
 
 [Introduction](#introduction) | [Features](#features) | [Register Your Account](#register-your-account) | [Install and configure SDK](#install-and-configure-sdk) | [Prepare Your Database](#prepare-your-database) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
@@ -38,7 +40,7 @@ package
 ### Install SDK Package
 Install passw0rd SDK library with the following code:
 ```bash
-composer require passw0rd/sdk
+composer require passw0rd/sdk-php
 ```
 
 
@@ -109,22 +111,10 @@ Server side.
 - Then, passw0rd SDK will create user's passw0rd **record**. You need to store this unique user's `record` (recordBytes or recordBase64 format) in your database in an associated column.
 
 ```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Load .env variables (required string)
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
-]);
-
 try {
-    $protocol = new Protocol($context);
-    $enroll = $protocol->enroll($password)); // password_record
+    $enroll = $protocol->enroll($password)); // [record, enrollment key]
+    $record = $enroll[0]; //save record to database
+    $encryptionKey = $enroll[1]; //use encryption key for protecting user data
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
@@ -141,27 +131,14 @@ Use this flow at the "sign in" step when a user already has his or her own uniqu
 You have to pass his or her `record` from your DB into the `VerifyPassword` function:
 
 ```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Load .env variables (required string)
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
-]);
-
 try {
-    $protocol = new Protocol($context);
-    $verifyPassword = $protocol->verifyPassword($password, $record));
+    $encryptionKey = $protocol->verifyPassword($password, $record)); //use encryption key for decrypting user data
 }
 catch(\Exception $e) {
-    var_dump($e->getMessage());
-    die;
+    // Login error (incorrect password)
 }
+if($encryptionKey)
+    // Login success
 ```
 
 ## Rotate app keys and user record
@@ -213,25 +190,13 @@ catch(\Exception $e) {
 }
 ```
 
-**Step 3.** Use the `UpdateEnrollmentRecord()` SDK function to create a user's `newRECORD` (you don't need to ask your users to create a new password). The `UpdateEnrollmentRecord()` function requires the `UPDATE_TOKEN` and user's `oldRECORD` from your DB:
+**Step 3.** Use the `updateEnrollmentRecord()` SDK function to create a user's `newRECORD` (you don't need to ask 
+your users to create a new password). The `updateEnrollmentRecord()` function requires the `UPDATE_TOKEN` and user's 
+`oldRECORD` from your DB:
 
 ```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Load .env variables (required string)
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
-]);
-
 try {
-    $protocol = new Protocol($context);
-    $newRecord = $protocol->UpdateEnrollmentRecord($oldRecord));
+    $newRecord = $protocol->updateEnrollmentRecord($oldRecord));
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
@@ -255,28 +220,15 @@ Use passw0rd CLI `update-keys` command and your `UPDATE_TOKEN` to update the `AP
 ./passw0rd application update-keys <service_public_key> <app_secret_key> <update_token>
 ```
 
-**Step 6.** Move to passw0rd SDK configuration and replace your previous `APP_SECRET_KEY`,  `SERVICE_PUBLIC_KEY` with a new one (`APP_TOKEN` will be the same). Delete previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` and `UPDATE_TOKEN`.
+**Step 6.** Move to passw0rd SDK configuration .env file and replace your previous `APP_SECRET_KEY`,  
+`SERVICE_PUBLIC_KEY` 
+with a new one (`APP_TOKEN` will be the same). Delete previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` and `UPDATE_TOKEN`.
 
-```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'appSecretKey' => $_ENV['NEW_APP_SECRET_KEY'],
-    'servicePublicKey' => $_ENV['NEW_SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
-]);
-
-try {
-    $protocol = new Protocol($context);
-}
-catch(\Exception $e) {
-    var_dump($e->getMessage());
-}
+```dotenv
+APP_TOKEN=
+SERVICE_PUBLIC_KEY= 
+APP_SECRET_KEY=
+UPDATE_TOKEN= //must be empty
 ```
 
 

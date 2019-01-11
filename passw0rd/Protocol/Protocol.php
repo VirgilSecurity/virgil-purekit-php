@@ -181,7 +181,6 @@ class Protocol implements AvailableProtocol
         return true;
     }
 
-
     /**
      * @param string $record
      * @param bool $encodeToBase64
@@ -189,7 +188,7 @@ class Protocol implements AvailableProtocol
      * @throws ProtocolContextException
      * @throws ProtocolException
      */
-    public function updatePassword(string $record, bool $encodeToBase64 = true): string
+    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = true): string
     {
         if(is_null($this->context->getUpdateToken()))
             throw new ProtocolContextException("Empty update token");
