@@ -1,5 +1,5 @@
 # Passw0rd SDK PHP
-[![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=develop)](https://travis-ci.com/passw0rd/sdk-php)
+[![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=master)](https://travis-ci.com/passw0rd/sdk-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 
 
