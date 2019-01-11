@@ -47,7 +47,7 @@ use passw0rd\Http\HttpClient;
 use Passw0rd\VerifyPasswordResponse;
 
 
-class PHEClientTest extends \PHPUnit\Framework\TestCase
+class ProtocolTest extends \PHPUnit\Framework\TestCase
 {
     protected $client;
     protected $context;
@@ -57,7 +57,7 @@ class PHEClientTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        if ((int)getenv("IS_TRAVIS") !== 1)
+        if (is_file("../src/.env"))
             (new Dotenv("../src"))->load();
 
         $this->context = (new ProtocolContext)->create([
@@ -69,7 +69,7 @@ class PHEClientTest extends \PHPUnit\Framework\TestCase
 
         $this->protocol = new Protocol($this->context);
         $this->httpClient = new HttpClient();
-        $this->password = "password23";
+        $this->password = "password234";
 
     }
 
