@@ -98,12 +98,11 @@ class Protocol implements AvailableProtocol
 
     /**
      * @param string $password
-     * @param bool $encodeToBase64
-     * @return string
+     * @return array
      * @throws ProtocolException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function enrollAccount(string $password, bool $encodeToBase64 = false): string
+    public function enrollAccount(string $password): array
     {
         // API Request
         $enrollRequest = new EnrollRequest('enroll');
@@ -124,24 +123,23 @@ class Protocol implements AvailableProtocol
 
         // PHE Response
         try {
-            $res = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
+            $enroll = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
         }
         catch(\Exception $e) {
             throw new ProtocolException(__METHOD__.": {$e->getMessage()}, {$e->getCode()}");
         }
 
-        return $encodeToBase64==true ? base64_encode($res[0]) : $res[0];
+        return $enroll; // [record, enrollment key]
     }
-
 
     /**
      * @param string $password
      * @param string $record
-     * @return bool
+     * @return string
      * @throws ProtocolException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function verifyPassword(string $password, string $record): bool
+    public function verifyPassword(string $password, string $record): string
     {
 
         // PHE Request
@@ -172,13 +170,14 @@ class Protocol implements AvailableProtocol
 
         // PHE Response
         try {
-            $this->getPHEClient()->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
+            $encryptionKey = $this->getPHEClient()->checkResponseAndDecrypt($password, $record,
+                $verifyPasswordResponse);
         }
         catch(\Exception $e) {
             throw new ProtocolException("Authentication failed");
         }
 
-        return true;
+        return $encryptionKey;
     }
 
     /**

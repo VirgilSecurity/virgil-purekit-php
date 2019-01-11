@@ -57,7 +57,7 @@ $context = (new ProtocolContext)->create([
     'appToken' => $_ENV['APP_TOKEN'],
     'appSecretKey' => $_ENV['APP_SECRET_KEY'],
     'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['OPTIONAL_UPDATE_TOKEN'],
+    'updateToken' => $_ENV['UPDATE_TOKEN'],
 ]);
 
 try {
@@ -126,7 +126,7 @@ $context = (new ProtocolContext)->create([
 
 try {
     $protocol = new Protocol($context);
-    $enroll = $protocol->enrollAccount($password)); // [record, enrollment key]
+    $enroll = $protocol->enrollAccount($password)); // [record, encryption key]
     $record = $enroll[0]; //save record to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
 }
