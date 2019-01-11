@@ -3,4 +3,4 @@ for-dev
 vendor
 composer.lock
 .env
-super_secret.txt
+.env-travis

@@ -57,8 +57,10 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        if (is_file("../src/.env"))
-            (new Dotenv("../src"))->load();
+        $pathToEnvTravisFile = "../../../";
+
+        if (is_file($pathToEnvTravisFile.".env-travis"))
+            (new Dotenv($pathToEnvTravisFile, '.env-travis'))->load();
 
         $this->context = (new ProtocolContext)->create([
             'appToken' => getenv("APP_TOKEN"),
