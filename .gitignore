@@ -3,4 +3,3 @@ for-dev
 vendor
 composer.lock
 .env
-.env-travis
