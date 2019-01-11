@@ -42,4 +42,4 @@ before_script:
   - sudo sh -c "echo 'extension=vsce_phe_php.so' >> /etc/php/7.2/cli/php.ini"
   - cd $TRAVIS_BUILD_DIR
   - composer install
-script: phpunit --configuration phpunit.xml --coverage-text
+script: phpunit --configuration phpunit.xml
