@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=master)](https://travis-ci.com/passw0rd/sdk-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
-[![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php.svg)
+[![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
 
 
 [Introduction](#introduction) | [Features](#features) | [Register Your Account](#register-your-account) | [Install and configure SDK](#install-and-configure-sdk) | [Prepare Your Database](#prepare-your-database) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
@@ -38,6 +38,24 @@ package
 
 
 ### Install SDK Package
+
+#### Add vsce_phe_php extension before use this SDK:
+
+* [Download virgil-crypto-c-{latest version} archive from the CDN](https://cdn.virgilsecurity.com/virgil-crypto-c/php/) according to
+your server operating system
+* Place *vsce_phe_php.so* file from the archive (/lib folder) into the directory with extensions
+* Add string *extension=vsce_phe_php* to the php.ini file
+* Restart your web-service (apache or nginx): *sudo service {apache2 / nginx} restart*
+
+##### Tips:
+
+* PHP version: *phpversion() / php --version*
+* OS Version: *PHP_OS*
+* php.ini and extensions directory: *phpinfo() / php -i / php-config --extension_dir*
+
+Or launch *extension/helper.php* file
+
+
 Install passw0rd SDK library with the following code:
 ```bash
 composer require passw0rd/sdk-php
