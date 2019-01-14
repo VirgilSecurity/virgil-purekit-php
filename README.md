@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/passw0rd/sdk-php.png?branch=master)](https://travis-ci.com/passw0rd/sdk-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
-[![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php.svg)
+[![Total Downloads](https://img.shields.io/packagist/dt/passw0rd/sdk-php.svg?style=flat-square)](https://packagist.org/packages/passw0rd/sdk-php)
 
 
 [Introduction](#introduction) | [Features](#features) | [Register Your Account](#register-your-account) | [Install and configure SDK](#install-and-configure-sdk) | [Prepare Your Database](#prepare-your-database) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
