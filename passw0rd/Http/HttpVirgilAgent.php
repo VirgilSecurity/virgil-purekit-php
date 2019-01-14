@@ -35,78 +35,42 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
+namespace passw0rd\Http;
 
-
-use passw0rd\Http\HttpVirgilAgent;
-
-abstract class BaseRequest
+/**
+ * Class HttpVirgilAgent
+ * @package passw0rd\Http
+ */
+class HttpVirgilAgent
 {
-    const POST = 'POST';
-    const GET = 'GET';
+    const PRODUCT = 'passw0rd';
+    const FAMILY = 'php';
+    const VERSION = '1.0.0'; // TODO: Add composer.lock parser!
 
-    protected $method = self::POST;
-    protected $endpoint;
-    protected $optionsHeader;
-    protected $optionsBody;
-
-    protected $virgilAgent;
+    private $platform;
 
     /**
-     * BaseRequest constructor.
-     * @param string $endpoint
+     * @return string
      */
-    public function __construct(string $endpoint)
+    private function getPlatform(): string
     {
-        $this->endpoint = $endpoint;
-        $this->virgilAgent = new HttpVirgilAgent();
-        $this->optionsBody = $this->formatBody();
+        $this->platform = strtolower(php_uname('s'));
+        return $this->platform;
     }
 
     /**
      * @return string
      */
-    public function getMethod(): string
+    private function getPHPVersion(): string
     {
-        return $this->method;
+        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
     }
 
     /**
      * @return string
      */
-    private function getEndpoint(): string
+    public function getFormatString(): string
     {
-        return $this->endpoint;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptionsHeader(): array
-    {
-        return ["virgil-agent" => $this->virgilAgent->getFormatString(), "AppToken" => $_ENV['APP_TOKEN']];
-    }
-
-    /**
-     * @return string
-     */
-    public function getOptionsBody(): string
-    {
-        return $this->optionsBody;
-    }
-
-    /**
-     * @return string
-     */
-    abstract protected function formatBody(): string;
-
-    /**
-     * @return string
-     */
-    public function getUri(): string
-    {
-        $env = isset($_ENV['ENV']) ? $_ENV['ENV'] : 'api';
-        $uri = "https://$env.passw0rd.io/phe/v1/{$this->getEndpoint()}";
-        return $uri;
+        return self::PRODUCT . ";" . self::FAMILY . ";" . $this->getPlatform() . ";" . self::VERSION;
     }
 }

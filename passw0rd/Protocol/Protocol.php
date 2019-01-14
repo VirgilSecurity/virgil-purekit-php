@@ -44,6 +44,7 @@ use passw0rd\Exeptions\ProtocolContextException;
 use passw0rd\Exeptions\ProtocolException;
 use passw0rd\Helpers\ArrayHelperTrait;
 use passw0rd\Http\HttpClient;
+use passw0rd\Http\HttpVirgilAgent;
 use passw0rd\Http\Request\EnrollRequest;
 use passw0rd\Http\Request\VerifyPasswordRequest;
 use Passw0rd\VerifyPasswordResponse;
