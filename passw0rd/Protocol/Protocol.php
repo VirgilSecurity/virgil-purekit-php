@@ -211,6 +211,7 @@ class Protocol implements AvailableProtocol
      */
     public function encrypt(string $plainText, string $accountKey): string
     {
+        $this->getPHECipher()->setupDefaults();
         return $this->getPHECipher()->encrypt($plainText, $accountKey);
     }
 
