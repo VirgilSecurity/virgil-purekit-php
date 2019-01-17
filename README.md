@@ -39,12 +39,11 @@ package
 
 ### Install SDK Package
 
-#### Add vsce_phe_php extension before use this SDK:
+#### Add the vsce_phe_php extension before using this SDK:
 
-* [Download virgil-crypto-c-{latest version} archive from the CDN](https://cdn.virgilsecurity.com/virgil-crypto-c/php/) according to
-your server operating system
-* Place *vsce_phe_php.so* file from the archive (/lib folder) into the directory with extensions
-* Add string *extension=vsce_phe_php* to the php.ini file
+* [Download virgil-crypto-c-{latest version} archive from the CDN](https://cdn.virgilsecurity.com/virgil-crypto-c/php/) according to your server operating system
+* Place the *vsce_phe_php.so* file from the archive (/lib folder) into the directory with extensions
+* Add the *extension=vsce_phe_php* string in to the php.ini file
 * Restart your web-service (apache or nginx): *sudo service {apache2 / nginx} restart*
 
 ##### Tips:
@@ -53,10 +52,9 @@ your server operating system
 * OS Version: *PHP_OS*
 * php.ini and extensions directory: *phpinfo() / php -i / php-config --extension_dir*
 
-Or launch *extension/helper.php* file
+Also, you can launch the *extension/helper.php* file to get information about a version and extensions. 
 
-
-Install passw0rd SDK library with the following code:
+now, install passw0rd SDK library with the following code:
 ```bash
 composer require passw0rd/sdk-php
 ```
