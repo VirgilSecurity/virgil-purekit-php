@@ -32,7 +32,7 @@ If you don't have an account or a passw0rd project with its credentials, please 
 
 
 ## Install and Configure SDK
-The passw0rd PHP SDK is provided as a package named `passw0rd/sdk`. The package is distributed via Composer. The 
+The passw0rd PHP SDK is provided as a package named `passw0rd/sdk-php`. The package is distributed via Composer. The 
 package
  is available for PHP 7.0 or newer.
 
