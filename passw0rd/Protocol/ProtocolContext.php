@@ -38,7 +38,6 @@
 namespace passw0rd\Protocol;
 
 use passw0rd\Core\PHEClient;
-use passw0rd\Credentials\AvailableCredentials;
 use passw0rd\Credentials\InputCredentialsChecker;
 use passw0rd\Exeptions\InputCredentialsCheckerException;
 use passw0rd\Exeptions\ProtocolContextException;
@@ -101,6 +100,8 @@ class ProtocolContext
             {
                 if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
                     throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
+
+//                $this->version = (int) $this->getUpdateToken(true);
             }
 
             try {
@@ -243,14 +244,6 @@ class ProtocolContext
     }
 
     /**
-     * @return PHEClient
-     */
-    public function getPHEClient(): PHEClient
-    {
-        return $this->PHEClient;
-    }
-
-    /**
      * @param int $version
      * @return PHEClient
      */
@@ -270,14 +263,14 @@ class ProtocolContext
         $this->PHEClient = new PHEClient();
         $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
+        $this->pheImpl[$this->getVersion()] = $this->PHEClient;
+
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);
-
             $this->nextPHEClient = new PHEClient();
             $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
-        }
 
-        $this->pheImpl[$this->getVersion()] = $this->PHEClient;
-        $this->pheImpl[$this->getNextVersion()] = $this->nextPHEClient;
+            $this->pheImpl[$this->getNextVersion()] = $this->nextPHEClient;
+        }
     }
 }

@@ -54,26 +54,57 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     protected $protocol;
     protected $httpClient;
     protected $password;
+    protected $clientEnrollmentRecord;
 
     protected function setUp()
     {
-        (new Dotenv(__DIR__."/../../../"))->load();
+        (new Dotenv(__DIR__ . "/../../../"))->load();
 
+        $this->password = "password123456";
+        $this->clientEnrollmentRecord = base64_decode($_ENV["CLIENT_ENROLLMENT_RECORD"]);
+    }
+
+    public function testProtocolFullFlowWithoutUpdateToken()
+    {
         $this->context = (new ProtocolContext)->create([
             'appToken' => $_ENV["APP_TOKEN"],
             'servicePublicKey' => $_ENV["SERVICE_PUBLIC_KEY"],
             'appSecretKey' => $_ENV["APP_SECRET_KEY"],
-            'updateToken' => $_ENV["UPDATE_TOKEN"]
+            'updateToken' => "",
         ]);
 
         $this->protocol = new Protocol($this->context);
-        $this->httpClient = new HttpClient();
-        $this->password = "password234";
+
+        $enrollAccount = $this->protocol->enrollAccount($this->password); // [clientEnrollmentRecord,
+        // clientAccountKey]
+
+        $record = $enrollAccount[0];
+        $clientAccountKey = $enrollAccount[1];
+
+        $this->assertInternalType('array', $enrollAccount);
+        $this->assertEquals(202, strlen($record));
+        $this->assertEquals(32, strlen($clientAccountKey));
+
+        $verifyPassword = $this->protocol->verifyPassword($this->password, $record);
+        $this->assertEquals(32, strlen($verifyPassword));
+
+        $this->expectException(\passw0rd\Exeptions\ProtocolContextException::class);
+        $newRecord = $this->protocol->updateEnrollmentRecord($record);
     }
 
-    public function testProtocolUpdateEnrollmentRecordShouldSucceed()
+    public function testProtocolFullFlowWithUpdateTokenAndSameVersionOfRecord()
     {
-        $enrollAccount = $this->protocol->enrollAccount($this->password); // [clientEnrollmentRecord, clientAccountKey]
+        $this->context = (new ProtocolContext)->create([
+            'appToken' => $_ENV["APP_TOKEN"],
+            'servicePublicKey' => $_ENV["SERVICE_PUBLIC_KEY"],
+            'appSecretKey' => $_ENV["APP_SECRET_KEY"],
+            'updateToken' => $_ENV["UPDATE_TOKEN"],
+        ]);
+
+        $this->protocol = new Protocol($this->context);
+
+        $enrollAccount = $this->protocol->enrollAccount($this->password); // [clientEnrollmentRecord,
+        // clientAccountKey]
 
         $record = $enrollAccount[0];
         $clientAccountKey = $enrollAccount[1];
@@ -86,9 +117,27 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(32, strlen($verifyPassword));
 
         $newRecord = $this->protocol->updateEnrollmentRecord($record);
+        $this->assertEquals(null, $newRecord);
+    }
+
+    public function testProtocolFullFlowWithUpdateToken()
+    {
+        $this->context = (new ProtocolContext)->create([
+            'appToken' => $_ENV["APP_TOKEN"],
+            'servicePublicKey' => $_ENV["SERVICE_PUBLIC_KEY"],
+            'appSecretKey' => $_ENV["APP_SECRET_KEY"],
+            'updateToken' => $_ENV["UPDATE_TOKEN"],
+        ]);
+
+        $this->protocol = new Protocol($this->context);
+
+        $verifyPassword = $this->protocol->verifyPassword($this->password, $this->clientEnrollmentRecord);
+        $this->assertEquals(32, strlen($verifyPassword));
+
+        $newRecord = $this->protocol->updateEnrollmentRecord($this->clientEnrollmentRecord);
         $this->assertEquals(202, strlen($newRecord));
 
-        $verifyPassword2 = $this->protocol->verifyPassword($this->password, $newRecord);
-        $this->assertEquals(32, strlen($verifyPassword2));
+        $verifyPassword = $this->protocol->verifyPassword($this->password, $newRecord);
+        $this->assertEquals(32, strlen($verifyPassword));
     }
 }

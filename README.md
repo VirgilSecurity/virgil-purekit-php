@@ -87,7 +87,7 @@ catch(\Exception $e) {
 ## Prepare Your Database
 Passw0rd SDK allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `record`.
 
-**Passw0rd record** - a user's password that is protected with our Passw0rd technology. Passw0rd `record` contains a version, client & server random salts and two values obtained during execution of the PHE protocol
+**Passw0rd record** - a user's password that is protected with our Passw0rd technology. Passw0rd `record` contains a version, client & server random salts and two values obtained during execution of the PHE protocol.
 
 In order to create and work with user's `record` you have to set up your database with an additional column.
 
@@ -238,6 +238,7 @@ UPDATE_TOKEN= //need to be filled
 
 ```php
 try {
+    // $newRecord is null ONLY if oldRecord is already updated
     $newRecord = $protocol->updateEnrollmentRecord($oldRecord));
 }
 catch(\Exception $e) {
