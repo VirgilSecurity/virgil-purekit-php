@@ -57,10 +57,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $env = (new Dotenv(__DIR__."/../../../"))->load();
-
-        var_dump($env, getenv("APP_TOKEN"), $_ENV['APP_TOKEN']);
-        die;
+        (new Dotenv(__DIR__."/../../../"))->load();
 
         $this->context = (new ProtocolContext)->create([
             'appToken' => $_ENV["APP_TOKEN"],
