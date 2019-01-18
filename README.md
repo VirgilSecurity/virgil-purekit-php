@@ -197,7 +197,7 @@ There can never be enough security, so you should rotate your sensitive data reg
 
 Also, use this flow in case your database has been COMPROMISED!
 
-> This action doesn't require to create an additional table or to do any modification with available one. When a user just needs to change his or her own password, use the EnrollAccount function to replace user's old passw0rd record value in your DB with a new record.
+> This action doesn't require to create an additional table or to modify scheme of existing table. When a user just needs to change his or her own password, use the EnrollAccount function to replace user's oldRecord in your DB with a newRecord.
 
 There is how it works:
 
