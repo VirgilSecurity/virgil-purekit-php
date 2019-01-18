@@ -128,21 +128,7 @@ So, in order to create a `record` for a new database or available one, go throug
 - Then, Passw0rd SDK will create a user's `record`. You need to store this unique user's `record` in your database in associated column.
 
 ```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
-]);
-
 try {
-    $protocol = new Protocol($context);
     $enroll = $protocol->enrollAccount($password)); // [record, encryption key]
     $record = $enroll[0]; //save record to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
@@ -161,21 +147,7 @@ When you've created a passw0rd's `record` for all users in your DB, you can dele
 Use this flow when a user already has his or her own passw0rd's `record` in your database. This function allows you to verify user's password with the `record` from your DB every time when the user signs in. You have to pass his or her `record` from your DB into the `VerifyPassword` function:
 
 ```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
-]);
-
 try {
-    $protocol = new Protocol($context);
     $encryptionKey = $protocol->verifyPassword($password, $record)); //use encryption key for decrypting user data
 }
 catch(\Exception $e) {
@@ -255,26 +227,11 @@ as a result, you get your `UPDATE_TOKEN`.
 **Step 2.** Initialize passw0rd SDK with the `UPDATE_TOKEN`
 Move to passw0rd SDK configuration file and specify your `UPDATE_TOKEN`:
 
-```php
-use Dotenv\Dotenv;
-use passw0rd\Protocol\Protocol;
-use passw0rd\Protocol\ProtocolContext;
-
-(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
-
-$context = (new ProtocolContext)->create([
-    'appToken' => $_ENV['APP_TOKEN'],
-    'appSecretKey' => $_ENV['APP_SECRET_KEY'],
-    'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
-]);
-
-try {
-    $protocol = new Protocol($context);
-}
-catch(\Exception $e) {
-    var_dump($e->getMessage());
-}
+```dotenv
+APP_TOKEN=
+SERVICE_PUBLIC_KEY= 
+APP_SECRET_KEY=
+UPDATE_TOKEN= //must be fill
 ```
 
 **Step 3.** Start migration. Use the `UpdateEnrollmentRecord()` SDK function to create a user's `newRecord` (you don't need to ask your users to create a new password). The `UpdateEnrollmentRecord()` function requires the `update_token` and user's `oldRecord` from your DB:

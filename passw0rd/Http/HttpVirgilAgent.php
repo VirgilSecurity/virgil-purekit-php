@@ -45,7 +45,7 @@ class HttpVirgilAgent
 {
     const PRODUCT = 'passw0rd';
     const FAMILY = 'php';
-    const VERSION = '1.1.0'; // TODO: Add composer.lock parser!
+    const VERSION = '1.1.1'; // TODO: Add composer.lock parser!
 
     private $platform;
 
