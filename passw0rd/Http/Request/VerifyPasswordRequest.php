@@ -46,6 +46,11 @@ use Passw0rd\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
 class VerifyPasswordRequest extends BaseRequest
 {
     /**
+     * @var int
+     */
+    private $version;
+
+    /**
      * @var string
      */
     private $verifyPasswordRequest;
@@ -54,9 +59,11 @@ class VerifyPasswordRequest extends BaseRequest
      * VerifyPasswordRequest constructor.
      * @param string $endpoint
      * @param string $verifyPasswordRequest
+     * @param int $version
      */
-    public function __construct(string $endpoint, string $verifyPasswordRequest)
+    public function __construct(string $endpoint, string $verifyPasswordRequest, int $version)
     {
+        $this->version = $version;
         $this->verifyPasswordRequest = $verifyPasswordRequest;
         parent::__construct($endpoint);
     }
@@ -67,7 +74,7 @@ class VerifyPasswordRequest extends BaseRequest
     protected function formatBody(): string
     {
         $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();
-        $protobufVerifyPasswordRequest->setVersion(1);
+        $protobufVerifyPasswordRequest->setVersion($this->version);
         $protobufVerifyPasswordRequest->setRequest($this->verifyPasswordRequest);
         $body = $protobufVerifyPasswordRequest->serializeToString();
         return $body;

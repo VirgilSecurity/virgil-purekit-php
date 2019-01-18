@@ -106,7 +106,7 @@ class Protocol implements AvailableProtocol
     public function enrollAccount(string $password): array
     {
         // API Request
-        $enrollRequest = new EnrollRequest('enroll');
+        $enrollRequest = new EnrollRequest('enroll', $this->context->getVersion());
         $this->httpClient->setRequest($enrollRequest);
 
         // API Response
@@ -142,17 +142,18 @@ class Protocol implements AvailableProtocol
      */
     public function verifyPassword(string $password, string $record): string
     {
+        $PHEClient = $this->context->getPHEImpl($this->context->getVersion());
 
         // PHE Request
         try {
-            $verifyPasswordRequest = $this->getPHEClient()->createVerifyPasswordRequest($password, $record);
+            $verifyPasswordRequest = $PHEClient->createVerifyPasswordRequest($password, $record);
         }
         catch(\Exception $e) {
             throw new ProtocolException('Verify password request error');
         }
 
         // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
+        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->context->getVersion());
 
         $this->httpClient->setRequest($verifyPassword);
 
@@ -171,8 +172,7 @@ class Protocol implements AvailableProtocol
 
         // PHE Response
         try {
-            $encryptionKey = $this->getPHEClient()->checkResponseAndDecrypt($password, $record,
-                $verifyPasswordResponse);
+            $encryptionKey = $PHEClient->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
         }
         catch(\Exception $e) {
             throw new ProtocolException("Authentication failed");
@@ -188,8 +188,10 @@ class Protocol implements AvailableProtocol
      * @throws ProtocolContextException
      * @throws ProtocolException
      */
-    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = true): string
+    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): string
     {
+        $this->context->setNextVersion();
+
         if(is_null($this->context->getUpdateToken()))
             throw new ProtocolContextException("Empty update token");
 

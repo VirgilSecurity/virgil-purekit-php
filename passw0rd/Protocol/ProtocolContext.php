@@ -53,8 +53,13 @@ class ProtocolContext
     private $servicePublicKey;
     private $appSecretKey;
     private $updateToken;
+
     private $version;
+
     private $PHEClient;
+    private $nextPHEClient;
+
+    private $pheImpl;
 
     const PK_PREFIX = "PK";
     const SK_PREFIX = "SK";
@@ -96,8 +101,6 @@ class ProtocolContext
             {
                 if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
                     throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
-
-                $this->version = (int) $this->getUpdateToken(true);
             }
 
             try {
@@ -220,7 +223,23 @@ class ProtocolContext
      */
     public function getVersion(): int
     {
-        return (int)$this->version;
+        return (int) $this->version;
+    }
+
+    /**
+     * @return int
+     */
+    public function getNextVersion(): int
+    {
+        return (int) $this->version + 1;
+    }
+
+    /**
+     * @return void
+     */
+    public function setNextVersion(): void
+    {
+        $this->version = $this->version + 1;
     }
 
     /**
@@ -232,6 +251,15 @@ class ProtocolContext
     }
 
     /**
+     * @param int $version
+     * @return PHEClient
+     */
+    public function getPHEImpl(int $version): PHEClient
+    {
+        return $this->pheImpl[$version];
+    }
+
+    /**
      * @param string $appSecretKey
      * @param string $servicePublicKey
      * @param string|null $updateToken
@@ -240,12 +268,16 @@ class ProtocolContext
     private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
         $this->PHEClient = new PHEClient();
-
         $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);
-            $this->PHEClient->setKeys($newKeys[0], $newKeys[1]);
+
+            $this->nextPHEClient = new PHEClient();
+            $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
         }
+
+        $this->pheImpl[$this->getVersion()] = $this->PHEClient;
+        $this->pheImpl[$this->getNextVersion()] = $this->nextPHEClient;
     }
 }
