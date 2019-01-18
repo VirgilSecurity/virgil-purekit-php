@@ -57,14 +57,13 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        // TODO Fix it!
-        $this->markTestSkipped("Some problems with env variables");
+        (new Dotenv(__DIR__."/../../../"))->load();
 
         $this->context = (new ProtocolContext)->create([
-            'appToken' => getenv("APP_TOKEN"),
-            'servicePublicKey' => getenv("SERVICE_PUBLIC_KEY"),
-            'appSecretKey' => getenv("APP_SECRET_KEY"),
-            'updateToken' => getenv("UPDATE_TOKEN"),
+            'appToken' => $_ENV["APP_TOKEN"],
+            'servicePublicKey' => $_ENV["SERVICE_PUBLIC_KEY"],
+            'appSecretKey' => $_ENV["APP_SECRET_KEY"],
+            'updateToken' => $_ENV["UPDATE_TOKEN"]
         ]);
 
         $this->protocol = new Protocol($this->context);
@@ -72,69 +71,24 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         $this->password = "password234";
     }
 
-    public function testProtocolEnrollAccountAndVerifyPasswordShouldSucceed()
+    public function testProtocolUpdateEnrollmentRecordShouldSucceed()
     {
-        // API Request
-        $enrollRequest = new EnrollRequest('enroll');
-        $this->httpClient->setRequest($enrollRequest);
+        $enrollAccount = $this->protocol->enrollAccount($this->password); // [clientEnrollmentRecord, clientAccountKey]
 
-        // API Response
-        $response = $this->httpClient->getResponse(false);
+        $record = $enrollAccount[0];
+        $clientAccountKey = $enrollAccount[1];
 
-        if ($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
+        $this->assertInternalType('array', $enrollAccount);
+        $this->assertEquals(202, strlen($record));
+        $this->assertEquals(32, strlen($clientAccountKey));
 
-        $protobufResponse = $response->getBody()->getContents();
+        $verifyPassword = $this->protocol->verifyPassword($this->password, $record);
+        $this->assertEquals(32, strlen($verifyPassword));
 
-        // Protobuf Response
-        $protoEnrollmentResponse = new EnrollmentResponse();
-        $protoEnrollmentResponse->mergeFromString($protobufResponse);
-        $enrollmentResponse = $protoEnrollmentResponse->getResponse();
+        $newRecord = $this->protocol->updateEnrollmentRecord($record);
+        $this->assertEquals(202, strlen($newRecord));
 
-        // PHE Response
-        try {
-            $res = $this->context->getPHEClient()->enrollAccount($enrollmentResponse, $this->password);
-        } catch (\Exception $e) {
-            throw new ProtocolException(__METHOD__ . ": {$e->getMessage()}, {$e->getCode()}");
-        }
-
-        $this->assertEquals(202, strlen($res[0]));
-
-        // PHE Request
-        try {
-            $verifyPasswordRequest = $this->context->getPHEClient()->createVerifyPasswordRequest($this->password,
-                $res[0]);
-        } catch (\Exception $e) {
-            throw new ProtocolException('Verify password request error');
-        }
-
-        // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
-
-        $this->httpClient->setRequest($verifyPassword);
-
-        // API Response
-        $response = $this->httpClient->getResponse(false);
-
-        if ($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
-
-        $protobufResponse = $response->getBody()->getContents();
-
-        // Protobuf Response
-        $protoVerifyPasswordResponse = new VerifyPasswordResponse();
-        $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
-        $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
-
-        $checkResponseAndDecrypt = $this->context->getPHEClient()->checkResponseAndDecrypt($this->password, $res[0],
-            $verifyPasswordResponse);
-
-        $this->assertInternalType('string', $checkResponseAndDecrypt);
-        $this->assertEquals(32, strlen($checkResponseAndDecrypt));
-
-        $wrongPassword = "wrong-password";
-        $this->expectException(\Exception::class);
-        $this->context->getPHEClient()->checkResponseAndDecrypt($wrongPassword, $res[0],
-            $verifyPasswordResponse);
+        $verifyPassword2 = $this->protocol->verifyPassword($this->password, $newRecord);
+        $this->assertEquals(32, strlen($verifyPassword2));
     }
 }
