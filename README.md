@@ -85,11 +85,11 @@ catch(\Exception $e) {
 ```
 
 ## Prepare Your Database
-Passw0rd SDK allows you to easily perform all the necessary operations to create, verify and rotate user's `record` without requiring any additional actions.
+Passw0rd SDK allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `record`.
 
-**Passw0rd record** - a user's password that is protected with our Passw0rd technology. Passw0rd record contains version, client & server random salts and two values obtained during execution of the PHE protocol
+**Passw0rd record** - a user's password that is protected with our Passw0rd technology. Passw0rd `record` contains a version, client & server random salts and two values obtained during execution of the PHE protocol
 
-In order to create and work with user's protected passw0rd you have to set up your database with an additional column.
+In order to create and work with user's `record` you have to set up your database with an additional column.
 
 The column must have the following parameters:
 <table class="params">
@@ -118,7 +118,7 @@ The column must have the following parameters:
 
 ### Enroll User Record
 
-Use this flow to create a passw0rd's `record` in your DB for a user.
+Use this flow to create a new passw0rd's `record` in your DB for a user.
 
 > Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your system to implement Passw0rd technology. You can go through your database and enroll (create) a user's `record` at any time.
 
@@ -166,7 +166,7 @@ Sensitive PII is information which, when disclosed, could result in harm to the 
 
 Passw0rd service allows you to protect user's PII (personal data) with a user's `encryptionKey` that is obtained from `EnrollAccount` or `VerifyPassword` functions. The `encryptionKey` will be the same for both functions.
 
-In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's `passw0rd record`. The `encryptionKey` will be updated after user changes own password.
+In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's `record`. The `encryptionKey` will be updated after user changes own password.
 
 Here is an example of data encryption/decryption with an `encryptionKey`:
 
@@ -197,7 +197,7 @@ There can never be enough security, so you should rotate your sensitive data reg
 
 Also, use this flow in case your database has been COMPROMISED!
 
-> This action doesn't require to create an additional table or to modify scheme of existing table. When a user just needs to change his or her own password, use the EnrollAccount function to replace user's oldRecord in your DB with a newRecord.
+> This action doesn't require to create an additional table or to modify scheme of existing table. When a user needs to change his or her own password, use the EnrollAccount function to replace user's oldRecord in your DB with a newRecord.
 
 There is how it works:
 
@@ -225,13 +225,13 @@ passw0rd application rotate <app_token>
 as a result, you get your `UPDATE_TOKEN`.
 
 **Step 2.** Initialize passw0rd SDK with the `UPDATE_TOKEN`
-Move to passw0rd SDK configuration file and specify your `UPDATE_TOKEN`:
+Move to passw0rd SDK configuration .env file and specify your `UPDATE_TOKEN`:
 
 ```dotenv
 APP_TOKEN=
 SERVICE_PUBLIC_KEY= 
 APP_SECRET_KEY=
-UPDATE_TOKEN= //must be fill
+UPDATE_TOKEN= //need to be filled
 ```
 
 **Step 3.** Start migration. Use the `UpdateEnrollmentRecord()` SDK function to create a user's `newRecord` (you don't need to ask your users to create a new password). The `UpdateEnrollmentRecord()` function requires the `update_token` and user's `oldRecord` from your DB:
@@ -250,7 +250,7 @@ So, run the `UpdateEnrollmentRecord()` function and save user's `newRecord` into
 
 Since the SDK is able to work simultaneously with two versions of user's records (`newRecord` and `oldRecord`), this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the passw0rd SDK will verify his password without any problems because Passw0rd Service can work with both user's records (`newRecord` and `oldRecord`).
 
-Delete users's `oldRecords` from database after you finished migration.
+Delete `oldRecords` from database after you finished migration.
 
 
 **Step 4.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
