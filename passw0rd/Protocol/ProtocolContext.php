@@ -101,7 +101,7 @@ class ProtocolContext
                 if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
                     throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
 
-//                $this->version = (int) $this->getUpdateToken(true);
+                $this->version = (int) $this->getUpdateToken(true);
             }
 
             try {
@@ -228,14 +228,6 @@ class ProtocolContext
     }
 
     /**
-     * @return int
-     */
-    public function getNextVersion(): int
-    {
-        return (int) $this->version + 1;
-    }
-
-    /**
      * @return void
      */
     public function setNextVersion(): void
@@ -244,12 +236,19 @@ class ProtocolContext
     }
 
     /**
-     * @param int $version
+     * @return void
+     */
+    public function setUpdateTokenVersion(): void
+    {
+        $this->version = $this->getUpdateToken(true);
+    }
+
+    /**
      * @return PHEClient
      */
-    public function getPHEImpl(int $version): PHEClient
+    public function getPHEImpl(): PHEClient
     {
-        return $this->pheImpl[$version];
+        return $this->pheImpl;
     }
 
     /**
@@ -263,14 +262,16 @@ class ProtocolContext
         $this->PHEClient = new PHEClient();
         $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
-        $this->pheImpl[$this->getVersion()] = $this->PHEClient;
+        $this->pheImpl = $this->PHEClient;
 
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);
             $this->nextPHEClient = new PHEClient();
             $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
 
-            $this->pheImpl[$this->getNextVersion()] = $this->nextPHEClient;
+            $this->setUpdateTokenVersion();
+
+            $this->pheImpl = $this->nextPHEClient;
         }
     }
 }

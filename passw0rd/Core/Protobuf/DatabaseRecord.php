@@ -35,14 +35,58 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\_tests\unit;
+namespace passw0rd\Core\Protobuf;
 
-use PHPUnit\Framework\TestCase;
+use Passw0rd\DatabaseRecord as ProtobufDatabaseRecord;
+use passw0rd\Exeptions\ProtocolContextException;
 
-class TempTest extends TestCase
+/**
+ * Class DatabaseRecord
+ * @package passw0rd\Core\Protobuf
+ */
+class DatabaseRecord
 {
-    public function testTempTrue()
+    /**
+     * @return ProtobufDatabaseRecord
+     */
+    private static function initInstance()
     {
-        $this->assertTrue(true);
+        return new ProtobufDatabaseRecord();
+    }
+
+    /**
+     * @param string $value
+     * @param string $type
+     * @return string
+     * @throws ProtocolContextException
+     */
+    public static function getValue(string $value, string $type): string
+    {
+        $typeArr = ['record', 'version'];
+
+        if(!in_array($type, $typeArr))
+            throw new ProtocolContextException("Incorrect type value");
+
+        $db = self::initInstance();
+        $db->mergeFromString($value);
+
+        $res["record"] = $db->getRecord();
+        $res["version"] = $db->getVersion();
+
+        return $res[$type];
+    }
+
+    /**
+     * @param string $value
+     * @param int $version
+     * @return string
+     */
+    public static function setup(string $value, int $version): string
+    {
+        $dbRecord = self::initInstance();
+        $dbRecord->setRecord($value);
+        $dbRecord->setVersion($version);
+
+        return $dbRecord->serializeToString();
     }
 }

@@ -38,6 +38,8 @@
 namespace passw0rd\Protocol;
 
 use passw0rd\Core\PHECipher;
+use passw0rd\Core\PHEClient;
+use passw0rd\Core\Protobuf\DatabaseRecord;
 use Passw0rd\EnrollmentResponse;
 use passw0rd\Exeptions\ProtocolContextException;
 use passw0rd\Exeptions\ProtocolException;
@@ -54,8 +56,6 @@ use Passw0rd\VerifyPasswordResponse;
 class Protocol implements AvailableProtocol
 {
     use ArrayHelperTrait;
-
-    private $recordVersion;
 
     /**
      * @var HttpClient
@@ -105,13 +105,11 @@ class Protocol implements AvailableProtocol
      */
     public function enrollAccount(string $password): array
     {
-        if($this->context->getUpdateToken()!==null)
-            $this->context->setNextVersion();
-
-        $PHEClient = $this->context->getPHEImpl($this->context->getVersion());
+        if(""==$password)
+            throw new ProtocolException("Empty password");
 
         // API Request
-        $enrollRequest = new EnrollRequest('enroll', $this->context->getVersion());
+        $enrollRequest = new EnrollRequest('enroll', $this->getVersion());
         $this->httpClient->setRequest($enrollRequest);
 
         // API Response
@@ -127,14 +125,13 @@ class Protocol implements AvailableProtocol
         $protoEnrollmentResponse->mergeFromString($protobufResponse);
         $enrollmentResponse = $protoEnrollmentResponse->getResponse();
 
-        $this->recordVersion = (int) $protoEnrollmentResponse->getVersion();
-
         // PHE Response
         try {
-            $enroll = $PHEClient->enrollAccount($enrollmentResponse, $password);
+            $enroll = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
+            $enroll[0] = DatabaseRecord::setup($enroll[0], (int) $protoEnrollmentResponse->getVersion());
         }
         catch(\Exception $e) {
-            throw new ProtocolException(__METHOD__.": {$e->getMessage()}, {$e->getCode()}");
+            throw new ProtocolException("Invalid proof");
         }
 
         return $enroll; // [record, enrollment key]
@@ -149,18 +146,20 @@ class Protocol implements AvailableProtocol
      */
     public function verifyPassword(string $password, string $record): string
     {
-        $PHEClient = $this->context->getPHEImpl($this->context->getVersion());
-
         // PHE Request
         try {
-            $verifyPasswordRequest = $PHEClient->createVerifyPasswordRequest($password, $record);
+            if((int)DatabaseRecord::getValue($record, "version") !== (int)$this->getVersion())
+                throw new ProtocolException("Invalid User Version");
+
+            $record = DatabaseRecord::getValue($record, "record");
+            $verifyPasswordRequest = $this->getPHEClient()->createVerifyPasswordRequest($password, $record);
         }
         catch(\Exception $e) {
-            throw new ProtocolException('Verify password request error');
+            throw new ProtocolException($e->getMessage());
         }
 
         // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->context->getVersion());
+        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->getVersion());
 
         $this->httpClient->setRequest($verifyPassword);
 
@@ -179,10 +178,13 @@ class Protocol implements AvailableProtocol
 
         // PHE Response
         try {
-            $encryptionKey = $PHEClient->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
+            $encryptionKey = $this->getPHEClient()->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
+
+            if(strlen($encryptionKey)!==32)
+                throw new ProtocolException("Authentication failed (invalid password)");
         }
         catch(\Exception $e) {
-            throw new ProtocolException("Authentication failed");
+            throw new ProtocolException($e->getMessage());
         }
 
         return $encryptionKey;
@@ -191,26 +193,27 @@ class Protocol implements AvailableProtocol
     /**
      * @param string $record
      * @param bool $encodeToBase64
-     * @return null|string
+     * @return string
      * @throws ProtocolContextException
      * @throws ProtocolException
      */
-    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): ?string
+    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): string
     {
         if(is_null($this->context->getUpdateToken()))
             throw new ProtocolContextException("Empty update token");
 
         // PHE Response
         try {
-
-            if($this->recordVersion == $this->context->getVersion()) {
-                $updatedRecord = null;
+            if((int)DatabaseRecord::getValue($record, "version") == (int)$this->getVersion()) {
+                throw new ProtocolException("Already migrated");
             }
             else {
-                $this->context->setNextVersion();
+                $record = DatabaseRecord::getValue($record, "record");
 
-                $updatedRecord = $this->context->getPHEImpl($this->context->getVersion())->updateEnrollmentRecord($record,
+                $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record,
                     $this->context->getUpdateToken());
+
+                $updatedRecord = DatabaseRecord::setup($updatedRecord, $this->getVersion());
             }
         }
         catch(\Exception $e) {
@@ -247,5 +250,21 @@ class Protocol implements AvailableProtocol
     private function getPHECipher(): PHECipher
     {
         return $this->PHECipher;
+    }
+
+    /**
+     * @return int
+     */
+    public function getVersion(): int
+    {
+        return $this->context->getVersion();
+    }
+
+    /**
+     * @return PHEClient
+     */
+    private function getPHEClient(): PHEClient
+    {
+        return $this->context->getPHEImpl();
     }
 }
