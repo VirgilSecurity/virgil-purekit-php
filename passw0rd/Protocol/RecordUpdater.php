@@ -74,7 +74,7 @@ class RecordUpdater
      */
     public function update(string $record): ?string
     {
-        if($this->validate($record)) {
+        if(true==$this->validate($record)) {
 
             $r = DatabaseRecord::getValue($record, "record");
 
@@ -90,11 +90,11 @@ class RecordUpdater
 
     /**
      * @param string $record
-     * @return bool|null
+     * @return bool
      * @throws RecordUpdaterException
      * @throws \passw0rd\Exeptions\ProtocolContextException
      */
-    private function validate(string $record): ?bool
+    private function validate(string $record): bool
     {
         $recordVersion = (int) DatabaseRecord::getValue($record, "version");
         $utVersion = (int) $this->updateToken->getVersion();
@@ -104,7 +104,7 @@ class RecordUpdater
             throw new RecordUpdaterException("Invalid version of updateToken($utVersion) or record($recordVersion)");
 
         if($utVersion==$recordVersion)
-            $res = null;
+            $res = false;
 
         if($utVersion==$recordVersion + 1)
             $res = true;
@@ -112,7 +112,10 @@ class RecordUpdater
         return $res;
     }
 
-    private function getVersion()
+    /**
+     * @return int
+     */
+    private function getVersion(): int
     {
         return $this->version;
     }
