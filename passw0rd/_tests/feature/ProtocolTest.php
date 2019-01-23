@@ -61,7 +61,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         $this->clientEnrollmentRecord = base64_decode($_ENV["CLIENT_ENROLLMENT_RECORD"]);
     }
 
-    private function sleep(int $seconds=1)
+    private function sleep(int $seconds=5)
     {
         sleep($seconds);
     }
