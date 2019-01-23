@@ -193,11 +193,11 @@ class Protocol implements AvailableProtocol
     /**
      * @param string $record
      * @param bool $encodeToBase64
-     * @return string
+     * @return null|string
      * @throws ProtocolContextException
      * @throws ProtocolException
      */
-    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): string
+    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): ?string
     {
         if(is_null($this->context->getUpdateToken()))
             throw new ProtocolContextException("Empty update token");
@@ -205,7 +205,7 @@ class Protocol implements AvailableProtocol
         // PHE Response
         try {
             if((int)DatabaseRecord::getValue($record, "version") == (int)$this->getVersion()) {
-                throw new ProtocolException("Already migrated");
+                return null;
             }
             else {
                 $record = DatabaseRecord::getValue($record, "record");

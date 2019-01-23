@@ -44,13 +44,11 @@ use passw0rd\Protocol\ProtocolContext;
 
 class ProtocolTest extends \PHPUnit\Framework\TestCase
 {
-    protected $client;
     protected $protocol;
     protected $protocol1;
     protected $protocol2;
     protected $password;
     protected $anotherPassword;
-    protected $clientEnrollmentRecord;
 
     protected function setUp()
     {
@@ -58,7 +56,6 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
         $this->password = "password123456";
         $this->anotherPassword = "123456password";
-        $this->clientEnrollmentRecord = base64_decode($_ENV["CLIENT_ENROLLMENT_RECORD"]);
     }
 
     private function sleep(int $seconds=5)
@@ -66,7 +63,13 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         sleep($seconds);
     }
 
-    private function getContext(bool $withUpdateToken = true, bool $withCorrectServicePublicKey = true)
+    /**
+     * @param bool $withUpdateToken
+     * @param bool $withCorrectServicePublicKey
+     * @return ProtocolContext
+     * @throws Exception
+     */
+    private function getContext(bool $withUpdateToken = true, bool $withCorrectServicePublicKey = true): ProtocolContext
     {
         $context = (new ProtocolContext)->create([
             'appToken' => $_ENV["APP_TOKEN"],
@@ -210,8 +213,8 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         $rec1Record = $rec1[0];
         $rec1AccountKey = $rec1[1];
 
-        $this->expectException(ProtocolException::class);
         $rec2 = $this->protocol->updateEnrollmentRecord($rec1Record);
+        $this->assertEquals(null, $rec2);
     }
 
     /**
