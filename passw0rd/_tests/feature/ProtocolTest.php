@@ -40,6 +40,7 @@ use passw0rd\Core\Protobuf\DatabaseRecord;
 use passw0rd\Exeptions\ProtocolException;
 use passw0rd\Protocol\Protocol;
 use passw0rd\Protocol\ProtocolContext;
+use passw0rd\Protocol\RecordUpdater;
 
 
 class ProtocolTest extends \PHPUnit\Framework\TestCase
@@ -49,6 +50,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     protected $protocol2;
     protected $password;
     protected $anotherPassword;
+    protected $recordUpdater;
 
     protected function setUp()
     {
@@ -56,6 +58,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
         $this->password = "password123456";
         $this->anotherPassword = "123456password";
+        $this->recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]);
     }
 
     private function sleep(int $seconds=5)
@@ -192,9 +195,9 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
         $res1 = $this->protocol1->verifyPassword($this->password, $rec1Record);
 
-        $this->protocol2 = new Protocol($this->getContext());
+        $rec2 = $this->recordUpdater->update($rec1Record);
 
-        $rec2 = $this->protocol2->updateEnrollmentRecord($rec1Record);
+        $this->protocol2 = new Protocol($this->getContext());
         $res2 = $this->protocol2->verifyPassword($this->password, $rec2);
         $this->assertEquals($res1, $rec1AccountKey);
         $this->assertEquals($res2, $rec1AccountKey);
@@ -213,7 +216,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
         $rec1Record = $rec1[0];
         $rec1AccountKey = $rec1[1];
 
-        $rec2 = $this->protocol->updateEnrollmentRecord($rec1Record);
+        $rec2 = $this->recordUpdater->update($rec1Record);
         $this->assertEquals(null, $rec2);
     }
 
@@ -235,8 +238,8 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
         $this->protocol2 = new Protocol($this->getContext());
 
-        $this->expectException(ProtocolException::class);
-        $rec2 = $this->protocol2->updateEnrollmentRecord($rec1RecordVer1);
+        $this->expectException(Exception::class);
+        $rec2 = $this->recordUpdater->update($rec1RecordVer1);
 
         $this->expectException(ProtocolException::class);
         $res1 = $this->protocol2->verifyPassword($this->password, $rec1RecordVer1);

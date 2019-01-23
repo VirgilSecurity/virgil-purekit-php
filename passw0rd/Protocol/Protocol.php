@@ -41,7 +41,6 @@ use passw0rd\Core\PHECipher;
 use passw0rd\Core\PHEClient;
 use passw0rd\Core\Protobuf\DatabaseRecord;
 use Passw0rd\EnrollmentResponse;
-use passw0rd\Exeptions\ProtocolContextException;
 use passw0rd\Exeptions\ProtocolException;
 use passw0rd\Helpers\ArrayHelperTrait;
 use passw0rd\Http\HttpClient;
@@ -50,6 +49,9 @@ use passw0rd\Http\Request\VerifyPasswordRequest;
 use Passw0rd\VerifyPasswordResponse;
 
 /**
+ *
+ * Protocol implements passw0rd client-server protocol
+ *
  * Class Protocol
  * @package passw0rd\Protocol
  */
@@ -73,6 +75,9 @@ class Protocol implements AvailableProtocol
     private $context;
 
     /**
+     *
+     * NewProtocol initializes new protocol instance with proper Context
+     *
      * Protocol constructor.
      * @param ProtocolContext $context
      * @throws \Exception
@@ -98,6 +103,9 @@ class Protocol implements AvailableProtocol
     }
 
     /**
+     *
+     * EnrollAccount requests pseudo-random data from server and uses it to protect password and daa encryption key
+     *
      * @param string $password
      * @return array
      * @throws ProtocolException
@@ -138,6 +146,9 @@ class Protocol implements AvailableProtocol
     }
 
     /**
+     *
+     * VerifyPassword verifies a password against enrollment record using passw0rd service
+     *
      * @param string $password
      * @param string $record
      * @return string
@@ -188,39 +199,6 @@ class Protocol implements AvailableProtocol
         }
 
         return $encryptionKey;
-    }
-
-    /**
-     * @param string $record
-     * @param bool $encodeToBase64
-     * @return null|string
-     * @throws ProtocolContextException
-     * @throws ProtocolException
-     */
-    public function updateEnrollmentRecord(string $record, bool $encodeToBase64 = false): ?string
-    {
-        if(is_null($this->context->getUpdateToken()))
-            throw new ProtocolContextException("Empty update token");
-
-        // PHE Response
-        try {
-            if((int)DatabaseRecord::getValue($record, "version") == (int)$this->getVersion()) {
-                return null;
-            }
-            else {
-                $record = DatabaseRecord::getValue($record, "record");
-
-                $updatedRecord = $this->getPHEClient()->updateEnrollmentRecord($record,
-                    $this->context->getUpdateToken());
-
-                $updatedRecord = DatabaseRecord::setup($updatedRecord, $this->getVersion());
-            }
-        }
-        catch(\Exception $e) {
-            throw new ProtocolException(__METHOD__.": {$e->getMessage()}, {$e->getCode()}");
-        }
-
-        return $encodeToBase64==true ? base64_encode($updatedRecord) : $updatedRecord;
     }
 
     /**

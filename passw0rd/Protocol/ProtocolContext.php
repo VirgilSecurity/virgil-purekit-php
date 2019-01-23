@@ -65,6 +65,9 @@ class ProtocolContext
     const UT_PREFIX = "UT";
 
     /**
+     *
+     * CreateContext validates input parameters and prepares them for being used in Protocol
+     *
      * @param array $credentials
      * @return ProtocolContext
      * @throws \Exception
@@ -192,6 +195,9 @@ class ProtocolContext
     }
 
     /**
+     *
+     * ParseVersionAndContent splits string into 3 parts: Prefix, version and decoded base64 content
+     *
      * @param string $prefix
      * @param string $key
      * @param bool $returnVersion
@@ -222,14 +228,6 @@ class ProtocolContext
     public function getVersion(): int
     {
         return (int) $this->version;
-    }
-
-    /**
-     * @return void
-     */
-    public function setNextVersion(): void
-    {
-        $this->version = $this->version + 1;
     }
 
     /**

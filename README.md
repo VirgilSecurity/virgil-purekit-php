@@ -234,12 +234,16 @@ APP_SECRET_KEY=
 UPDATE_TOKEN= //need to be filled
 ```
 
-**Step 3.** Start migration. Use the `UpdateEnrollmentRecord()` SDK function to create a user's `newRecord` (you don't need to ask your users to create a new password). The `UpdateEnrollmentRecord()` function requires the `update_token` and user's `oldRecord` from your DB:
+**Step 3.** Start migration. Use the `RecordUpdater::update()` SDK method to create a user's `newRecord` (you don't need  to ask your users to create a new password). The `RecordUpdater::update()` method requires the `update_token` and user's `oldRecord` from your DB:
 
 ```php
+use passw0rd\Protocol\RecordUpdater;
+
 try {
     // $newRecord is null ONLY if oldRecord is already updated
-    $newRecord = $protocol->updateEnrollmentRecord($oldRecord));
+    $recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]
+
+    $newRecord = $recordUpdater->update($oldRecord));
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
@@ -247,7 +251,7 @@ catch(\Exception $e) {
 }
 ```
 
-So, run the `UpdateEnrollmentRecord()` function and save user's `newRecord` into your database.
+So, run the `RecordUpdater::update()` function and save user's `newRecord` into your database.
 
 Since the SDK is able to work simultaneously with two versions of user's records (`newRecord` and `oldRecord`), this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the passw0rd SDK will verify his password without any problems because Passw0rd Service can work with both user's records (`newRecord` and `oldRecord`).
 
