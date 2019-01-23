@@ -67,6 +67,7 @@ class ProtocolContext
     /**
      * @param array $credentials
      * @return ProtocolContext
+     * @throws \Exception
      */
     public function create(array $credentials): ProtocolContext
     {
@@ -86,7 +87,7 @@ class ProtocolContext
 
     /**
      * @param array $credentials
-     * @return void
+     * @throws \Exception
      */
     public function mainSetter(array $credentials)
     {
@@ -99,7 +100,7 @@ class ProtocolContext
             if(!is_null($this->getUpdateToken()))
             {
                 if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
-                    throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
+                    throw new \Exception("Incorrect token version ".$this->getUpdateToken(true));
 
                 $this->version = (int) $this->getUpdateToken(true);
             }
@@ -110,9 +111,8 @@ class ProtocolContext
                 throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
             }
 
-        } catch (ProtocolContextException $e) {
-            var_dump($e->getMessage());
-            die;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
     }
@@ -212,9 +212,6 @@ class ProtocolContext
             throw new ProtocolContextException("Invalid version: $key");
 
         $decodedKey = base64_decode($parts[2]);
-
-//        if(strlen($decodedKey)!==65)
-//            throw new ProtocolContextException("Invalid string len: $key");
 
         return $returnVersion==true ? $parts[1] : $decodedKey;
     }
