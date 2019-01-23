@@ -38,7 +38,6 @@
 namespace passw0rd\Protocol;
 
 use passw0rd\Core\PHEClient;
-use passw0rd\Credentials\AvailableCredentials;
 use passw0rd\Credentials\InputCredentialsChecker;
 use passw0rd\Exeptions\InputCredentialsCheckerException;
 use passw0rd\Exeptions\ProtocolContextException;
@@ -53,16 +52,25 @@ class ProtocolContext
     private $servicePublicKey;
     private $appSecretKey;
     private $updateToken;
+
     private $version;
+
     private $PHEClient;
+    private $nextPHEClient;
+
+    private $pheImpl;
 
     const PK_PREFIX = "PK";
     const SK_PREFIX = "SK";
     const UT_PREFIX = "UT";
 
     /**
+     *
+     * CreateContext validates input parameters and prepares them for being used in Protocol
+     *
      * @param array $credentials
      * @return ProtocolContext
+     * @throws \Exception
      */
     public function create(array $credentials): ProtocolContext
     {
@@ -82,7 +90,7 @@ class ProtocolContext
 
     /**
      * @param array $credentials
-     * @return void
+     * @throws \Exception
      */
     public function mainSetter(array $credentials)
     {
@@ -95,7 +103,7 @@ class ProtocolContext
             if(!is_null($this->getUpdateToken()))
             {
                 if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
-                    throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
+                    throw new \Exception("Incorrect token version ".$this->getUpdateToken(true));
 
                 $this->version = (int) $this->getUpdateToken(true);
             }
@@ -106,9 +114,8 @@ class ProtocolContext
                 throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
             }
 
-        } catch (ProtocolContextException $e) {
-            var_dump($e->getMessage());
-            die;
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
     }
@@ -188,6 +195,9 @@ class ProtocolContext
     }
 
     /**
+     *
+     * ParseVersionAndContent splits string into 3 parts: Prefix, version and decoded base64 content
+     *
      * @param string $prefix
      * @param string $key
      * @param bool $returnVersion
@@ -209,9 +219,6 @@ class ProtocolContext
 
         $decodedKey = base64_decode($parts[2]);
 
-//        if(strlen($decodedKey)!==65)
-//            throw new ProtocolContextException("Invalid string len: $key");
-
         return $returnVersion==true ? $parts[1] : $decodedKey;
     }
 
@@ -220,15 +227,23 @@ class ProtocolContext
      */
     public function getVersion(): int
     {
-        return (int)$this->version;
+        return (int) $this->version;
+    }
+
+    /**
+     * @return void
+     */
+    public function setUpdateTokenVersion(): void
+    {
+        $this->version = $this->getUpdateToken(true);
     }
 
     /**
      * @return PHEClient
      */
-    public function getPHEClient(): PHEClient
+    public function getPHEImpl(): PHEClient
     {
-        return $this->PHEClient;
+        return $this->pheImpl;
     }
 
     /**
@@ -240,12 +255,18 @@ class ProtocolContext
     private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
         $this->PHEClient = new PHEClient();
-
         $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
+
+        $this->pheImpl = $this->PHEClient;
 
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);
-            $this->PHEClient->setKeys($newKeys[0], $newKeys[1]);
+            $this->nextPHEClient = new PHEClient();
+            $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
+
+            $this->setUpdateTokenVersion();
+
+            $this->pheImpl = $this->nextPHEClient;
         }
     }
 }

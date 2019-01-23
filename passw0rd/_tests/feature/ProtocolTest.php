@@ -36,105 +36,225 @@
  */
 
 use Dotenv\Dotenv;
-use passw0rd\Core\PHEClient;
-use Passw0rd\EnrollmentResponse;
+use passw0rd\Core\Protobuf\DatabaseRecord;
 use passw0rd\Exeptions\ProtocolException;
-use passw0rd\Http\Request\EnrollRequest;
-use passw0rd\Http\Request\VerifyPasswordRequest;
 use passw0rd\Protocol\Protocol;
 use passw0rd\Protocol\ProtocolContext;
-use passw0rd\Http\HttpClient;
-use Passw0rd\VerifyPasswordResponse;
+use passw0rd\Protocol\RecordUpdater;
 
 
 class ProtocolTest extends \PHPUnit\Framework\TestCase
 {
-    protected $client;
-    protected $context;
     protected $protocol;
-    protected $httpClient;
+    protected $protocol1;
+    protected $protocol2;
     protected $password;
+    protected $anotherPassword;
+    protected $recordUpdater;
 
     protected function setUp()
     {
-        // TODO Fix it!
-        $this->markTestSkipped("Some problems with env variables");
+        (new Dotenv(__DIR__ . "/../../../"))->load();
 
-        $this->context = (new ProtocolContext)->create([
-            'appToken' => getenv("APP_TOKEN"),
-            'servicePublicKey' => getenv("SERVICE_PUBLIC_KEY"),
-            'appSecretKey' => getenv("APP_SECRET_KEY"),
-            'updateToken' => getenv("UPDATE_TOKEN"),
-        ]);
-
-        $this->protocol = new Protocol($this->context);
-        $this->httpClient = new HttpClient();
-        $this->password = "password234";
+        $this->password = "password123456";
+        $this->anotherPassword = "123456password";
+        $this->recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]);
     }
 
-    public function testProtocolEnrollAccountAndVerifyPasswordShouldSucceed()
+    private function sleep(int $seconds=5)
     {
-        // API Request
-        $enrollRequest = new EnrollRequest('enroll');
-        $this->httpClient->setRequest($enrollRequest);
+        sleep($seconds);
+    }
 
-        // API Response
-        $response = $this->httpClient->getResponse(false);
+    /**
+     * @param bool $withUpdateToken
+     * @param bool $withCorrectServicePublicKey
+     * @return ProtocolContext
+     * @throws Exception
+     */
+    private function getContext(bool $withUpdateToken = true, bool $withCorrectServicePublicKey = true): ProtocolContext
+    {
+        $context = (new ProtocolContext)->create([
+            'appToken' => $_ENV["APP_TOKEN"],
+            'servicePublicKey' => true==$withCorrectServicePublicKey ? $_ENV["SERVICE_PUBLIC_KEY"] : $_ENV["INCORRECT_SERVICE_PUBLIC_KEY"],
+            'appSecretKey' => $_ENV["APP_SECRET_KEY"],
+            'updateToken' => true==$withUpdateToken ? $_ENV["UPDATE_TOKEN"] : "",
+        ]);
 
-        if ($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
+        return $context;
+    }
 
-        $protobufResponse = $response->getBody()->getContents();
+    /**
+     * @medium
+     */
+    public function testCaseHTC_1()
+    {
+        $this->protocol = new Protocol($this->getContext(false));
 
-        // Protobuf Response
-        $protoEnrollmentResponse = new EnrollmentResponse();
-        $protoEnrollmentResponse->mergeFromString($protobufResponse);
-        $enrollmentResponse = $protoEnrollmentResponse->getResponse();
+        $rec = $this->protocol->enrollAccount($this->password);
+        $recRecord = $rec[0];
+        $recAccountKey = $rec[1];
 
-        // PHE Response
-        try {
-            $res = $this->context->getPHEClient()->enrollAccount($enrollmentResponse, $this->password);
-        } catch (\Exception $e) {
-            throw new ProtocolException(__METHOD__ . ": {$e->getMessage()}, {$e->getCode()}");
-        }
+        $recVersion = DatabaseRecord::getValue($recRecord, "version");
+        $this->assertEquals(2, $recVersion);
 
-        $this->assertEquals(202, strlen($res[0]));
+        $this->assertNotEmpty($rec);
+        $this->assertInternalType('array', $rec);
+        $this->assertEquals(207, strlen($recRecord));
+        $this->assertEquals(32, strlen($recAccountKey));
 
-        // PHE Request
-        try {
-            $verifyPasswordRequest = $this->context->getPHEClient()->createVerifyPasswordRequest($this->password,
-                $res[0]);
-        } catch (\Exception $e) {
-            throw new ProtocolException('Verify password request error');
-        }
+        $accountKey = $this->protocol->verifyPassword($this->password, $recRecord);
+        $this->assertEquals(32, strlen($accountKey));
 
-        // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest);
+        $this->assertEquals($recAccountKey, $accountKey);
+    }
 
-        $this->httpClient->setRequest($verifyPassword);
+    /**
+     * @medium
+     */
+    public function testCaseHTC_2()
+    {
+        $this->sleep();
 
-        // API Response
-        $response = $this->httpClient->getResponse(false);
+        $this->protocol = new Protocol($this->getContext());
 
-        if ($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
+        $rec = $this->protocol->enrollAccount($this->password);
+        $recRecord = $rec[0];
+        $recAccountKey = $rec[1];
 
-        $protobufResponse = $response->getBody()->getContents();
+        $recVersion = DatabaseRecord::getValue($recRecord, "version");
+        $this->assertEquals(3, $recVersion);
 
-        // Protobuf Response
-        $protoVerifyPasswordResponse = new VerifyPasswordResponse();
-        $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
-        $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
+        $this->assertNotEmpty($rec);
+        $this->assertInternalType('array', $rec);
+        $this->assertEquals(207, strlen($recRecord));
+        $this->assertEquals(32, strlen($recAccountKey));
 
-        $checkResponseAndDecrypt = $this->context->getPHEClient()->checkResponseAndDecrypt($this->password, $res[0],
-            $verifyPasswordResponse);
+        $accountKey = $this->protocol->verifyPassword($this->password, $recRecord);
+        $this->assertEquals(32, strlen($accountKey));
 
-        $this->assertInternalType('string', $checkResponseAndDecrypt);
-        $this->assertEquals(32, strlen($checkResponseAndDecrypt));
+        $this->assertEquals($recAccountKey, $accountKey);
+    }
 
-        $wrongPassword = "wrong-password";
-        $this->expectException(\Exception::class);
-        $this->context->getPHEClient()->checkResponseAndDecrypt($wrongPassword, $res[0],
-            $verifyPasswordResponse);
+    /**
+     * @medium
+     */
+    public function testCaseHTC_3()
+    {
+        $this->sleep();
+
+        $this->protocol = new Protocol($this->getContext(false));
+
+        $rec = $this->protocol->enrollAccount($this->password);
+        $recRecord = $rec[0];
+        $recAccountKey = $rec[1];
+
+        $this->assertNotEmpty($rec);
+        $this->assertInternalType('array', $rec);
+        $this->assertEquals(207, strlen($recRecord));
+        $this->assertEquals(32, strlen($recAccountKey));
+
+        $this->expectException(ProtocolException::class);
+        $this->protocol->verifyPassword($this->anotherPassword, $recRecord);
+    }
+
+    /**
+     * @medium
+     */
+    public function testCaseHTC_4()
+    {
+        $this->sleep();
+
+        $this->protocol1 = new Protocol($this->getContext(false));
+
+        $rec1 = $this->protocol1->enrollAccount($this->password);
+        $rec1Record = $rec1[0];
+        $rec1AccountKey = $rec1[1];
+
+        $this->protocol2 = new Protocol($this->getContext(false, false));
+
+        $this->expectException(ProtocolException::class);
+        $rec2 = $this->protocol2->enrollAccount($this->password);
+
+        $this->expectException(ProtocolException::class);
+        $accountKey = $this->protocol2->verifyPassword($this->password, $rec1Record);
+    }
+
+    /**
+     * @medium
+     */
+    public function testCaseHTC_5()
+    {
+        $this->sleep();
+
+        $this->protocol1 = new Protocol($this->getContext(false));
+
+        $rec1 = $this->protocol1->enrollAccount($this->password);
+        $rec1Record = $rec1[0];
+        $rec1AccountKey = $rec1[1];
+
+        $res1 = $this->protocol1->verifyPassword($this->password, $rec1Record);
+
+        $rec2 = $this->recordUpdater->update($rec1Record);
+
+        $this->protocol2 = new Protocol($this->getContext());
+        $res2 = $this->protocol2->verifyPassword($this->password, $rec2);
+        $this->assertEquals($res1, $rec1AccountKey);
+        $this->assertEquals($res2, $rec1AccountKey);
+    }
+
+    /**
+     * @medium
+     */
+    public function testCaseHTC_6()
+    {
+        $this->sleep();
+
+        $this->protocol = new Protocol($this->getContext());
+
+        $rec1 = $this->protocol->enrollAccount($this->password);
+        $rec1Record = $rec1[0];
+        $rec1AccountKey = $rec1[1];
+
+        $rec2 = $this->recordUpdater->update($rec1Record);
+        $this->assertEquals(null, $rec2);
+    }
+
+    /**
+     * @medium
+     */
+    public function testCaseHTC_7()
+    {
+        $this->sleep();
+
+        $this->protocol1 = new Protocol($this->getContext());
+
+        $rec1 = $this->protocol1->enrollAccount($this->password);
+        $rec1Record = $rec1[0];
+        $rec1AccountKey = $rec1[1];
+
+        $r = DatabaseRecord::getValue($rec1Record, "record");
+        $rec1RecordVer1 = DatabaseRecord::setup($r, 1);
+
+        $this->protocol2 = new Protocol($this->getContext());
+
+        $this->expectException(Exception::class);
+        $rec2 = $this->recordUpdater->update($rec1RecordVer1);
+
+        $this->expectException(ProtocolException::class);
+        $res1 = $this->protocol2->verifyPassword($this->password, $rec1RecordVer1);
+    }
+
+    /**
+     * @medium
+     */
+    public function testCaseHTC_11()
+    {
+        $this->sleep();
+
+        $this->protocol = new Protocol($this->getContext());
+
+        $this->expectException(ProtocolException::class);
+        $rec = $this->protocol->enrollAccount("");
     }
 }

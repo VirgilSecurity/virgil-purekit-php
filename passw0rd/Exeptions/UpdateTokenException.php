@@ -35,36 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
+namespace passw0rd\Exeptions;
 
-use Passw0rd\EnrollmentRequest as ProtobufEnrollmentRequest;
-
-class EnrollRequest extends BaseRequest
+/**
+ * Class ProtocolException
+ * @package passw0rd\Exeptions
+ */
+class UpdateTokenException extends \Exception
 {
-    /**
-     * @var int
-     */
-    private $version;
 
-    /**
-     * EnrollRequest constructor.
-     * @param string $endpoint
-     * @param int $version
-     */
-    public function __construct(string $endpoint, int $version)
-    {
-        $this->version = $version;
-        parent::__construct($endpoint);
-    }
-
-    /**
-     * @return string
-     */
-    protected function formatBody(): string
-    {
-        $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();
-        $protobufEnrollmentRequest = $protobufEnrollmentRequest->setVersion($this->version);
-        $body = $protobufEnrollmentRequest->serializeToString();
-        return $body;
-    }
 }

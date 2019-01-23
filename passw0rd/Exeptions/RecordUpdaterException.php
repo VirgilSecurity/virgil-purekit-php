@@ -35,14 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\_tests\unit;
+namespace passw0rd\Exeptions;
 
-use PHPUnit\Framework\TestCase;
-
-class TempTest extends TestCase
+/**
+ * Class ProtocolException
+ * @package passw0rd\Exeptions
+ */
+class RecordUpdaterException extends \Exception
 {
-    public function testTempTrue()
-    {
-        $this->assertTrue(true);
-    }
+
 }

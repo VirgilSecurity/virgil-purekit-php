@@ -35,41 +35,69 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
+namespace passw0rd\Credentials;
 
-use Passw0rd\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
+use passw0rd\Exeptions\UpdateTokenException;
 
 /**
- * Class RotatePasswordRequest
- * @package passw0rd\Http\Request
+ * Class UpdateToken
+ * @package passw0rd\Credentials
  */
-class RotatePasswordRequest extends BaseRequest
+class UpdateToken
 {
-    /**
-     * @var string
-     */
-    private $verifyPasswordRequest;
+    private $updateToken;
+    private $version;
+    private $value;
+
+    const PREFIX = "UT";
 
     /**
-     * RotatePasswordRequest constructor.
-     * @param string $endpoint
-     * @param string $verifyPasswordRequest
+     * UpdateToken constructor.
+     * @param string $updateToken
+     * @throws UpdateTokenException
      */
-    public function __construct(string $endpoint, string $verifyPasswordRequest)
+    public function __construct(string $updateToken)
     {
-        $this->verifyPasswordRequest = $verifyPasswordRequest;
-        parent::__construct($endpoint);
+        if($updateToken == "")
+            throw new UpdateTokenException("Empty update token value");
+        $this->validateAndSet($updateToken);
+    }
+
+    /**
+     * @param string $updateToken
+     * @throws UpdateTokenException
+     */
+    private function validateAndSet(string $updateToken): void
+    {
+        $parts = explode(".", $updateToken);
+
+        if (count($parts) !== 3 || $parts[0] !== self::PREFIX)
+            throw new UpdateTokenException("Invalid string: $this->updateToken");
+
+        if ((int)$parts[1] < 1)
+            throw new UpdateTokenException("Invalid version: $parts[1]");
+
+        if(strlen($parts[2])!==92)
+            throw new UpdateTokenException("Invalid token base64 string len: $parts[2]");
+
+        $this->version = $parts[1];
+        $this->value = base64_decode($parts[2]);
+    }
+
+    /**
+     * @return int
+     */
+    public function getVersion(): int
+    {
+        return (int) $this->version;
     }
 
     /**
      * @return string
      */
-    protected function formatBody(): string
+    public function getValue(): string
     {
-        $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();
-        $protobufVerifyPasswordRequest->setVersion(1);
-        $protobufVerifyPasswordRequest->setRequest($this->verifyPasswordRequest);
-        $body = $protobufVerifyPasswordRequest->serializeToString();
-        return $body;
+        return $this->value;
     }
+
 }

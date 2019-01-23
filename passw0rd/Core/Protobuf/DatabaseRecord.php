@@ -35,36 +35,58 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace passw0rd\Http\Request;
+namespace passw0rd\Core\Protobuf;
 
-use Passw0rd\EnrollmentRequest as ProtobufEnrollmentRequest;
+use Passw0rd\DatabaseRecord as ProtobufDatabaseRecord;
+use passw0rd\Exeptions\ProtocolContextException;
 
-class EnrollRequest extends BaseRequest
+/**
+ * Class DatabaseRecord
+ * @package passw0rd\Core\Protobuf
+ */
+class DatabaseRecord
 {
     /**
-     * @var int
+     * @return ProtobufDatabaseRecord
      */
-    private $version;
-
-    /**
-     * EnrollRequest constructor.
-     * @param string $endpoint
-     * @param int $version
-     */
-    public function __construct(string $endpoint, int $version)
+    private static function initInstance()
     {
-        $this->version = $version;
-        parent::__construct($endpoint);
+        return new ProtobufDatabaseRecord();
     }
 
     /**
+     * @param string $value
+     * @param string $type
+     * @return string
+     * @throws ProtocolContextException
+     */
+    public static function getValue(string $value, string $type): string
+    {
+        $typeArr = ['record', 'version'];
+
+        if(!in_array($type, $typeArr))
+            throw new ProtocolContextException("Incorrect type value");
+
+        $db = self::initInstance();
+        $db->mergeFromString($value);
+
+        $res["record"] = $db->getRecord();
+        $res["version"] = $db->getVersion();
+
+        return $res[$type];
+    }
+
+    /**
+     * @param string $value
+     * @param int $version
      * @return string
      */
-    protected function formatBody(): string
+    public static function setup(string $value, int $version): string
     {
-        $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();
-        $protobufEnrollmentRequest = $protobufEnrollmentRequest->setVersion($this->version);
-        $body = $protobufEnrollmentRequest->serializeToString();
-        return $body;
+        $dbRecord = self::initInstance();
+        $dbRecord->setRecord($value);
+        $dbRecord->setVersion($version);
+
+        return $dbRecord->serializeToString();
     }
 }
