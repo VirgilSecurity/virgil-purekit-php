@@ -61,19 +61,31 @@ composer require passw0rd/sdk-php
 
 
 ### Configure SDK
+
+SDK configuration .env file:
+
+```dotenv
+APP_TOKEN=
+SERVICE_PUBLIC_KEY= 
+APP_SECRET_KEY=
+UPDATE_TOKEN= //need to be empty
+```
+
 Here is an example of how to specify your credentials SDK class instance:
+
 ```php
 use Dotenv\Dotenv;
 use passw0rd\Protocol\Protocol;
 use passw0rd\Protocol\ProtocolContext;
 
-(new Dotenv("../"))->load(); // Add this string to index file. Load .env variables (required string). 
+// Add correct path to .env file!
+(new Dotenv("{PATH_TO_FILE}"))->load();
 
 $context = (new ProtocolContext)->create([
     'appToken' => $_ENV['APP_TOKEN'],
     'appSecretKey' => $_ENV['APP_SECRET_KEY'],
     'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
-    'updateToken' => $_ENV['UPDATE_TOKEN'],
+    'updateToken' => $_ENV['UPDATE_TOKEN']
 ]);
 
 try {
@@ -234,16 +246,19 @@ APP_SECRET_KEY=
 UPDATE_TOKEN= //need to be filled
 ```
 
-**Step 3.** Start migration. Use the `RecordUpdater::update()` SDK method to create a user's `newRecord` (you don't need  to ask your users to create a new password). The `RecordUpdater::update()` method requires the `update_token` and user's `oldRecord` from your DB:
+**Step 3.** Start migration. Use the `RecordUpdater::update()` SDK method to create a user's `newRecord` (you don't need to ask your users to create a new password). The `RecordUpdater::update()` method requires the `update_token` and user's `oldRecord` from your DB:
 
 ```php
 use passw0rd\Protocol\RecordUpdater;
 
 try {
-    // $newRecord is null ONLY if oldRecord is already updated
     $recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]
 
     $newRecord = $recordUpdater->update($oldRecord));
+    
+    // $newRecord is null ONLY if $oldRecord is already updated
+    if ($newRecord !== null)
+        //save new record to the database
 }
 catch(\Exception $e) {
     var_dump($e->getMessage());
@@ -251,11 +266,9 @@ catch(\Exception $e) {
 }
 ```
 
-So, run the `RecordUpdater::update()` function and save user's `newRecord` into your database.
+So, run the `RecordUpdater::update()` method and save user's `newRecord` into your database.
 
 Since the SDK is able to work simultaneously with two versions of user's records (`newRecord` and `oldRecord`), this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the passw0rd SDK will verify his password without any problems because Passw0rd Service can work with both user's records (`newRecord` and `oldRecord`).
-
-Delete `oldRecords` from database after you finished migration.
 
 
 **Step 4.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
