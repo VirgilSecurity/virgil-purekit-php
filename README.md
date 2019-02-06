@@ -252,7 +252,7 @@ UPDATE_TOKEN= //need to be filled
 use passw0rd\Protocol\RecordUpdater;
 
 try {
-    $recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]
+    $recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]);
 
     $newRecord = $recordUpdater->update($oldRecord));
     
