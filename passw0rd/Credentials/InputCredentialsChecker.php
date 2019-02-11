@@ -75,9 +75,9 @@ class InputCredentialsChecker implements Credentials
             }
 
             if ($credentialKey == Credentials::APP_TOKEN) {
-                $pref = $this->credentials[$credentialKey][1];
+                $pref = $this->credentials[$credentialKey][0];
 
-                if(!in_array($pref, ['T', 'V']))
+                if(!in_array($pref, ['P', 'A']))
                     throw new InputCredentialsCheckerException("Incorrect $credentialKey");
             }
         }

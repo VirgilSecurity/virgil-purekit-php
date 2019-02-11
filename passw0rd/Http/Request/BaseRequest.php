@@ -107,15 +107,15 @@ abstract class BaseRequest
      */
     public function getUri(): string
     {
-        $pref = $this->appToken[1];
+        $pref = $this->appToken[0];
 
         $v = isset($_ENV['VIRGIL_ENV']) ? $_ENV['VIRGIL_ENV'] : 'api';
         $p = isset($_ENV['PASSW0RD_ENV']) ? $_ENV['PASSW0RD_ENV'] : 'api';
 
-        if('T'==$pref)
+        if('P'==$pref)
             $uri = "https://$p.passw0rd.io/phe/v1/{$this->getEndpoint()}";
 
-        if('V'==$pref)
+        if('A'==$pref)
             $uri = "https://$v.virgilsecurity.com/phe/v1/{$this->getEndpoint()}";
 
         return $uri;
