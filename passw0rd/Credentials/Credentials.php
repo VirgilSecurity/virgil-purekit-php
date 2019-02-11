@@ -38,10 +38,15 @@
 namespace passw0rd\Credentials;
 
 /**
- * Interface AvailableCredentials
+ * Interface Credentials
  * @package passw0rd\Credentials
  */
-interface AvailableCredentials
+interface Credentials
 {
-    const KEYS = ['appToken', 'servicePublicKey', 'appSecretKey', 'updateToken'];
+    const ALL = [self::APP_TOKEN, self::SERVICE_PUBLIC_KEY, self::APP_SECRET_KEY, self::UPDATE_TOKEN];
+
+    const APP_TOKEN = 'appToken';
+    const SERVICE_PUBLIC_KEY = 'servicePublicKey';
+    const APP_SECRET_KEY = 'appSecretKey';
+    const UPDATE_TOKEN = 'updateToken';
 }

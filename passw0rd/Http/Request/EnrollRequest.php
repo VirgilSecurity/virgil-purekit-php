@@ -50,9 +50,11 @@ class EnrollRequest extends BaseRequest
      * EnrollRequest constructor.
      * @param string $endpoint
      * @param int $version
+     * @param $appToken
      */
-    public function __construct(string $endpoint, int $version)
+    public function __construct(string $endpoint, int $version, $appToken)
     {
+        $this->appToken = $appToken;
         $this->version = $version;
         parent::__construct($endpoint);
     }
