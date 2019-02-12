@@ -1,5 +1,5 @@
 {
-  "name": "passw0rd/sdk-php",
+  "name": "virgil/passw0rd-sdk",
   "description": "Virgil Security introduces an implementation of the Password-Hardened Encryption (PHE) protocol that provides developers with a technology to protect users passwords from offline/online attacks and make stolen passwords useless even if your database has been compromised.",
   "keywords": [],
   "homepage": "https://passw0rd.io/",

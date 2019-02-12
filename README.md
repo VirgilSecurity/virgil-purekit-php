@@ -56,7 +56,7 @@ Also, you can launch the *extension/helper.php* file to get information about a 
 
 now, install passw0rd SDK library with the following code:
 ```bash
-composer require passw0rd/sdk-php
+composer require virgil/passw0rd-sdk
 ```
 
 
