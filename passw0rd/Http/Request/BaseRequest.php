@@ -52,6 +52,8 @@ abstract class BaseRequest
 
     protected $virgilAgent;
 
+    protected $appToken;
+
     /**
      * BaseRequest constructor.
      * @param string $endpoint
@@ -84,7 +86,7 @@ abstract class BaseRequest
      */
     public function getOptionsHeader(): array
     {
-        return ["virgil-agent" => $this->virgilAgent->getFormatString(), "AppToken" => $_ENV['APP_TOKEN']];
+        return ["virgil-agent" => $this->virgilAgent->getFormatString(), "AppToken" => $this->appToken];
     }
 
     /**
@@ -105,8 +107,18 @@ abstract class BaseRequest
      */
     public function getUri(): string
     {
-        $env = isset($_ENV['ENV']) ? $_ENV['ENV'] : 'api';
-        $uri = "https://$env.passw0rd.io/phe/v1/{$this->getEndpoint()}";
+        $pref = $this->appToken[0];
+
+        $v = isset($_ENV['VIRGIL_ENV']) ? $_ENV['VIRGIL_ENV'] : 'api';
+        $p = isset($_ENV['PASSW0RD_ENV']) ? $_ENV['PASSW0RD_ENV'] : 'api';
+
+        if('P'==$pref)
+            $uri = "https://$p.passw0rd.io/phe/v1/{$this->getEndpoint()}";
+
+        if('A'==$pref)
+            $uri = "https://$v.virgilsecurity.com/phe/v1/{$this->getEndpoint()}";
+
         return $uri;
+
     }
 }

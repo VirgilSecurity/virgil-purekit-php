@@ -60,9 +60,11 @@ class VerifyPasswordRequest extends BaseRequest
      * @param string $endpoint
      * @param string $verifyPasswordRequest
      * @param int $version
+     * @param string $appToken
      */
-    public function __construct(string $endpoint, string $verifyPasswordRequest, int $version)
+    public function __construct(string $endpoint, string $verifyPasswordRequest, int $version, string $appToken)
     {
+        $this->appToken = $appToken;
         $this->version = $version;
         $this->verifyPasswordRequest = $verifyPasswordRequest;
         parent::__construct($endpoint);

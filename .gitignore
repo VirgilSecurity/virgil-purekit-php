@@ -1,5 +1,4 @@
 .idea
 for-dev
 vendor
-composer.lock
 .env

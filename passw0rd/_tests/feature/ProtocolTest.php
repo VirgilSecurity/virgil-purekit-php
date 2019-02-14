@@ -50,15 +50,20 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     protected $protocol2;
     protected $password;
     protected $anotherPassword;
-    protected $recordUpdater;
+    protected $recordUpdater = [];
+    protected $projects = [];
 
     protected function setUp()
     {
         (new Dotenv(__DIR__ . "/../../../"))->load();
+        $this->projects = explode(',',$_ENV['PROJECTS']);
 
         $this->password = "password123456";
         $this->anotherPassword = "123456password";
-        $this->recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]);
+
+        foreach ($this->projects as $project) {
+            $this->recordUpdater[$project] = new RecordUpdater($_ENV["{$project}_UPDATE_TOKEN"]);
+        }
     }
 
     private function sleep(int $seconds=5)
@@ -67,21 +72,25 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @param string $project
      * @param bool $withUpdateToken
      * @param bool $withCorrectServicePublicKey
      * @return ProtocolContext
      * @throws Exception
      */
-    private function getContext(bool $withUpdateToken = true, bool $withCorrectServicePublicKey = true): ProtocolContext
+    private function getContext(string $project, bool $withUpdateToken = true, bool $withCorrectServicePublicKey =
+    true):
+    ProtocolContext
     {
-        $context = (new ProtocolContext)->create([
-            'appToken' => $_ENV["APP_TOKEN"],
-            'servicePublicKey' => true==$withCorrectServicePublicKey ? $_ENV["SERVICE_PUBLIC_KEY"] : $_ENV["INCORRECT_SERVICE_PUBLIC_KEY"],
-            'appSecretKey' => $_ENV["APP_SECRET_KEY"],
-            'updateToken' => true==$withUpdateToken ? $_ENV["UPDATE_TOKEN"] : "",
+        $context[$project] = (new ProtocolContext)->create([
+            'appToken' => $_ENV["{$project}_APP_TOKEN"],
+            'servicePublicKey' => true==$withCorrectServicePublicKey ? $_ENV["{$project}_SERVICE_PUBLIC_KEY"] :
+                $_ENV["{$project}_INCORRECT_SERVICE_PUBLIC_KEY"],
+            'appSecretKey' => $_ENV["{$project}_APP_SECRET_KEY"],
+            'updateToken' => true==$withUpdateToken ? $_ENV["{$project}_UPDATE_TOKEN"] : "",
         ]);
 
-        return $context;
+        return $context[$project];
     }
 
     /**
@@ -89,24 +98,29 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
      */
     public function testCaseHTC_1()
     {
-        $this->protocol = new Protocol($this->getContext(false));
+        $this->sleep();
 
-        $rec = $this->protocol->enrollAccount($this->password);
-        $recRecord = $rec[0];
-        $recAccountKey = $rec[1];
+        foreach ($this->projects as $project) {
 
-        $recVersion = DatabaseRecord::getValue($recRecord, "version");
-        $this->assertEquals(2, $recVersion);
+            $this->protocol[$project] = new Protocol($this->getContext($project,false));
 
-        $this->assertNotEmpty($rec);
-        $this->assertInternalType('array', $rec);
-        $this->assertEquals(207, strlen($recRecord));
-        $this->assertEquals(32, strlen($recAccountKey));
+            $rec = $this->protocol[$project]->enrollAccount($this->password);
+            $recRecord = $rec[0];
+            $recAccountKey = $rec[1];
 
-        $accountKey = $this->protocol->verifyPassword($this->password, $recRecord);
-        $this->assertEquals(32, strlen($accountKey));
+            $recVersion = DatabaseRecord::getValue($recRecord, "version");
+            $this->assertEquals(2, $recVersion);
 
-        $this->assertEquals($recAccountKey, $accountKey);
+            $this->assertNotEmpty($rec);
+            $this->assertInternalType('array', $rec);
+            $this->assertEquals(207, strlen($recRecord));
+            $this->assertEquals(32, strlen($recAccountKey));
+
+            $accountKey = $this->protocol[$project]->verifyPassword($this->password, $recRecord);
+            $this->assertEquals(32, strlen($accountKey));
+
+            $this->assertEquals($recAccountKey, $accountKey);
+        }
     }
 
     /**
@@ -116,24 +130,26 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol = new Protocol($this->getContext());
+        foreach ($this->projects as $project) {
+            $this->protocol[$project] = new Protocol($this->getContext($project));
 
-        $rec = $this->protocol->enrollAccount($this->password);
-        $recRecord = $rec[0];
-        $recAccountKey = $rec[1];
+            $rec = $this->protocol[$project]->enrollAccount($this->password);
+            $recRecord = $rec[0];
+            $recAccountKey = $rec[1];
 
-        $recVersion = DatabaseRecord::getValue($recRecord, "version");
-        $this->assertEquals(3, $recVersion);
+            $recVersion = DatabaseRecord::getValue($recRecord, "version");
+            $this->assertEquals(3, $recVersion);
 
-        $this->assertNotEmpty($rec);
-        $this->assertInternalType('array', $rec);
-        $this->assertEquals(207, strlen($recRecord));
-        $this->assertEquals(32, strlen($recAccountKey));
+            $this->assertNotEmpty($rec);
+            $this->assertInternalType('array', $rec);
+            $this->assertEquals(207, strlen($recRecord));
+            $this->assertEquals(32, strlen($recAccountKey));
 
-        $accountKey = $this->protocol->verifyPassword($this->password, $recRecord);
-        $this->assertEquals(32, strlen($accountKey));
+            $accountKey = $this->protocol[$project]->verifyPassword($this->password, $recRecord);
+            $this->assertEquals(32, strlen($accountKey));
 
-        $this->assertEquals($recAccountKey, $accountKey);
+            $this->assertEquals($recAccountKey, $accountKey);
+        }
     }
 
     /**
@@ -143,19 +159,21 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol = new Protocol($this->getContext(false));
+        foreach ($this->projects as $project) {
+            $this->protocol[$project] = new Protocol($this->getContext($project, false));
 
-        $rec = $this->protocol->enrollAccount($this->password);
-        $recRecord = $rec[0];
-        $recAccountKey = $rec[1];
+            $rec = $this->protocol[$project]->enrollAccount($this->password);
+            $recRecord = $rec[0];
+            $recAccountKey = $rec[1];
 
-        $this->assertNotEmpty($rec);
-        $this->assertInternalType('array', $rec);
-        $this->assertEquals(207, strlen($recRecord));
-        $this->assertEquals(32, strlen($recAccountKey));
+            $this->assertNotEmpty($rec);
+            $this->assertInternalType('array', $rec);
+            $this->assertEquals(207, strlen($recRecord));
+            $this->assertEquals(32, strlen($recAccountKey));
 
-        $this->expectException(ProtocolException::class);
-        $this->protocol->verifyPassword($this->anotherPassword, $recRecord);
+            $this->expectException(ProtocolException::class);
+            $this->protocol[$project]->verifyPassword($this->anotherPassword, $recRecord);
+        }
     }
 
     /**
@@ -165,19 +183,21 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol1 = new Protocol($this->getContext(false));
+        foreach ($this->projects as $project) {
+            $this->protocol1[$project] = new Protocol($this->getContext($project, false));
 
-        $rec1 = $this->protocol1->enrollAccount($this->password);
-        $rec1Record = $rec1[0];
-        $rec1AccountKey = $rec1[1];
+            $rec1 = $this->protocol1[$project]->enrollAccount($this->password);
+            $rec1Record = $rec1[0];
+            $rec1AccountKey = $rec1[1];
 
-        $this->protocol2 = new Protocol($this->getContext(false, false));
+            $this->protocol2[$project] = new Protocol($this->getContext($project, false, false));
 
-        $this->expectException(ProtocolException::class);
-        $rec2 = $this->protocol2->enrollAccount($this->password);
+            $this->expectException(ProtocolException::class);
+            $rec2 = $this->protocol2[$project]->enrollAccount($this->password);
 
-        $this->expectException(ProtocolException::class);
-        $accountKey = $this->protocol2->verifyPassword($this->password, $rec1Record);
+            $this->expectException(ProtocolException::class);
+            $accountKey = $this->protocol2[$project]->verifyPassword($this->password, $rec1Record);
+        }
     }
 
     /**
@@ -187,20 +207,22 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol1 = new Protocol($this->getContext(false));
+        foreach ($this->projects as $project) {
+            $this->protocol1[$project] = new Protocol($this->getContext($project, false));
 
-        $rec1 = $this->protocol1->enrollAccount($this->password);
-        $rec1Record = $rec1[0];
-        $rec1AccountKey = $rec1[1];
+            $rec1 = $this->protocol1[$project]->enrollAccount($this->password);
+            $rec1Record = $rec1[0];
+            $rec1AccountKey = $rec1[1];
 
-        $res1 = $this->protocol1->verifyPassword($this->password, $rec1Record);
+            $res1 = $this->protocol1[$project]->verifyPassword($this->password, $rec1Record);
 
-        $rec2 = $this->recordUpdater->update($rec1Record);
+            $rec2 = $this->recordUpdater[$project]->update($rec1Record);
 
-        $this->protocol2 = new Protocol($this->getContext());
-        $res2 = $this->protocol2->verifyPassword($this->password, $rec2);
-        $this->assertEquals($res1, $rec1AccountKey);
-        $this->assertEquals($res2, $rec1AccountKey);
+            $this->protocol2[$project] = new Protocol($this->getContext($project));
+            $res2 = $this->protocol2[$project]->verifyPassword($this->password, $rec2);
+            $this->assertEquals($res1, $rec1AccountKey);
+            $this->assertEquals($res2, $rec1AccountKey);
+        }
     }
 
     /**
@@ -210,14 +232,16 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol = new Protocol($this->getContext());
+        foreach ($this->projects as $project) {
+            $this->protocol[$project] = new Protocol($this->getContext($project));
 
-        $rec1 = $this->protocol->enrollAccount($this->password);
-        $rec1Record = $rec1[0];
-        $rec1AccountKey = $rec1[1];
+            $rec1 = $this->protocol[$project]->enrollAccount($this->password);
+            $rec1Record = $rec1[0];
+            $rec1AccountKey = $rec1[1];
 
-        $rec2 = $this->recordUpdater->update($rec1Record);
-        $this->assertEquals(null, $rec2);
+            $rec2 = $this->recordUpdater[$project]->update($rec1Record);
+            $this->assertEquals(null, $rec2);
+        }
     }
 
     /**
@@ -227,22 +251,24 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol1 = new Protocol($this->getContext());
+        foreach ($this->projects as $project) {
+            $this->protocol1[$project] = new Protocol($this->getContext($project));
 
-        $rec1 = $this->protocol1->enrollAccount($this->password);
-        $rec1Record = $rec1[0];
-        $rec1AccountKey = $rec1[1];
+            $rec1 = $this->protocol1[$project]->enrollAccount($this->password);
+            $rec1Record = $rec1[0];
+            $rec1AccountKey = $rec1[1];
 
-        $r = DatabaseRecord::getValue($rec1Record, "record");
-        $rec1RecordVer1 = DatabaseRecord::setup($r, 1);
+            $r = DatabaseRecord::getValue($rec1Record, "record");
+            $rec1RecordVer1 = DatabaseRecord::setup($r, 1);
 
-        $this->protocol2 = new Protocol($this->getContext());
+            $this->protocol2[$project] = new Protocol($this->getContext($project));
 
-        $this->expectException(Exception::class);
-        $rec2 = $this->recordUpdater->update($rec1RecordVer1);
+            $this->expectException(Exception::class);
+            $rec2 = $this->recordUpdater[$project]->update($rec1RecordVer1);
 
-        $this->expectException(ProtocolException::class);
-        $res1 = $this->protocol2->verifyPassword($this->password, $rec1RecordVer1);
+            $this->expectException(ProtocolException::class);
+            $res1 = $this->protocol2[$project]->verifyPassword($this->password, $rec1RecordVer1);
+        }
     }
 
     /**
@@ -252,9 +278,11 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     {
         $this->sleep();
 
-        $this->protocol = new Protocol($this->getContext());
+        foreach ($this->projects as $project) {
+            $this->protocol[$project] = new Protocol($this->getContext($project));
 
-        $this->expectException(ProtocolException::class);
-        $rec = $this->protocol->enrollAccount("");
+            $this->expectException(ProtocolException::class);
+            $rec = $this->protocol[$project]->enrollAccount("");
+        }
     }
 }

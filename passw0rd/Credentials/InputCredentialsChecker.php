@@ -43,7 +43,7 @@ use passw0rd\Exeptions\InputCredentialsCheckerException;
  * Class InputCredentialsChecker
  * @package passw0rd\credentials
  */
-class InputCredentialsChecker implements AvailableCredentials
+class InputCredentialsChecker implements Credentials
 {
     /**
      * @var array
@@ -65,13 +65,20 @@ class InputCredentialsChecker implements AvailableCredentials
      */
     public function check(): bool
     {
-        foreach (AvailableCredentials::KEYS as $credentialKey) {
+        foreach (Credentials::ALL as $credentialKey) {
             if (!$this->checkKeyExists($credentialKey))
                 throw new InputCredentialsCheckerException("Credential key does not exists: $credentialKey");
 
-            if ($credentialKey !== 'updateToken') {
+            if ($credentialKey !== Credentials::UPDATE_TOKEN) {
                 if (!$this->checkValue($credentialKey))
                     throw new InputCredentialsCheckerException("Incorrect or empty value for credential key: $credentialKey");
+            }
+
+            if ($credentialKey == Credentials::APP_TOKEN) {
+                $pref = $this->credentials[$credentialKey][0];
+
+                if(!in_array($pref, ['P', 'A']))
+                    throw new InputCredentialsCheckerException("Incorrect $credentialKey");
             }
         }
 

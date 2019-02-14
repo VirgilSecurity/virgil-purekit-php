@@ -117,7 +117,7 @@ class Protocol implements AvailableProtocol
             throw new ProtocolException("Empty password");
 
         // API Request
-        $enrollRequest = new EnrollRequest('enroll', $this->getVersion());
+        $enrollRequest = new EnrollRequest('enroll', $this->getVersion(), $this->context->getAppToken());
         $this->httpClient->setRequest($enrollRequest);
 
         // API Response
@@ -170,7 +170,8 @@ class Protocol implements AvailableProtocol
         }
 
         // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->getVersion());
+        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->getVersion(),
+            $this->context->getAppToken());
 
         $this->httpClient->setRequest($verifyPassword);
 
