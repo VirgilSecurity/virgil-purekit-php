@@ -45,7 +45,6 @@ use passw0rd\Exeptions\UpdateTokenException;
  */
 class UpdateToken
 {
-    private $updateToken;
     private $version;
     private $value;
 
@@ -72,7 +71,7 @@ class UpdateToken
         $parts = explode(".", $updateToken);
 
         if (count($parts) !== 3 || $parts[0] !== self::PREFIX)
-            throw new UpdateTokenException("Invalid string: $this->updateToken");
+            throw new UpdateTokenException("Invalid format: $updateToken");
 
         if ((int)$parts[1] < 1)
             throw new UpdateTokenException("Invalid version: $parts[1]");

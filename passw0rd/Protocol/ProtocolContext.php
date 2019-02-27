@@ -39,7 +39,6 @@ namespace passw0rd\Protocol;
 
 use passw0rd\Core\PHEClient;
 use passw0rd\Credentials\InputCredentialsChecker;
-use passw0rd\Exeptions\InputCredentialsCheckerException;
 use passw0rd\Exeptions\ProtocolContextException;
 
 /**
@@ -76,12 +75,7 @@ class ProtocolContext
     {
         $credentialsChecker = new InputCredentialsChecker($credentials);
 
-        try {
-            $credentialsChecker->check();
-        } catch (InputCredentialsCheckerException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        $credentialsChecker->check();
 
         $this->mainSetter($credentials);
 
@@ -96,28 +90,22 @@ class ProtocolContext
     {
         $this->setCredentials($credentials);
 
-        try {
-            if ($this->isKeysVersionsEquals())
-                $this->version = (int) $this->getServicePublicKey(true);
+        if ($this->isKeysVersionsEquals())
+            $this->version = (int) $this->getServicePublicKey(true);
 
-            if(!is_null($this->getUpdateToken()))
-            {
-                if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
-                    throw new \Exception("Incorrect token version ".$this->getUpdateToken(true));
+        if(!is_null($this->getUpdateToken()))
+        {
+            if((int) $this->getUpdateToken(true)!==$this->getVersion()+1)
+                throw new ProtocolContextException("Incorrect token version ".$this->getUpdateToken(true));
 
-                $this->version = (int) $this->getUpdateToken(true);
-            }
-
-            try {
-                $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
-            } catch (\Exception $e) {
-                throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
-            }
-
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+            $this->version = (int) $this->getUpdateToken(true);
         }
 
+        try {
+            $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
+        } catch (\Exception $e) {
+            throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
+        }
     }
 
     /**
@@ -152,46 +140,35 @@ class ProtocolContext
         return $this->appToken;
     }
 
+
     /**
      * @param bool $returnVersion
      * @return string
+     * @throws ProtocolContextException
      */
     public function getServicePublicKey(bool $returnVersion = false): string
     {
-        try {
-            return $this->getParsedContext(self::PK_PREFIX, $this->servicePublicKey, $returnVersion);
-        } catch (ProtocolContextException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        return $this->getParsedContext(self::PK_PREFIX, $this->servicePublicKey, $returnVersion);
     }
 
     /**
      * @param bool $returnVersion
      * @return string
+     * @throws ProtocolContextException
      */
     public function getAppSecretKey(bool $returnVersion = false): string
     {
-        try {
-            return $this->getParsedContext(self::SK_PREFIX, $this->appSecretKey, $returnVersion);
-        } catch (ProtocolContextException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        return $this->getParsedContext(self::SK_PREFIX, $this->appSecretKey, $returnVersion);
     }
 
     /**
      * @param bool $returnVersion
      * @return null|string
+     * @throws ProtocolContextException
      */
     public function getUpdateToken(bool $returnVersion = false):? string
     {
-        try {
-            return $this->getParsedContext(self::UT_PREFIX, $this->updateToken, $returnVersion);
-        } catch (ProtocolContextException $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        return $this->getParsedContext(self::UT_PREFIX, $this->updateToken, $returnVersion);
     }
 
     /**
@@ -231,7 +208,7 @@ class ProtocolContext
     }
 
     /**
-     * @return void
+     * @throws ProtocolContextException
      */
     public function setUpdateTokenVersion(): void
     {
