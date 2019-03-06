@@ -22,6 +22,7 @@ install:
   - travis_retry sudo apt-get install -y -qq php${PHP_VERSION}-dev
   - travis_retry sudo apt-get install -y -qq php${PHP_VERSION}-mbstring
   - travis_retry sudo apt-get install -y -qq php${PHP_VERSION}-curl
+  - travis_retry sudo apt-get install -y -qq php${PHP_VERSION}-xml
   - echo "Install PHPUnit version ${PHPUNIT_VERSION} ..."
   - travis_retry wget https://phar.phpunit.de/phpunit-${PHPUNIT_VERSION}.phar
   - chmod +x phpunit-${PHPUNIT_VERSION}.phar
