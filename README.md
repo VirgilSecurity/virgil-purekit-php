@@ -97,11 +97,11 @@ catch(\Exception $e) {
 ```
 
 ## Prepare Your Database
-PureKit allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `record`.
+PureKit allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `purekitrecord`.
 
-**Passw0rd record** - a user's password that is protected with our Passw0rd technology. Passw0rd `record` contains a version, client & server random salts and two values obtained during execution of the PHE protocol.
+**purekitrecord** - a user's password that is protected with our PureKit technology. `purekitrecord` contains a version, client & server random salts and two values obtained during execution of the PHE protocol.
 
-In order to create and work with user's `record` you have to set up your database with an additional column.
+In order to create and work with user's `purekitrecord` you have to set up your database with an additional column.
 
 The column must have the following parameters:
 <table class="params">
@@ -116,10 +116,10 @@ The column must have the following parameters:
 
 <tbody>
 <tr>
-	<td>passw0rd_record</td>
+	<td>purekitrecord</td>
 	<td>bytearray</td>
 	<td>210</td>
-	<td> A unique record, namely a user's protected passw0rd.</td>
+	<td> A unique record, namely a user's protected purekitrecord.</td>
 </tr>
 
 </tbody>
@@ -130,20 +130,21 @@ The column must have the following parameters:
 
 ### Enroll User Record
 
-Use this flow to create a new passw0rd's `record` in your DB for a user.
+Use this flow to create a new `purekitrecord` in your DB for a user.
 
-> Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your system to implement Passw0rd technology. You can go through your database and enroll (create) a user's `record` at any time.
+> Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your
+ system to implement Passw0rd technology. You can go through your database and enroll (create) a user's 
+ `purekitrecord` at any time.
 
-So, in order to create a `record` for a new database or available one, go through the following operations:
+So, in order to create a `purekitrecord` for a new database or available one, go through the following operations:
 - Take a user's **password** (or its hash or whatever you use) and pass it into the `EnrollAccount` function in a PureKit on your Server side.
-- PureKit will send a request to Passw0rd Service to get enrollment.
-- Then, PureKit will create a user's `record`. You need to store this unique user's `record` in your database in 
-associated column.
+- PureKit will send a request to PureKit service to get enrollment.
+- Then, PureKit will create a user's `purekitrecord`. You need to store this unique user's `purekitrecord` in your database in associated column.
 
 ```php
 try {
     $enroll = $protocol->enrollAccount($password)); // [record, encryption key]
-    $record = $enroll[0]; //save record to database
+    $record = $enroll[0]; //save purekitrecord to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
 }
 catch(\Exception $e) {
@@ -153,12 +154,14 @@ catch(\Exception $e) {
 }
 ```
 
-When you've created a passw0rd's `record` for all users in your DB, you can delete the unnecessary column where user passwords were previously stored.
+When you've created a `purekitrecord` for all users in your DB, you can delete the unnecessary column where user passwords were previously stored.
 
 
 ### Verify User Record
 
-Use this flow when a user already has his or her own passw0rd's `record` in your database. This function allows you to verify user's password with the `record` from your DB every time when the user signs in. You have to pass his or her `record` from your DB into the `VerifyPassword` function:
+Use this flow when a user already has his or her own `purekitrecord` in your database. This function allows you to 
+verify user's password with the `purekitrecord` from your DB every time when the user signs in. You have to pass his or
+ her `purekitrecord` from your DB into the `VerifyPassword` function:
 
 ```php
 try {
@@ -178,9 +181,11 @@ Not only user's password is a sensitive data. In this flow we will help you to p
 PII is a data that could potentially identify a specific individual, and PII can be sensitive.
 Sensitive PII is information which, when disclosed, could result in harm to the individual whose privacy has been breached. Sensitive PII should therefore be encrypted in transit and when data is at rest. Such information includes biometric information, medical information, personally identifiable financial information (PIFI) and unique identifiers such as passport or Social Security numbers.
 
-Passw0rd service allows you to protect user's PII (personal data) with a user's `encryptionKey` that is obtained from `EnrollAccount` or `VerifyPassword` functions. The `encryptionKey` will be the same for both functions.
+PureKit service allows you to protect user's PII (personal data) with a user's `encryptionKey` that is obtained from 
+`EnrollAccount` or `VerifyPassword` functions. The `encryptionKey` will be the same for both functions.
 
-In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's `record`. The `encryptionKey` will be updated after user changes own password.
+In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's 
+`purekitrecord`. The `encryptionKey` will be updated after user changes own password.
 
 Here is an example of data encryption/decryption with an `encryptionKey`:
 
@@ -207,8 +212,10 @@ Encryption is performed using AES256-GCM with key & nonce derived from the user'
 
 Virgil Security has Zero knowledge about a user's `encryptionKey`, because the key is calculated every time when you execute `EnrollAccount` or `VerifyPassword` functions at your server side.
 
-## Rotate app keys and user record
-There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this flow to get an `UPDATE_TOKEN` for updating user's `RECORD` in your database and to get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application.
+## Rotate app keys and user purekitrecord
+There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this 
+flow to get an `UPDATE_TOKEN` for updating user's `purekitrecord` in your database and to get a new `APP_SECRET_KEY` 
+and `SERVICE_PUBLIC_KEY` of a specific application.
 
 Also, use this flow in case your database has been COMPROMISED!
 
@@ -253,8 +260,7 @@ catch(\Exception $e) {
 
 So, run the `RecordUpdater::update()` method and save user's `newRecord` into your database.
 
-Since the PureKit is able to work simultaneously with two versions of user's records (`newRecord` and `oldRecord`), 
-this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the Virgil PureKit will verify his password without any problems because Passw0rd Service can work with both user's records (`newRecord` and `oldRecord`).
+Since the PureKit is able to work simultaneously with two versions of user's purekitrecords (`newRecord` and `oldRecord`), this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the Virgil PureKit will verify his password without any problems because Passw0rd Service can work with both user's  purekitrecords (`newRecord` and `oldRecord`).
 
 
 **Step 4.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
