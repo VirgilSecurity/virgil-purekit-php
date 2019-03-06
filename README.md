@@ -40,7 +40,7 @@ The PureKit is provided as a package named `virgil/purekit`. The package is dist
 #### Add the vsce_phe_php extension before using this PureKit:
 
 * [Download virgil-crypto-c-{latest version} archive from the CDN](https://cdn.virgilsecurity.com/virgil-crypto-c/php/) according to your server operating system
-* Place the *vsce_phe_php.so* file from the archive (/lib folder) into the directory with extensions
+* Place the *vsce_phe_php.{so/dll}* file from the archive (/lib folder) into the directory with extensions
 * Add the *extension=vsce_phe_php* string in to the php.ini file
 * Restart your web-service (apache or nginx): *sudo service {apache2 / nginx} restart*
 
@@ -97,11 +97,11 @@ catch(\Exception $e) {
 ```
 
 ## Prepare Your Database
-PureKit allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `purekitrecord`.
+PureKit allows you to easily perform all the necessary operations to create, verify and rotate (update) user's `PureRecord`.
 
-**purekitrecord** - a user's password that is protected with our PureKit technology. `purekitrecord` contains a version, client & server random salts and two values obtained during execution of the PHE protocol.
+**PureRecord** - a user's password that is protected with our PureKit technology. `PureRecord` contains a version, client & server random salts and two values obtained during execution of the PHE protocol.
 
-In order to create and work with user's `purekitrecord` you have to set up your database with an additional column.
+In order to create and work with user's `PureRecord` you have to set up your database with an additional column.
 
 The column must have the following parameters:
 <table class="params">
@@ -116,10 +116,10 @@ The column must have the following parameters:
 
 <tbody>
 <tr>
-	<td>purekitrecord</td>
+	<td>PureRecord</td>
 	<td>bytearray</td>
 	<td>210</td>
-	<td> A unique record, namely a user's protected purekitrecord.</td>
+	<td> A unique record, namely a user's protected PureRecord.</td>
 </tr>
 
 </tbody>
@@ -130,21 +130,21 @@ The column must have the following parameters:
 
 ### Enroll User Record
 
-Use this flow to create a new `purekitrecord` in your DB for a user.
+Use this flow to create a `PureRecord` in your DB for a user.
 
 > Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your
  system to implement Passw0rd technology. You can go through your database and enroll (create) a user's 
- `purekitrecord` at any time.
+ `PureRecord` at any time.
 
-So, in order to create a `purekitrecord` for a new database or available one, go through the following operations:
+So, in order to create a `PureRecord` for a new database or available one, go through the following operations:
 - Take a user's **password** (or its hash or whatever you use) and pass it into the `EnrollAccount` function in a PureKit on your Server side.
 - PureKit will send a request to PureKit service to get enrollment.
-- Then, PureKit will create a user's `purekitrecord`. You need to store this unique user's `purekitrecord` in your database in associated column.
+- Then, PureKit will create a user's `PureRecord`. You need to store this unique user's `PureRecord` in your database in associated column.
 
 ```php
 try {
     $enroll = $protocol->enrollAccount($password)); // [record, encryption key]
-    $record = $enroll[0]; //save purekitrecord to database
+    $record = $enroll[0]; //save PureRecord to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
 }
 catch(\Exception $e) {
@@ -154,14 +154,14 @@ catch(\Exception $e) {
 }
 ```
 
-When you've created a `purekitrecord` for all users in your DB, you can delete the unnecessary column where user passwords were previously stored.
+When you've created a `PureRecord` for all users in your DB, you can delete the unnecessary column where user passwords were previously stored.
 
 
 ### Verify User Record
 
-Use this flow when a user already has his or her own `purekitrecord` in your database. This function allows you to 
-verify user's password with the `purekitrecord` from your DB every time when the user signs in. You have to pass his or
- her `purekitrecord` from your DB into the `VerifyPassword` function:
+Use this flow when a user already has his or her own `PureRecord` in your database. This function allows you to 
+verify user's password with the `PureRecord` from your DB every time when the user signs in. You have to pass his or
+ her `PureRecord` from your DB into the `VerifyPassword` function:
 
 ```php
 try {
@@ -185,7 +185,7 @@ PureKit service allows you to protect user's PII (personal data) with a user's `
 `EnrollAccount` or `VerifyPassword` functions. The `encryptionKey` will be the same for both functions.
 
 In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's 
-`purekitrecord`. The `encryptionKey` will be updated after user changes own password.
+`PureRecord`. The `encryptionKey` will be updated after user changes own password.
 
 Here is an example of data encryption/decryption with an `encryptionKey`:
 
@@ -212,9 +212,9 @@ Encryption is performed using AES256-GCM with key & nonce derived from the user'
 
 Virgil Security has Zero knowledge about a user's `encryptionKey`, because the key is calculated every time when you execute `EnrollAccount` or `VerifyPassword` functions at your server side.
 
-## Rotate app keys and user purekitrecord
+## Rotate app keys and user PureRecord
 There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this 
-flow to get an `UPDATE_TOKEN` for updating user's `purekitrecord` in your database and to get a new `APP_SECRET_KEY` 
+flow to get an `UPDATE_TOKEN` for updating user's `PureRecord` in your database and to get a new `APP_SECRET_KEY` 
 and `SERVICE_PUBLIC_KEY` of a specific application.
 
 Also, use this flow in case your database has been COMPROMISED!
@@ -227,8 +227,8 @@ There is how it works:
 
 Move to your Application panel and press “Show update token” button to get the `UPDATE_TOKEN`.
 
-**Step 2.** Initialize Virgil PureKit with the `UPDATE_TOKEN`
-Move to Virgil PureKit configuration .env file and specify your `UPDATE_TOKEN`:
+**Step 2.** Initialize PureKit with the `UPDATE_TOKEN`
+Move to PureKit configuration .env file and specify your `UPDATE_TOKEN`:
 
 ```dotenv
 APP_TOKEN=
@@ -237,7 +237,8 @@ APP_SECRET_KEY=
 UPDATE_TOKEN= //need to be filled
 ```
 
-**Step 3.** Start migration. Use the `RecordUpdater::update()` PureKit method to create a user's `newRecord` (you don't need to ask your users to create a new password). The `RecordUpdater::update()` method requires the `UPDATE_TOKEN` and user's `oldRecord` from your DB:
+**Step 3.** Start migration. Use the `RecordUpdater::update()` PureKit method to create a user's new `PureRecord` 
+(you don't need to ask your users to create a new password). The `RecordUpdater::update()` method requires the `UPDATE_TOKEN` and user's old `PureRecord` from your DB:
 
 ```php
 use Virgil\PureKit\Protocol\RecordUpdater;
@@ -245,10 +246,10 @@ use Virgil\PureKit\Protocol\RecordUpdater;
 try {
     $recordUpdater = new RecordUpdater($_ENV["UPDATE_TOKEN"]);
 
-    $newRecord = $recordUpdater->update($oldRecord));
+    $newPureRecord = $recordUpdater->update($oldRecord));
     
-    // $newRecord is null ONLY if $oldRecord is already updated
-    if ($newRecord !== null)
+    // $newPureRecord is null ONLY if $oldRecord is already updated
+    if ($newPureRecord !== null)
         // Save new record to the database
 }
 catch(\Exception $e) {
@@ -258,9 +259,11 @@ catch(\Exception $e) {
 }
 ```
 
-So, run the `RecordUpdater::update()` method and save user's `newRecord` into your database.
+So, run the `RecordUpdater::update()` method and save user's new `PureRecord` into your database.
 
-Since the PureKit is able to work simultaneously with two versions of user's purekitrecords (`newRecord` and `oldRecord`), this will not affect the backend or users. This means, if a user logs into your system when you do the migration, the Virgil PureKit will verify his password without any problems because Passw0rd Service can work with both user's  purekitrecords (`newRecord` and `oldRecord`).
+Since the PureKit is able to work simultaneously with two versions of user's PureRecords (new `PureRecord` and old `PureRecord`),
+ this will not affect the backend or users. This means, if a user logs into your system when you do the migration, 
+ the Virgil PureKit will verify his password without any problems because PureKit can work with both user's PureRecords (new and old).
 
 
 **Step 4.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
@@ -269,10 +272,10 @@ Use Virgil CLI `update-keys` command and your `UPDATE_TOKEN` to update the `APP_
 
 ```bash
 // FreeBSD / Linux / Mac OS
-./virgil passw0rd update-keys <service_public_key> <app_secret_key> <update_token>
+./virgil purekit update-keys <service_public_key> <app_secret_key> <update_token>
 
 // Windows OS
-virgil passw0rd update-keys <service_public_key> <app_secret_key> <update_token>
+virgil purekit update-keys <service_public_key> <app_secret_key> <update_token>
 ```
 
 **Step 5.** Move to PureKit configuration .env file and replace your previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` with a new one (`APP_TOKEN` will be the same). Delete previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` and `UPDATE_TOKEN`.
