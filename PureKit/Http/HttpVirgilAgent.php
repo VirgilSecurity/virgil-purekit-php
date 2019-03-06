@@ -43,7 +43,7 @@ namespace Virgil\PureKit\Http;
  */
 class HttpVirgilAgent
 {
-    const PRODUCT = 'PureKit';
+    const PRODUCT = 'purekit';
     const FAMILY = 'php';
     const VERSION = '2.0.0'; // TODO: Add composer.lock parser!
 
