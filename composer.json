@@ -1,5 +1,5 @@
 {
-  "name": "passw0rd/sdk-php",
+  "name": "virgil/purekit",
   "description": "Virgil Security introduces an implementation of the Password-Hardened Encryption (PHE) protocol that provides developers with a technology to protect users passwords from offline/online attacks and make stolen passwords useless even if your database has been compromised.",
   "keywords": [],
   "homepage": "https://passw0rd.io/",
@@ -12,7 +12,7 @@
     }
   ],
   "require": {
-    "php": ">=7.1",
+    "php": "^7.2",
     "vlucas/phpdotenv": "^2.5",
     "guzzlehttp/guzzle": "~6.0",
     "google/protobuf": "^3.6.1"
@@ -22,14 +22,14 @@
   },
   "autoload": {
     "psr-4": {
-      "passw0rd\\": "passw0rd",
-      "Passw0rd\\": "passw0rd/Core/Protobuf/build/Passw0rd",
-      "GPBMetadata\\": "passw0rd/Core/Protobuf/build/GPBMetadata"
+      "Virgil\\PureKit\\": "PureKit",
+      "Purekit\\": "PureKit/Core/Protobuf/build/Purekit",
+      "GPBMetadata\\": "PureKit/Core/Protobuf/build/GPBMetadata"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "passw0rd\\Tests\\": "passw0rd/_tests/src"
+      "Virgil\\PureKit\\Tests\\": "PureKit/_tests/src"
     }
   },
   "scripts": {
