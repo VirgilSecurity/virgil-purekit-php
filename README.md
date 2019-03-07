@@ -223,9 +223,9 @@ Also, use this flow in case your database has been COMPROMISED!
 
 There is how it works:
 
-**Step 1.** Get your `UPDATE_TOKEN` using [Virgil Dashboard](https://dashboard.virgilsecurity.com)
+**Step 1.** Get your `UPDATE_TOKEN`
 
-Move to your Application panel and press “Show update token” button to get the `UPDATE_TOKEN`.
+Navigate to [Virgil Dashboard](https://dashboard.virgilsecurity.com/login), open your pure application panel and press "Show update token" button to get the `UPDATE_TOKEN`.
 
 **Step 2.** Initialize PureKit with the `UPDATE_TOKEN`
 Move to PureKit configuration .env file and specify your `UPDATE_TOKEN`:
