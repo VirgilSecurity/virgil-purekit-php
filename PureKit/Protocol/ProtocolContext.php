@@ -52,6 +52,8 @@ class ProtocolContext
     private $appSecretKey;
     private $updateToken;
 
+    private $newRawKeys;
+
     private $version;
 
     private $PHEClient;
@@ -238,6 +240,9 @@ class ProtocolContext
 
         if (!is_null($updateToken)) {
             $newKeys = $this->PHEClient->rotateKeys($updateToken);
+
+            $this->newRawKeys = $newKeys;
+
             $this->nextPHEClient = new PHEClient();
             $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
 
@@ -245,5 +250,13 @@ class ProtocolContext
 
             $this->pheImpl = $this->nextPHEClient;
         }
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getNewRawKeys(): ?array
+    {
+        return $this->newRawKeys;
     }
 }
