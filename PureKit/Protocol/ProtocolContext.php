@@ -103,8 +103,7 @@ class ProtocolContext
         try {
             $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
         } catch (\Exception $e) {
-            throw new ProtocolContextException($e->getCode());
-//            throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
+            throw new ProtocolContextException("Protocol error with PHE client constructor or setKeys method (code: {$e->getCode()}");
         }
     }
 
