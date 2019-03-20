@@ -56,9 +56,6 @@ class ProtocolContext
 
     private $version;
 
-    private $PHEClient;
-    private $nextPHEClient;
-
     private $pheImpl;
 
     const PK_PREFIX = "PK";
@@ -106,7 +103,8 @@ class ProtocolContext
         try {
             $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
         } catch (\Exception $e) {
-            throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
+            throw new ProtocolContextException($e->getCode());
+//            throw new ProtocolContextException('Protocol error with PHE client constructor or setKeys method');
         }
     }
 
@@ -233,22 +231,24 @@ class ProtocolContext
      */
     private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
-        $this->PHEClient = new PHEClient();
-        $this->PHEClient->setKeys($appSecretKey, $servicePublicKey);
+        $PHEClient = new PHEClient();
+        $PHEClient->setupDefaults();
+        $PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
-        $this->pheImpl = $this->PHEClient;
+        $this->pheImpl = $PHEClient;
 
         if (!is_null($updateToken)) {
-            $newKeys = $this->PHEClient->rotateKeys($updateToken);
+            $newKeys = $PHEClient->rotateKeys($updateToken);
 
             $this->newRawKeys = $newKeys;
 
-            $this->nextPHEClient = new PHEClient();
-            $this->nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
+            $nextPHEClient = new PHEClient();
+            $nextPHEClient->setupDefaults();
+            $nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
 
             $this->setUpdateTokenVersion();
 
-            $this->pheImpl = $this->nextPHEClient;
+            $this->pheImpl = $nextPHEClient;
         }
     }
 
