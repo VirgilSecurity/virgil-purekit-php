@@ -63,6 +63,7 @@ class RecordUpdater
     public function __construct(string $updateToken)
     {
         $this->pheClient = new PHEClient();
+        $this->pheClient->setupDefaults();
         $this->updateToken = new UpdateToken($updateToken);
     }
 

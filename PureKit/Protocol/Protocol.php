@@ -246,4 +246,12 @@ class Protocol implements AvailableProtocol
     {
         return $this->context->getPHEImpl();
     }
+
+    /**
+     * @return array|null
+     */
+    public function getNewRawKeys(): ?array
+    {
+        return $this->context->getNewRawKeys();
+    }
 }
