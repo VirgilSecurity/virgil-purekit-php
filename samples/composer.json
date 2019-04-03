@@ -1,0 +1,12 @@
+{
+    "name": "virgil/virgil-phppurekit-test",
+    "require": {
+        "virgil/purekit": "^2.1"
+    },
+    "authors": [
+        {
+            "name": "Virgil Security",
+            "email": "support@virgilsecurity.com"
+        }
+    ]
+}
