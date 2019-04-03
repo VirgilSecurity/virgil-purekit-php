@@ -19,3 +19,5 @@ To make things simple, it uses a json file user_table.json as a database.
 - Replace your credentials in `rotate.php`
 - Run rotate.php: `php rotate.php`
 - user_table.json should contain new records
+- Finish rotation process in Dashboard
+- Update your credentials in `main.php`
