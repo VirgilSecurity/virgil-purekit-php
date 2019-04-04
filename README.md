@@ -279,11 +279,9 @@ UPDATE_TOKEN= //must be empty
 
 ### Add the vsce_phe_php extension
 
-[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases/download/v2.1.1/virgil-test.zip), unzip and 
-execute on your server [virgil-test.php](https://github.com/VirgilSecurity/virgil-purekit-php/_help/virgil-test.php) file.
+[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases/download/v2.1.1/virgil-test.zip), unzip and execute on your server [virgil-test.php](https://github.com/VirgilSecurity/virgil-purekit-php/_help/virgil-test.php) file.
 
-[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *vsce_phe_php* extension 
-according to your server operating system.
+[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *vsce_phe_php* extension according to your server operating system.
 
 Make sure you have access to edit the php.ini file. For example, use *root*
 
