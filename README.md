@@ -37,27 +37,13 @@ The PureKit is provided as a package named `virgil/purekit`. The package is dist
 
 ### Install PureKit Package
 
-#### Add the vsce_phe_php extension before using this PureKit:
+-  **Step #1.** Add the [vsce_phe_php extension](https://github.com/VirgilSecurity/virgil-purekit-php/releases) into your server before using the PureKit. Read more [here](#add-the-vsce_phe_php-extension).
 
-* [Download virgil-crypto-c-{latest version} archive from the CDN](https://cdn.virgilsecurity.com/virgil-crypto-c/php/) according to your server operating system
-* Place the *vsce_phe_php.{so/dll}* file from the archive (/lib folder) into the directory with extensions
-* Add the *extension=vsce_phe_php* string in to the php.ini file
-* Restart your web-service (apache or nginx): *sudo service {apache2 / nginx} restart*
-
-##### Tips:
-
-* PHP version: *phpversion() / php --version*
-* OS Version: *PHP_OS*
-* php.ini and extensions directory: *phpinfo() / php -i / php-config --extension_dir*
-
-Also, you can launch the *extension/helper.php* file to get information about a version and extensions.
-
-Now, install PureKit library with the following code:
-```bash
-composer require virgil/purekit
-```
-
-
+- **Step #2.** Install PureKit library with the following code:
+    ```bash
+    composer require virgil/purekit
+    ```
+    
 ### Configure PureKit
 
 PureKit configuration .env file:
@@ -127,6 +113,8 @@ The column must have the following parameters:
 
 
 ## Usage Examples
+
+> You can find out working sample for the following commands in [this directory](/samples)
 
 ### Enroll User Record
 
@@ -287,10 +275,52 @@ APP_SECRET_KEY=
 UPDATE_TOKEN= //must be empty
 ```
 
+## Additional information
 
+### Add the vsce_phe_php extension
+
+[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases/download/v2.1.1/virgil-test.zip), unzip and execute on your server [virgil-test.php](https://github.com/VirgilSecurity/virgil-purekit-php/_help/virgil-test.php) file.
+
+[Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *vsce_phe_php* extension according to your server operating system.
+
+Make sure you have access to edit the php.ini file. For example, use *root*
+
+    $ sudo su
+
+Add the *extension=vsce_phe_php* string in to the php.ini file 
+
+    $ echo "extension=vsce_phe_php” >> (PATH_TO_PHP.INI)
+ 
+Copy extension file to the extensions directory.
+For the Linux/Darwin:
+ 
+    $ cp vsce_phe_php.so (PATH_TO_EXTENSION_DIR)
+    
+Or for the Windows:
+
+    $ cp vsce_phe_php.dll (PATH_TO_EXTENSION_DIR)
+    
+Then, restart your server or php-fpm service!
+
+#### Installation example
+
+Our web stack is: *Linux, nginx, php7.2-fpm*
+
+- Execute the *virgil-test.php* to find out your path to php.ini file and path to the extension directory:
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/develop/_help/s-1.png" 
+    width="60%"></p> 
+
+- Then, go to the command line interface (CLI) to specify the paths from the previous step:
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/develop/_help/s-2.png" width="60%"></p>
+
+- Reload the page in your browser to see that extension is loaded (`IS_EXTENSION_LOADED => TRUE`):
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/develop/_help/s-3.png" 
+    width="60%"></p>
+    
 ## Docs
 * [Virgil Dashboard](https://dashboard.virgilsecurity.com)
 * [The PHE WhitePaper](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) - foundation principles of the protocol
+* [PHP Sample](/samples)
 
 ## License
 
