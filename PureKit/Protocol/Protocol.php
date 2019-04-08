@@ -250,7 +250,7 @@ class Protocol implements AvailableProtocol
     /**
      * @return array|null
      */
-    public function getNewRawKeys(): ?array
+    public function getNewRawKeys()
     {
         return $this->context->getNewRawKeys();
     }
