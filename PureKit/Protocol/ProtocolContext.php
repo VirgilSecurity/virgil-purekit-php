@@ -165,7 +165,7 @@ class ProtocolContext
      * @return null|string
      * @throws ProtocolContextException
      */
-    public function getUpdateToken(bool $returnVersion = false):? string
+    public function getUpdateToken(bool $returnVersion = false)
     {
         return $this->getParsedContext(self::UT_PREFIX, $this->updateToken, $returnVersion);
     }
@@ -180,7 +180,7 @@ class ProtocolContext
      * @return null|string
      * @throws ProtocolContextException
      */
-    private function getParsedContext(string $prefix, string $key, bool $returnVersion = false): ?string
+    private function getParsedContext(string $prefix, string $key, bool $returnVersion = false)
     {
         if ($prefix == self::UT_PREFIX && $key == "")
             return null;
@@ -254,7 +254,7 @@ class ProtocolContext
     /**
      * @return array|null
      */
-    public function getNewRawKeys(): ?array
+    public function getNewRawKeys()
     {
         return $this->newRawKeys;
     }

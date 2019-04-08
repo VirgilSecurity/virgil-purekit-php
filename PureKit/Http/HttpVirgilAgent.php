@@ -45,7 +45,7 @@ class HttpVirgilAgent
 {
     const PRODUCT = 'purekit';
     const FAMILY = 'php';
-    const VERSION = '2.1.0'; // TODO: Add composer.lock parser!
+    const VERSION = '2.1.1'; // TODO: Add composer.lock parser!
 
     private $platform;
 

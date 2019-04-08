@@ -73,7 +73,7 @@ class RecordUpdater
      * @throws RecordUpdaterException
      * @throws \Virgil\PureKit\Exceptions\ProtocolContextException
      */
-    public function update(string $record): ?string
+    public function update(string $record)
     {
         if(true==$this->validate($record)) {
 
