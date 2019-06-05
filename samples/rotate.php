@@ -4,8 +4,6 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Virgil\PureKit\Protocol\Protocol;
 use Virgil\PureKit\Protocol\ProtocolContext;
-use Virgil\PureKit\Core\PHE;
-use Virgil\PureKit\Core\PHEClient;
 use Virgil\PureKit\Protocol\RecordUpdater;
 
 ############################
