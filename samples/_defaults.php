@@ -41,12 +41,19 @@ $defaultsDir = '_defaults'.DIRECTORY_SEPARATOR;
 
 $files = ['user_table.json', 'main_table.json'];
 $recoveryPrivateKeyFile = 'recovery_private_key.pem';
-$envExampleFile = '.env.example';
-$envFile = '.env';
 
-if(!is_file($envExampleFile)) {
-    printf("Error: no $envExampleFile file\n");
-    exit();
+if(in_array('--with-env', $argv))
+{
+    $envExampleFile = '.env.example';
+    $envFile = '.env';
+
+    if(!is_file($envExampleFile)) {
+        printf("Error: no $envExampleFile file\n");
+        exit();
+    }
+
+    copy($envExampleFile, $envFile);
+    printf("Restoring empty $envFile\n");
 }
 
 foreach ($files as $file) {
@@ -63,8 +70,5 @@ if(is_file($recoveryPrivateKeyFile)) {
     unlink($recoveryPrivateKeyFile);
     printf("Deleting $recoveryPrivateKeyFile\n");
 }
-
-copy($envExampleFile, $envFile);
-printf("Restoring $envFile\n");
 
 printf("Finished.\n");
