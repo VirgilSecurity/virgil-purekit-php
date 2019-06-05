@@ -3,3 +3,5 @@ vendor
 recovery_private_key.pem
 user_table.json
 main_table.json
+!/_defaults/main_table.json
+!/_defaults/user_table.json
