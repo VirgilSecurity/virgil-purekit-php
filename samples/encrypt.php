@@ -100,7 +100,6 @@ try {
         // Deprecate existing user password field & save in database
         $user->passwordHash = "";
 
-        printf("\n");
         print_r($user);
         printf("\n");
     }

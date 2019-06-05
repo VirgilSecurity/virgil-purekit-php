@@ -37,16 +37,25 @@
 
 printf("Restoring defaults\n");
 
+$defaultsDir = '_defaults'.DIRECTORY_SEPARATOR;
+
 $files = ['user_table.json', 'main_table.json'];
-$recoveryPrivateKeyFile = "..".DIRECTORY_SEPARATOR.'recovery_private_key.pem';
+$recoveryPrivateKeyFile = 'recovery_private_key.pem';
+$envExampleFile = '.env.example';
+$envFile = '.env';
+
+if(!is_file($envExampleFile)) {
+    printf("Error: no $envExampleFile file\n");
+    exit();
+}
 
 foreach ($files as $file) {
-    if(!is_file($file)) {
+    if(!is_dir($defaultsDir) || !is_file($defaultsDir.$file)) {
         printf("Error: no default files\n");
         exit();
     }
 
-    copy($file, "..".DIRECTORY_SEPARATOR.$file);
+    copy($defaultsDir.$file, $file);
     printf("Restoring default file ($file)\n");
 }
 
@@ -54,5 +63,8 @@ if(is_file($recoveryPrivateKeyFile)) {
     unlink($recoveryPrivateKeyFile);
     printf("Deleting $recoveryPrivateKeyFile\n");
 }
+
+copy($envExampleFile, $envFile);
+printf("Restoring $envFile\n");
 
 printf("Finished.\n");

@@ -2,75 +2,81 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Dotenv\Dotenv;
+use Virgil\CryptoImpl\VirgilCrypto;
 use Virgil\PureKit\Protocol\Protocol;
 use Virgil\PureKit\Protocol\ProtocolContext;
 use Virgil\PureKit\Protocol\RecordUpdater;
 
-############################
-#      LOAD DATABASE       #
-############################
-
-$userTableString = file_get_contents('user_table.json');
-$userTable = json_decode($userTableString);
-
-############################
-#  INITIALIZE FOR UPDATE   #
-############################
-
-// Set your updateToken
-$updateToken = 'UT.2.CiBn6z2if/onG6fZY7/vpUwP8k28cQbnXgV06Z74f2zjIhIgXE9GKd4x7NypIzf0esPe2yC4Epf+IvkMjE8HRVICyn4=';
-
 try {
-    // Set here your PureKit credentials, now with updateToken
+    #################################
+    #      MAIN CONFIGURATION       #
+    #################################
+
+    $userTableExample = 'user_table.json';
+    $virgilCrypto = new VirgilCrypto();
+
+    ######################################
+    #    INITIALIZE PUREKIT FOR UPDATE   #
+    ######################################
+
+    // Set here your PureKit credentials
+    $env = (new Dotenv(".", ".env"))->load();
+
     $context = (new ProtocolContext)->create([
-        'appToken' => 'AT.lkDXnQp0u1xl5urxIHIJlxnHHJdoXXV4',
-        'appSecretKey' => 'SK.1.I1xFwFk1OR9ipFY84jecxA1O0rC3IkG16SX+AyvWOZo=',
-        'servicePublicKey' => 'PK.1.BLy3NeLlwhcpsvyH6ojpJhlXaZ6cbcrMW7VSvLrwAE9Q0aEg1BeDgzgxu8lktYtSOAVKn3/SjqPBcjNoBKTBUtA=',
-        'updateToken' => $updateToken
+        'appToken' => $_ENV['SAMPLE_APP_TOKEN'],
+        'appSecretKey' => $_ENV['SAMPLE_APP_SECRET_KEY'],
+        'servicePublicKey' => $_ENV['SAMPLE_SERVICE_PUBLIC_KEY'],
+        'updateToken' => $_ENV['SAMPLE_UPDATE_TOKEN'] // set your UPDATE TOKEN
     ]);
 
     $protocol = new Protocol($context);
-}
-catch(\Exception $e) {
-    var_dump($e);
-    die;
-}
 
-############################
-#   ROTATE USER RECORDS    #
-############################
+    ############################
+    #      LOAD DATABASE       #
+    ############################
 
-$recordUpdater = new RecordUpdater($updateToken);
+    $userTableString = file_get_contents($userTableExample);
+    $userTable = json_decode($userTableString);
 
-foreach($userTable as $user) {
-    try {
-        printf("Rotating '%s's record: ", $user->username);
+    ############################
+    #   ROTATE USER RECORDS    #
+    ############################
+
+    $recordUpdater = new RecordUpdater($_ENV['SAMPLE_UPDATE_TOKEN']);
+
+    foreach ($userTable as $user) {
+        printf("Rotating '%s's record:\n", $user->username);
 
         // Get new record for user
         $oldRecord = base64_decode($user->record);
         $newRecord = $recordUpdater->update($oldRecord);
 
-        if($newRecord == null) {
+        if (is_null($newRecord)) {
             // User record is already updated, don't save
             print("User record is already migrated\n");
             break;
         }
 
         // Save record to database
-        $user->record = base64_encode($newRecord); 
+        $user->record = base64_encode($newRecord);
 
-        var_export($user);
+        printf("\n");
+        print_r($user);
+        printf("\n");
     }
-    catch(\Exception $e) {
-        var_dump($e);
-        die;
-    }
+
+    ############################
+    #     SAVE TO DATABASE     #
+    ############################
+
+    $fp = fopen($userTableExample, 'w');
+    fwrite($fp, json_encode($userTable));
+    fclose($fp);
+
+    printf("Finished.\n");
+
+} catch (\Exception $e) {
+    printf("\n\nERROR!\n%s\nCode:%s\n%s\n", $e->getMessage(), $e->getCode(), "Finished.\n");
+    die;
 }
-
-############################
-#     SAVE TO DATABASE     #
-############################
-
-$fp = fopen('user_table.json', 'w');
-fwrite($fp, json_encode($userTable));
-fclose($fp);
