@@ -1,2 +1,5 @@
 vendor
 .env
+recovery_private_key.pem
+user_table.json
+main_table.json

@@ -16,6 +16,8 @@ try {
     $userTableExample = 'user_table.json';
     $mainTableExample = 'main_table.json';
 
+    $recoveryPrivateKeyFile = "recovery_private_key.pem";
+
     $virgilCrypto = new VirgilCrypto();
     $phe = new PHE();
 
@@ -49,7 +51,7 @@ try {
     #   GENERATE AND STORE RECOVERY KEYS   #
     ########################################
 
-    printf("Generating Recovery Keys...\n\n");
+    printf("Generating Recovery Keys\n");
 
     $keyPair = $virgilCrypto->generateKeys();
     $privateKey = $keyPair->getPrivateKey();
@@ -61,8 +63,13 @@ try {
 
     // Convert to PEM only for this sample
     $privateKeyPEM = VirgilKeyPair::privateKeyToPEM($privateKeyExported);
-    printf("Store to the secure place your Recovery Private Key:\n%s\n", $privateKeyPEM);
-    printf("Storing Recovery Public Key to the main_table.json...\n\n");
+    printf("Storing Recovery Private Key to the $recoveryPrivateKeyFile file\n");
+
+    $fp = fopen('recovery_private_key.pem', 'w');
+    fwrite($fp, $privateKeyPEM);
+    fclose($fp);
+
+    printf("Storing Recovery Public Key to the main_table.json\n");
     $mainTable[0]->recovery_public_key = VirgilKeyPair::publicKeyToPEM($publicKeyExported);
 
     ########################################
@@ -70,7 +77,7 @@ try {
     ########################################
 
     foreach ($userTable as $user) {
-        printf("Enrolling user '%s'...", $user->username);
+        printf("Enrolling user '%s'", $user->username);
 
         // Ideally, you'll ask for users to create a new password, but
         // for this guide, we'll use existing password in DB
@@ -133,10 +140,10 @@ try {
 
     // Use encryption key for decrypting user data
     $decryptedAddress = $phe->decrypt($encryptedAddress, $encryptionKey);
-    printf("'%s's home address:\n%s\n\n", $userTable[0]->username, $decryptedAddress);
-    printf("Encrypt sample successfully finished.");
+    printf("'%s's home address:\n%s\n", $userTable[0]->username, $decryptedAddress);
+    printf("Finished.\n");
 
 } catch (\Exception $e) {
-    printf("\n\nERROR!\n%s\nCode:%s\n%s\n", $e->getMessage(), $e->getCode(), "Finished.");
+    printf("\n\nERROR!\n%s\nCode:%s\n%s\n", $e->getMessage(), $e->getCode(), "Finished.\n");
     die;
 }

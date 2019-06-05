@@ -35,9 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-printf("Restore defaults...\n");
+printf("Restoring defaults\n");
 
 $files = ['user_table.json', 'main_table.json'];
+$recoveryPrivateKeyFile = "..".DIRECTORY_SEPARATOR.'recovery_private_key.pem';
 
 foreach ($files as $file) {
     if(!is_file($file)) {
@@ -46,7 +47,12 @@ foreach ($files as $file) {
     }
 
     copy($file, "..".DIRECTORY_SEPARATOR.$file);
-    printf("Restore default file ($file)\n");
+    printf("Restoring default file ($file)\n");
+}
+
+if(is_file($recoveryPrivateKeyFile)) {
+    unlink($recoveryPrivateKeyFile);
+    printf("Deleting $recoveryPrivateKeyFile\n");
 }
 
 printf("Finished.\n");
