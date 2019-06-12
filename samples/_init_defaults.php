@@ -44,7 +44,7 @@ $recoveryPrivateKeyFile = 'recovery_private_key.pem';
 
 if(in_array('--with-env', $argv))
 {
-    $envExampleFile = '.env.example';
+    $envExampleFile = '_defaults'.DIRECTORY_SEPARATOR.'.env.example';
     $envFile = '.env';
 
     if(!is_file($envExampleFile)) {

@@ -9,9 +9,9 @@ use Virgil\PureKit\Protocol\ProtocolContext;
 use Virgil\PureKit\Core\PHE;
 
 try {
-    #################################
-    #      MAIN CONFIGURATION       #
-    #################################
+    printf("Starting enroll...\n");
+
+    // MAIN CONFIGURATION
 
     $userTableExample = 'user_table.json';
     $mainTableExample = 'main_table.json';
@@ -21,25 +21,21 @@ try {
     $virgilCrypto = new VirgilCrypto();
     $phe = new PHE();
 
-    ############################
-    #    INITIALIZE PUREKIT    #
-    ############################
+    // INITIALIZE PUREKIT
 
     // Set here your PureKit credentials
     $env = (new Dotenv(".", ".env"))->load();
 
     $context = (new ProtocolContext)->create([
-        'appToken' => $_ENV['SAMPLE_APP_TOKEN'],
-        'appSecretKey' => $_ENV['SAMPLE_APP_SECRET_KEY'],
-        'servicePublicKey' => $_ENV['SAMPLE_SERVICE_PUBLIC_KEY'],
-        'updateToken' => '' // needs to be left empty
+        'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+        'appToken' => $_ENV['APP_TOKEN'],
+        'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+        'updateToken' => '' // needs to be empty
     ]);
 
     $protocol = new Protocol($context);
 
-    ############################
-    #      LOAD DATABASE       #
-    ############################
+    // LOAD DATABASE
 
     $userTableString = file_get_contents($userTableExample);
     $userTable = json_decode($userTableString);
@@ -47,9 +43,7 @@ try {
     $mainTableString = file_get_contents($mainTableExample);
     $mainTable = json_decode($mainTableString);
 
-    ########################################
-    #   GENERATE AND STORE RECOVERY KEYS   #
-    ########################################
+    // GENERATE AND STORE RECOVERY KEYS
 
     printf("Generating Recovery Keys\n");
 
@@ -72,9 +66,7 @@ try {
     printf("Storing Recovery Public Key to the main_table.json\n");
     $mainTable[0]->recovery_public_key = VirgilKeyPair::publicKeyToPEM($publicKeyExported);
 
-    ########################################
-    #   ENROLL AND ENCRYPT USER ACCOUNTS   #
-    ########################################
+    // ENROLL AND ENCRYPT USER ACCOUNTS
 
     foreach ($userTable as $user) {
         printf("Enrolling user '%s'", $user->username);
@@ -104,9 +96,7 @@ try {
         printf("\n");
     }
 
-    ############################
-    #     SAVE TO DATABASE     #
-    ############################
+    // SAVE TO DATABASE
 
     $database = [
         $userTableExample => $userTable,
@@ -119,18 +109,14 @@ try {
         fclose($fp);
     }
 
-    ############################
-    #     VERIFY PASSWORD      #
-    ############################
+    // VERIFY PASSWORD
 
     $password = "80815C001";
     $record = base64_decode($userTable[0]->record);
 
     $encryptionKey = $protocol->verifyPassword($password, $record);
 
-    ############################
-    # ENCRYPT AND DECRYPT DATA #
-    ############################
+    // ENCRYPT AND DECRYPT DATA
 
     $homeAddress = "1600 Pennsylvania Ave NW, Washington, DC 20500, USA";
     // Use encryption key for encrypting user data
@@ -140,6 +126,7 @@ try {
     // Use encryption key for decrypting user data
     $decryptedAddress = $phe->decrypt($encryptedAddress, $encryptionKey);
     printf("'%s's home address:\n%s\n", $userTable[0]->username, $decryptedAddress);
+
     printf("Finished.\n");
 
 } catch (\Exception $e) {

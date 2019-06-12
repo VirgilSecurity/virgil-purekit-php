@@ -37,7 +37,8 @@ The PureKit is provided as a package named `virgil/purekit`. The package is dist
 
 ### Install PureKit Package
 
--  **Step #1.** Add the [vsce_phe_php extension](https://github.com/VirgilSecurity/virgil-purekit-php/releases) into your server before using the PureKit. Read more [here](#add-the-vsce_phe_php-extension).
+-  **Step #1.** Add the [crypto extensions](https://github.com/VirgilSecurity/virgil-purekit-php/releases) into your 
+server before using the PureKit. Read more [here](#add-the-crypto-extensions-into-your-server-before-using-the-purekit).
 
 - **Step #2.** Install PureKit library with the following code:
     ```bash
@@ -277,53 +278,46 @@ UPDATE_TOKEN= //must be empty
 
 ## Additional information
 
-### Add the vsce_phe_php extension
+### Add the crypto extensions into your server before using the PureKit
 
-- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases), unzip and execute on your server 
-[virgil-test.php](/_help/virgil-test.php) file.
+- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) *virgil-test.zip*, unzip it and execute on your server [virgil-test.php](/_help/virgil-test.php) file.
 
-- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *vsce_phe_php* extension 
-according to your server operating system.
+- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *%YOUR_OS%_extensions.zip* archive according to your server operating system and PHP version.
 
-- Make sure you have access to edit the php.ini file. For example, use *root*
+- Make sure you have access to edit the php.ini file (for example, use *root* for the Linux/Darwin or run *cmd* under administrator for the Windows).
+- Copy extension files to the extensions directory.
+    - For Linux/Darwin:
     ```
-    $ sudo su
+     $ path="%PATH_TO_EXTENSIONS_DIR%" && cp vsce_phe_php.so $path && cp virgil_crypto_php.so $path
     ```
-- Add the *extension=vsce_phe_php* string in to the php.ini file 
+    - For Windows:
     ```
-    $ echo "extension=vsce_phe_php” >> (PATH_TO_PHP.INI)
+     $ set path=%PATH_TO_EXTENSIONS_DIR% && copy vsce_phe_php.dll %path% && copy virgil_crypto_php.dll %path%
+    ```
+- Add the extensions into the php.ini file 
+    ```
+    $ echo -e "extension=vsce_phe_php\nextension=virgil_crypto_php” >> %PATH_TO_PHP.INI%
     ```
     
-- Copy extension file to the extensions directory.
-    - For the Linux/Darwin:
-    ```
-     $ cp vsce_phe_php.so (PATH_TO_EXTENSION_DIR)
-    ```
-    
-    - Or for the Windows:
-    ```
-     $ cp vsce_phe_php.dll (PATH_TO_EXTENSION_DIR)
-    ```
-    
-- Then, restart your server or php-fpm service!
+- Restart your server or php-fpm service
 
-#### Installation example
+#### Extensions installation example
 
 Our web stack is: *Linux, nginx, php7.2-fpm*
 
-- Execute the [virgil-test.php](/_help/virgil-test.php) to find out your path to php.ini file and path to the extension directory:
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-purekit-php/master/_help/s-1.png" 
+- Execute the [virgil-test.php](/_help/virgil-test.php) to find your path to the extensions directory and path to the php.ini file:
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-1.png" 
     width="60%"></p> 
 
-- Then, go to the command line interface (CLI) to specify the paths from the previous step:
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-purekit-php/master/_help/s-2.png" 
+- Then, go to the command line interface (CLI) to specify the paths you identified in the previous step:
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-2.png" 
     width="60%"></p>
 
-- Reload the page in your browser to see that extension is loaded (`IS_EXTENSION_LOADED => TRUE`):
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-purekit-php/master/_help/s-3.png" 
+- Reload the page in your browser to see that the extension is loaded (`IS_VSCE_PHE_PHP_EXTENSION_LOADED => true` and 
+`IS_VIRGIL_CRYPTO_PHP_EXTENSION_LOADED => true`):
+    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-3.png" 
     width="60%"></p>
-    
-    
+        
 ## Docs
 * [Virgil Dashboard](https://dashboard.virgilsecurity.com)
 * [The PHE WhitePaper](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) - foundation principles of the protocol

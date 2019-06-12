@@ -9,39 +9,31 @@ use Virgil\PureKit\Protocol\ProtocolContext;
 use Virgil\PureKit\Protocol\RecordUpdater;
 
 try {
-    #################################
-    #      MAIN CONFIGURATION       #
-    #################################
+    // MAIN CONFIGURATION
 
     $userTableExample = 'user_table.json';
     $virgilCrypto = new VirgilCrypto();
 
-    ######################################
-    #    INITIALIZE PUREKIT FOR UPDATE   #
-    ######################################
+    // INITIALIZE PUREKIT FOR UPDATE
 
     // Set here your PureKit credentials
     $env = (new Dotenv(".", ".env"))->load();
 
     $context = (new ProtocolContext)->create([
-        'appToken' => $_ENV['SAMPLE_APP_TOKEN'],
-        'appSecretKey' => $_ENV['SAMPLE_APP_SECRET_KEY'],
-        'servicePublicKey' => $_ENV['SAMPLE_SERVICE_PUBLIC_KEY'],
-        'updateToken' => $_ENV['SAMPLE_UPDATE_TOKEN'] // set your UPDATE TOKEN
+        'appSecretKey' => $_ENV['APP_SECRET_KEY'],
+        'appToken' => $_ENV['APP_TOKEN'],
+        'servicePublicKey' => $_ENV['SERVICE_PUBLIC_KEY'],
+        'updateToken' => $_ENV['UPDATE_TOKEN'] // set your UPDATE TOKEN
     ]);
 
     $protocol = new Protocol($context);
 
-    ############################
-    #      LOAD DATABASE       #
-    ############################
+    // LOAD DATABASE
 
     $userTableString = file_get_contents($userTableExample);
     $userTable = json_decode($userTableString);
 
-    ############################
-    #   ROTATE USER RECORDS    #
-    ############################
+    // ROTATE USER RECORDS
 
     $recordUpdater = new RecordUpdater($_ENV['SAMPLE_UPDATE_TOKEN']);
 
@@ -66,9 +58,7 @@ try {
         printf("\n");
     }
 
-    ############################
-    #     SAVE TO DATABASE     #
-    ############################
+    // SAVE TO DATABASE
 
     $fp = fopen($userTableExample, 'w');
     fwrite($fp, json_encode($userTable));

@@ -34,3 +34,79 @@
  *
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
+
+use Virgil\CryptoImpl\VirgilCrypto;
+
+require_once 'vendor/autoload.php';
+
+try {
+
+    printf("Starting recovery...\n");
+
+    // MAIN CONFIGURATION
+
+    $userTableExample = 'user_table.json';
+    $mainTableExample = 'main_table.json';
+
+    $recoveryPrivateKeyFile = "recovery_private_key.pem";
+
+    $virgilCrypto = new VirgilCrypto();
+
+    // LOAD DATABASE
+
+    $userTableString = file_get_contents($userTableExample);
+    $userTable = json_decode($userTableString);
+
+    $mainTableString = file_get_contents($mainTableExample);
+    $mainTable = json_decode($mainTableString);
+
+    // CHECK RECOVERY PRIVATE KEY
+
+    if(!is_file($recoveryPrivateKeyFile))
+        throw new Exception("No recovery $recoveryPrivateKeyFile file", 0);
+
+    $recoveryPrivateKeyPEM=file_get_contents($recoveryPrivateKeyFile);
+
+    if(!$recoveryPrivateKeyPEM)
+        throw new Exception("No recovery private key", 0);
+
+    // DECRYPT PASSWORD
+
+    $recoveryPrivateKeyDER = VirgilKeyPair::privateKeyToDER($recoveryPrivateKeyPEM);
+    $recoveryPrivateKey = $virgilCrypto->importPrivateKey($recoveryPrivateKeyDER);
+
+    foreach ($userTable as $user) {
+        $encrypted = base64_decode($user->encrypted);
+        $decrpyted = $virgilCrypto->decrypt($encrypted, $recoveryPrivateKey);
+        $user->passwordHash = $decrpyted;
+        $user->encrypted = "";
+        $user->record = "";
+
+        printf("Recovering user '%s'\n", $user->username);
+        printf("Password: '%s'\n", $user->passwordHash);
+    }
+
+    // CLEAR RECOVERY KEYS
+
+    $mainTable[0]->recovery_public_key = "";
+    unset($recoveryPrivateKeyFile);
+
+    // SAVE TO DATABASE
+
+    $database = [
+        $userTableExample => $userTable,
+        $mainTableExample => $mainTable,
+    ];
+
+    foreach ($database as $table => $file) {
+        $fp = fopen($table, 'w');
+        fwrite($fp, json_encode($file));
+        fclose($fp);
+    }
+
+    printf("Finished.\n");
+
+} catch (\Exception $e) {
+    printf("\n\nERROR!\n%s\nCode:%s\n%s\n", $e->getMessage(), $e->getCode(), "Finished.\n");
+    die;
+}
