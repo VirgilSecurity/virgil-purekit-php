@@ -45,6 +45,8 @@ server before using the PureKit. Read more [here](#add-the-crypto-extensions-int
     composer require virgil/purekit
     ```
     
+To uninstall Pure, see the [Recover Password Hashes](#recover-password-hashes) section.
+    
 ### Configure PureKit
 
 PureKit configuration .env file:
@@ -112,6 +114,56 @@ The column must have the following parameters:
 </tbody>
 </table>
 
+### Generate a recovery keypair
+
+This step is __optional__. Use this step if you will need to move away from Pure without having to put your users through registering again.
+
+To be able to move away from Pure without having to put your users through registering again, you need to generate a recovery keypair (public and private key). The public key will be used to encrypt passwords hashes at the enrollment step. You will need to store the encrypted hashes in your database.
+
+To generate a recovery keypair, [install Virgil Crypto Library](https://developer.virgilsecurity.com/docs/how-to/virgil-crypto/install-virgil-crypto) and use the code snippet below. Store the public key in your database and save the private key securely on another external device.
+
+> You won’t be able to restore your recovery private key, so it is crucial not to lose it.
+
+```php
+use Virgil\CryptoImpl\VirgilCrypto;
+// generate keypair:
+$virgilCrypto = new VirgilCrypto();
+$keyPair = $virgilCrypto->generateKeys();
+
+$privateKey = $keyPair->getPrivateKey();
+$publicKey = $keyPair->getPublicKey();
+
+// store exported keys:
+$privateKeyExported = $virgilCrypto->exportPrivateKey($privateKey);
+$publicKeyExported = $virgilCrypto->exportPublicKey($publicKey);
+```
+
+### Prepare your database for storing encrypted password hashes
+
+Now you need to prepare your database for the future passwords hashes recovery. Create a column in your users table or a separate table for storing encrypted user password hashes.
+
+<table class="params">
+<thead>
+		<tr>
+			<th>Parameters</th>
+			<th>Type</th>
+			<th>Size (bytes)</th>
+			<th>Description</th>
+		</tr>
+</thead>
+
+<tbody>
+<tr>
+	<td>encrypted_password_hashes</td>
+	<td>bytearray</td>
+	<td>512</td>
+	<td>User password hash, encrypted with the recovery key.</td>
+</tr>
+</tbody>
+</table>
+
+Further, at the [enrollment step](#enroll-user-record) you'll need to encrypt users' password hashes with the generated recovery public key and save them to the `encrypted_password_hashes` column.
+
 
 ## Usage Examples
 
@@ -121,20 +173,27 @@ The column must have the following parameters:
 
 Use this flow to create a `PureRecord` in your DB for a user.
 
-> Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your
- system to implement PHE technology. You can go through your database and enroll (create) a user's
- Pure `Record` at any time.
+> Remember, if you already have a database with user passwords, you don't have to wait until a user logs in into your system to implement PHE technology. You can go through your database and enroll (create) a user's Pure `Record` at any time.
 
 So, in order to create a Pure `Record` for a new database or available one, go through the following operations:
 - Take a user's **password** (or its hash or whatever you use) and pass it into the `EnrollAccount` function in a PureKit on your Server side.
 - PureKit will send a request to PureKit service to get enrollment.
 - Then, PureKit will create a user's Pure `Record`. You need to store this unique user's Pure `Record` in your database in associated column.
+- (optional) Encrypt your user password hashes with the recovery key generated in [Generate a recovery keypair](#generate-a-recovery-keypair) and save them to your database.
 
 ```php
 try {
-    $enroll = $protocol->enrollAccount($password)); // [record, encryption key]
+    $enroll = $protocol->enrollAccount($password); // [record, encryption key]
     $record = $enroll[0]; //save Pure Record to database
     $encryptionKey = $enroll[1]; //use encryption key for protecting user data
+
+    //use encryptionKey for protecting user data
+    $cipher = new PHE();
+    $encryptedUserData = $cipher->encrypt($data, $encryptionKey);
+
+    //(optional) use the generated recovery public key to encrypt a user password hash
+    //save encryptedPasswordHash into your database
+    $encryptedPasswordHash = $virgilCrypto->encrypt($password, $recoveryPublicKey);
 }
 catch(\Exception $e) {
     // Add your custom logic here
@@ -163,7 +222,7 @@ if($encryptionKey)
     // Login success
 ```
 
-## Encrypt user data in your database
+### Encrypt user data in your database
 
 Not only user's password is a sensitive data. In this flow we will help you to protect any Personally identifiable information (PII) in your database.
 
@@ -201,7 +260,7 @@ Encryption is performed using AES256-GCM with key & nonce derived from the user'
 
 Virgil Security has Zero knowledge about a user's `encryptionKey`, because the key is calculated every time when you execute `EnrollAccount` or `VerifyPassword` functions at your server side.
 
-## Rotate app keys and user PureRecord
+### Rotate app keys and user PureRecord
 There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this
 flow to get an `UPDATE_TOKEN` for updating user's `PureRecord` in your database and to get a new `APP_SECRET_KEY`
 and `SERVICE_PUBLIC_KEY` of a specific application.
@@ -276,6 +335,27 @@ APP_SECRET_KEY=
 UPDATE_TOKEN= //must be empty
 ```
 
+### Recover password hashes
+
+Use this step if you're uninstalling Pure. 
+
+Password hashes recovery is carried out by decrypting the encrypted users password hashes in your database and replacing the Pure records with them.
+
+In order to recover the original password hashes, you need to prepare your recovery private key. If you don't have a recovery key, then you have to ask your users to go through the registration process again to restore their passwords.
+
+Use your recovery private key to get original password hashes:
+
+```php
+$virgilCrypto = new VirgilCrypto();
+//iImport key
+$privateKeyImported = $virgilCrypto->importPrivateKey($privateKeyExported, $privateKeyPassword);
+
+// decrypt password hashes and save them in database
+$decrypted = $virgilCrypto->decrypt($encryptedPasswordHash, $privateKeyImported);
+```
+
+Save the decrypted users password hashes into your database. After the recovery process is done, you can delete all the Pure data and the recovery keypair.
+
 ## Additional information
 
 ### Add the crypto extensions into your server before using the PureKit
@@ -317,6 +397,8 @@ Our web stack is: *Linux, nginx, php7.2-fpm*
 `IS_VIRGIL_CRYPTO_PHP_EXTENSION_LOADED => true`):
     <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-3.png" 
     width="60%"></p>
+    
+
         
 ## Docs
 * [Virgil Dashboard](https://dashboard.virgilsecurity.com)
