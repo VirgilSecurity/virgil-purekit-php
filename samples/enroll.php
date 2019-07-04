@@ -47,6 +47,7 @@ try {
 
     printf("Generating Recovery Keys\n");
 
+    // This part should be done only once -->
     $keyPair = $virgilCrypto->generateKeys();
     $privateKey = $keyPair->getPrivateKey();
     $publicKey = $keyPair->getPublicKey();
@@ -54,9 +55,11 @@ try {
     // Store exported keys:
     $privateKeyExported = $virgilCrypto->exportPrivateKey($privateKey);
     $publicKeyExported = $virgilCrypto->exportPublicKey($publicKey);
+    // <-- This part should be done only once
 
     // Convert to PEM only for this sample
     $privateKeyPEM = VirgilKeyPair::privateKeyToPEM($privateKeyExported);
+
     printf("Storing Recovery Private Key to the $recoveryPrivateKeyFile file\n");
 
     $fp = fopen('recovery_private_key.pem', 'w');
@@ -64,12 +67,14 @@ try {
     fclose($fp);
 
     printf("Storing Recovery Public Key to the main_table.json\n");
-    $mainTable[0]->recovery_public_key = VirgilKeyPair::publicKeyToPEM($publicKeyExported);
+    $publicKeyPEM = VirgilKeyPair::publicKeyToPEM($publicKeyExported);
+
+    $mainTable[0]->recovery_public_key = $publicKeyPEM;
 
     // ENROLL AND ENCRYPT USER ACCOUNTS
 
     foreach ($userTable as $user) {
-        printf("Enrolling user '%s'", $user->username);
+        printf("Enrolling user '%s'\n", $user->username);
 
         // Ideally, you'll ask for users to create a new password, but
         // for this guide, we'll use existing password in DB
@@ -83,8 +88,7 @@ try {
         $user->ssn = base64_encode($phe->encrypt($user->ssn, $encryptionKey));
 
         // Import keys:
-        $privateKeyImported = $virgilCrypto->importPrivateKey($privateKeyExported);
-        $publicKeyImported = $virgilCrypto->importPublicKey($publicKeyExported);
+        $publicKeyImported = $virgilCrypto->importPublicKey($publicKeyPEM);
 
         $encrypted = $virgilCrypto->encrypt($user->passwordHash, [$publicKeyImported]);
         $user->encrypted = base64_encode($encrypted);

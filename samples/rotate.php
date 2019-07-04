@@ -35,7 +35,7 @@ try {
 
     // ROTATE USER RECORDS
 
-    $recordUpdater = new RecordUpdater($_ENV['SAMPLE_UPDATE_TOKEN']);
+    $recordUpdater = new RecordUpdater($_ENV['UPDATE_TOKEN']);
 
     foreach ($userTable as $user) {
         printf("Rotating '%s's record:\n", $user->username);
@@ -47,11 +47,10 @@ try {
         if (is_null($newRecord)) {
             // User record is already updated, don't save
             print("User record is already migrated\n");
-            break;
+        } else {
+            // Save record to database
+            $user->record = base64_encode($newRecord);
         }
-
-        // Save record to database
-        $user->record = base64_encode($newRecord);
 
         printf("\n");
         print_r($user);

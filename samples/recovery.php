@@ -72,12 +72,12 @@ try {
 
     // DECRYPT PASSWORD
 
-    $recoveryPrivateKeyDER = VirgilKeyPair::privateKeyToDER($recoveryPrivateKeyPEM);
-    $recoveryPrivateKey = $virgilCrypto->importPrivateKey($recoveryPrivateKeyDER);
+    $recoveryPrivateKey = $virgilCrypto->importPrivateKey($recoveryPrivateKeyPEM);
 
     foreach ($userTable as $user) {
         $encrypted = base64_decode($user->encrypted);
         $decrpyted = $virgilCrypto->decrypt($encrypted, $recoveryPrivateKey);
+
         $user->passwordHash = $decrpyted;
         $user->encrypted = "";
         $user->record = "";
