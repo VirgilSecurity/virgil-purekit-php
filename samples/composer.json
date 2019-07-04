@@ -1,7 +1,9 @@
 {
     "name": "virgil/virgil-phppurekit-test",
     "require": {
-        "virgil/purekit": "^2.1"
+        "virgil/purekit": "^2.1",
+        "virgil/crypto": "^5.0",
+        "vlucas/phpdotenv": "^2.5"
     },
     "authors": [
         {
