@@ -32,7 +32,8 @@ Before working with the SDK and usage examples, make sure that:
 
 
 ## Install and Configure PureKit
-The PureKit is provided as a package named `virgil/purekit`. The package is distributed via Composer and is available for PHP version 7.2.
+The PureKit is provided as a package named `virgil/purekit`. The package is distributed via Composer and is available
+ for PHP versions 7.2 and 7.3.
 
 
 ### Install the PureKit Package
