@@ -4,8 +4,6 @@
 
 namespace Purekit;
 
-use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -47,9 +45,9 @@ class EnrollmentResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 version = 1;</code>
-     * @param int $var
+     * @param $var
      * @return $this
+     * @throws \Exception
      */
     public function setVersion($var)
     {
@@ -69,9 +67,9 @@ class EnrollmentResponse extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes response = 2;</code>
-     * @param string $var
+     * @param $var
      * @return $this
+     * @throws \Exception
      */
     public function setResponse($var)
     {

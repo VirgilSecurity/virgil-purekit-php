@@ -35,61 +35,31 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Core;
+namespace Virgil\PureKit\_tests\feature;
 
-/**
- * Class PHECipher
- */
-class PHECipher
+use VirgilCrypto\Phe\PheCipher;
+
+class PheCipherTest extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @var
-     */
-    private $c_ctx;
+    protected $cipher;
 
-    /**
-     * PHECipher constructor.
-     * @return void
-     */
-    public function __construct()
+    protected function setUp()
     {
-        $this->c_ctx = vsce_phe_cipher_new_php();
+        $this->cipher = new PheCipher();
     }
 
-    /**
-     * PHECipher destructor.
-     * @return void
-     */
-    public function __destruct()
+    public function testFullFlowShouldSucceed()
     {
-        vsce_phe_cipher_delete_php($this->c_ctx);
-    }
+        $plainText = "plain text";
+        $accountKey = "Gjg-Ap7Qa5BjpuZ22FhZsairw^ZS5KjC"; // 32 bytes string
 
-    /**
-     * @return void
-     */
-    public function setupDefaults()
-    {
-        vsce_phe_cipher_setup_defaults_php($this->c_ctx);
-    }
+        $this->assertEquals(32, strlen($accountKey));
 
-    /**
-     * @param string $plainText
-     * @param string $accountKey
-     * @return string
-     */
-    public function encrypt(string $plainText, string $accountKey): string
-    {
-        return vsce_phe_cipher_encrypt_php($this->c_ctx, $plainText, $accountKey);
-    }
+        $this->cipher->setupDefaults();
 
-    /**
-     * @param string $cipherText
-     * @param string $accountKey
-     * @return string
-     */
-    public function decrypt(string $cipherText, string $accountKey): string
-    {
-        return vsce_phe_cipher_decrypt_php($this->c_ctx, $cipherText, $accountKey);
+        $encryptedData = $this->cipher->encrypt($plainText, $accountKey);
+        $decryptedData = $this->cipher->decrypt($encryptedData, $accountKey);
+
+        $this->assertEquals($plainText, $decryptedData);
     }
 }

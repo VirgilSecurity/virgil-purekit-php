@@ -6,7 +6,7 @@ use Dotenv\Dotenv;
 use Virgil\CryptoImpl\VirgilCrypto;
 use Virgil\PureKit\Protocol\Protocol;
 use Virgil\PureKit\Protocol\ProtocolContext;
-use Virgil\PureKit\Core\PHE;
+use VirgilCrypto\Phe\PheCipher;
 
 try {
     printf("Starting enroll...\n");
@@ -19,7 +19,7 @@ try {
     $recoveryPrivateKeyFile = "recovery_private_key.pem";
 
     $virgilCrypto = new VirgilCrypto();
-    $phe = new PHE();
+    $pheCipher = new PheCipher();
 
     // INITIALIZE PUREKIT
 
@@ -57,19 +57,15 @@ try {
     $publicKeyExported = $virgilCrypto->exportPublicKey($publicKey);
     // <-- This part should be done only once
 
-    // Convert to PEM only for this sample
-    $privateKeyPEM = VirgilKeyPair::privateKeyToPEM($privateKeyExported);
-
     printf("Storing Recovery Private Key to the $recoveryPrivateKeyFile file\n");
 
     $fp = fopen('recovery_private_key.pem', 'w');
-    fwrite($fp, $privateKeyPEM);
+    fwrite($fp, $privateKeyExported);
     fclose($fp);
 
     printf("Storing Recovery Public Key to the main_table.json\n");
-    $publicKeyPEM = VirgilKeyPair::publicKeyToPEM($publicKeyExported);
 
-    $mainTable[0]->recovery_public_key = $publicKeyPEM;
+    $mainTable[0]->recovery_public_key = $publicKeyExported;
 
     // ENROLL AND ENCRYPT USER ACCOUNTS
 
@@ -85,10 +81,10 @@ try {
 
         // Use encryptionKey for protecting user data & save in database
         $encryptionKey = $enroll[1];
-        $user->ssn = base64_encode($phe->encrypt($user->ssn, $encryptionKey));
+        $user->ssn = base64_encode($pheCipher->encrypt($user->ssn, $encryptionKey));
 
         // Import keys:
-        $publicKeyImported = $virgilCrypto->importPublicKey($publicKeyPEM);
+        $publicKeyImported = $virgilCrypto->importPublicKey($publicKeyExported);
 
         $encrypted = $virgilCrypto->encrypt($user->passwordHash, [$publicKeyImported]);
         $user->encrypted = base64_encode($encrypted);
@@ -124,11 +120,11 @@ try {
 
     $homeAddress = "1600 Pennsylvania Ave NW, Washington, DC 20500, USA";
     // Use encryption key for encrypting user data
-    $encryptedAddress = $phe->encrypt($homeAddress, $encryptionKey);
+    $encryptedAddress = $pheCipher->encrypt($homeAddress, $encryptionKey);
     printf("'%s's encrypted home address:\n%s\n", $userTable[0]->username, base64_encode($encryptedAddress));
 
     // Use encryption key for decrypting user data
-    $decryptedAddress = $phe->decrypt($encryptedAddress, $encryptionKey);
+    $decryptedAddress = $pheCipher->decrypt($encryptedAddress, $encryptionKey);
     printf("'%s's home address:\n%s\n", $userTable[0]->username, $decryptedAddress);
 
     printf("Finished.\n");

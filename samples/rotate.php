@@ -12,7 +12,6 @@ try {
     // MAIN CONFIGURATION
 
     $userTableExample = 'user_table.json';
-    $virgilCrypto = new VirgilCrypto();
 
     // INITIALIZE PUREKIT FOR UPDATE
 

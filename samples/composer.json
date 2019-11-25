@@ -3,7 +3,8 @@
     "require": {
         "virgil/purekit": "^2.1",
         "virgil/crypto": "^5.0",
-        "vlucas/phpdotenv": "^2.5"
+        "vlucas/phpdotenv": "^2.5",
+        "ext-json": "*"
     },
     "authors": [
         {

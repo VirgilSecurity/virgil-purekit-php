@@ -37,10 +37,10 @@
 
 namespace Virgil\PureKit\Protocol;
 
-use Virgil\PureKit\Core\PHEClient;
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Virgil\PureKit\Credentials\UpdateToken;
 use Virgil\PureKit\Exceptions\RecordUpdaterException;
+use VirgilCrypto\Phe\PheClient;
 
 /**
  *
@@ -62,7 +62,7 @@ class RecordUpdater
      */
     public function __construct(string $updateToken)
     {
-        $this->pheClient = new PHEClient();
+        $this->pheClient = new PheClient();
         $this->pheClient->setupDefaults();
         $this->updateToken = new UpdateToken($updateToken);
     }

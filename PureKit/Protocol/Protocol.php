@@ -37,8 +37,6 @@
 
 namespace Virgil\PureKit\Protocol;
 
-use Virgil\PureKit\Core\PHECipher;
-use Virgil\PureKit\Core\PHEClient;
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Purekit\EnrollmentResponse;
 use Virgil\PureKit\Exceptions\ProtocolException;
@@ -47,6 +45,8 @@ use Virgil\PureKit\Http\HttpClient;
 use Virgil\PureKit\Http\Request\EnrollRequest;
 use Virgil\PureKit\Http\Request\VerifyPasswordRequest;
 use Purekit\VerifyPasswordResponse;
+use VirgilCrypto\Phe\PheCipher;
+use VirgilCrypto\Phe\PheClient;
 
 /**
  *
@@ -85,7 +85,7 @@ class Protocol implements AvailableProtocol
     public function __construct(ProtocolContext $context)
     {
         $this->httpClient = new HttpClient();
-        $this->PHECipher = new PHECipher();
+        $this->PHECipher = new PheCipher();
         $this->context = $context;
     }
 
@@ -206,27 +206,29 @@ class Protocol implements AvailableProtocol
      * @param string $plainText
      * @param string $accountKey
      * @return string
+     * @throws \Exception
      */
     public function encrypt(string $plainText, string $accountKey): string
     {
         $this->getPHECipher()->setupDefaults();
-        return $this->getPHECipher()->encrypt($plainText, $accountKey);
+        return $this->getPheCipher()->encrypt($plainText, $accountKey);
     }
 
     /**
      * @param string $cipherText
      * @param string $accountKey
      * @return string
+     * @throws \Exception
      */
     public function decrypt(string $cipherText, string $accountKey): string
     {
-        return $this->getPHECipher()->decrypt($cipherText, $accountKey);
+        return $this->getPheCipher()->decrypt($cipherText, $accountKey);
     }
 
     /**
-     * @return PHECipher
+     * @return PheCipher
      */
-    private function getPHECipher(): PHECipher
+    private function getPHECipher(): PheCipher
     {
         return $this->PHECipher;
     }
@@ -240,9 +242,9 @@ class Protocol implements AvailableProtocol
     }
 
     /**
-     * @return PHEClient
+     * @return PheClient
      */
-    private function getPHEClient(): PHEClient
+    private function getPHEClient(): PheClient
     {
         return $this->context->getPHEImpl();
     }

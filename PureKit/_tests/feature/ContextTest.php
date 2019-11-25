@@ -54,9 +54,9 @@ class ContextTest extends \PHPUnit\Framework\TestCase
     private function getKey(int $key)
     {
         return [
-            'PK' => "PK.$key.{$_ENV["CONTEXT_SERVICE_PUBLIC_KEY"]}",
-            'SK' => "SK.$key.{$_ENV["CONTEXT_APP_SECRET_KEY"]}",
-            'UT' => "UT.$key.{$_ENV["CONTEXT_UPDATE_TOKEN"]}"
+            'PK' => "PK.$key.{$_ENV["SERVICE_PUBLIC_KEY"]}",
+            'SK' => "SK.$key.{$_ENV["APP_SECRET_KEY"]}",
+            'UT' => "UT.$key.{$_ENV["UPDATE_TOKEN"]}"
         ];
     }
 

@@ -37,9 +37,9 @@
 
 namespace Virgil\PureKit\Protocol;
 
-use Virgil\PureKit\Core\PHEClient;
 use Virgil\PureKit\Credentials\InputCredentialsChecker;
 use Virgil\PureKit\Exceptions\ProtocolContextException;
+use VirgilCrypto\Phe\PheClient;
 
 /**
  * Class ProtocolContext
@@ -103,7 +103,7 @@ class ProtocolContext
         try {
             $this->setPHEClient($this->getAppSecretKey(), $this->getServicePublicKey(), $this->getUpdateToken());
         } catch (\Exception $e) {
-            throw new ProtocolContextException("Protocol error with PHE client constructor or setKeys method (code: {$e->getCode()}");
+            throw new ProtocolContextException("Protocol error with PHE client constructor or setKeys method (code: {$e->getCode()})");
         }
     }
 
@@ -215,9 +215,9 @@ class ProtocolContext
     }
 
     /**
-     * @return PHEClient
+     * @return \Virgil\PureKit\Protocol\PheClient
      */
-    public function getPHEImpl(): PHEClient
+    public function getPheImpl(): PheClient
     {
         return $this->pheImpl;
     }
@@ -230,7 +230,7 @@ class ProtocolContext
      */
     private function setPHEClient(string $appSecretKey, string $servicePublicKey, string $updateToken = null): void
     {
-        $PHEClient = new PHEClient();
+        $PHEClient = new PheClient();
         $PHEClient->setupDefaults();
         $PHEClient->setKeys($appSecretKey, $servicePublicKey);
 
@@ -241,7 +241,7 @@ class ProtocolContext
 
             $this->newRawKeys = $newKeys;
 
-            $nextPHEClient = new PHEClient();
+            $nextPHEClient = new PheClient();
             $nextPHEClient->setupDefaults();
             $nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
 
