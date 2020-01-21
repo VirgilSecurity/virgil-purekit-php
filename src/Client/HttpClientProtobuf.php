@@ -40,5 +40,10 @@ namespace Virgil\PureKit\Client;
 
 class HttpClientProtobuf
 {
+    private $serviceBaseUrl;
 
+    public function __construct(string $serviceBaseUrl)
+    {
+        $this->serviceBaseUrl = $serviceBaseUrl;
+    }
 }

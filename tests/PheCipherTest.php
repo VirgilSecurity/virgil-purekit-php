@@ -43,7 +43,7 @@ class PheCipherTest extends \PHPUnit\Framework\TestCase
 {
     protected $cipher;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->cipher = new PheCipher();
     }

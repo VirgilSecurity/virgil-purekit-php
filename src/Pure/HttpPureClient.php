@@ -38,14 +38,16 @@
 namespace Virgil\PureKit\Pure;
 
 
+use Virgil\PureKit\Client\HttpClientProtobuf;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class HttpPheClient
+class HttpPureClient
 {
     private $appToken;
     private $client;
 
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1";
+    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1";
+    public const KEY_CASCADE = "cascade";
 
     public function __construct(string $appToken, string $serviceAddress)
     {

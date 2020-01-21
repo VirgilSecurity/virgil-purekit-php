@@ -38,21 +38,22 @@
 namespace Virgil\PureKit\Pure;
 
 
+use Virgil\CryptoImpl\Core\VirgilKeyPair;
+use Virgil\CryptoImpl\VirgilCrypto;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class HttpPheClient
+class VirgilCloudPureStorage
 {
-    private $appToken;
+    private $pureModelSerializer;
     private $client;
 
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1";
-
-    public function __construct(string $appToken, string $serviceAddress)
+    public function __construct(VirgilCrypto $crypto, HttpPureClient $client, VirgilKeyPair $signingKey)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceAddress, "serviceAddress");
+        ValidateUtil::checkNull($crypto, "crypto");
+        ValidateUtil::checkNull($client, "client");
+        ValidateUtil::checkNull($signingKey, "signingKey");
 
-        $this->appToken = $appToken;
-        $this->client = new HttpClientProtobuf($serviceAddress);
+        $this->pureModelSerializer = new PureModelSerializer($crypto, $signingKey);
+        $this->client = $client;
     }
 }

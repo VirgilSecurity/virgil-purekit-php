@@ -52,7 +52,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
     protected $recordUpdater = [];
     protected $projects = [];
 
-    protected function setUp()
+    protected function setUp(): void
     {
         (new Dotenv(__DIR__ . "/../../virgil-purekit-php/"))->load();
         $this->projects = explode(',',$_ENV['PROJECTS']);
