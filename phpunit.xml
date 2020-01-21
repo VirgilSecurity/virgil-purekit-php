@@ -1,7 +1,11 @@
-<phpunit bootstrap="./PureKit/_tests/bootstrap.php" colors="true">
-    <testsuites>
-        <testsuite name="UnitTests">
-            <directory>./PureKit/_tests/</directory>
-        </testsuite>
-    </testsuites>
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php"
+         colors="true"
+         verbose="true"
+         stopOnFailure="false">
+<testsuites>
+    <testsuite name="tests">
+        <directory>tests/</directory>
+    </testsuite>
+</testsuites>
 </phpunit>

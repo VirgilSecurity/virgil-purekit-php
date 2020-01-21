@@ -35,6 +35,20 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-error_reporting(E_ALL);
+namespace Virgil\PureKit\Pure\Exception;
 
-require __DIR__ . '/../../vendor/autoload.php';
+
+class PureLogicException extends PureException
+{
+    private $errorStatus;
+
+    public function __construct(ErrorStatus $errorStatus)
+    {
+        $this->errorStatus = $errorStatus;
+    }
+
+    public function getErrorStatus(): ErrorStatus
+    {
+        return $this->errorStatus;
+    }
+}

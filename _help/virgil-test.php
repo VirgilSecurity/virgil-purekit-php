@@ -2,10 +2,8 @@
 
 const VSCF_FOUNDATION_PHP = "vscf_foundation_php";
 const VSCE_PHE_PHP = "vsce_phe_php";
-const VSCP_PYTHIA_PHP = "vscp_pythia_php";
-const VSCR_RATCHET_PHP = "vscr_ratchet_php";
 
-const EXT_LIST = [VSCF_FOUNDATION_PHP, VSCE_PHE_PHP, VSCP_PYTHIA_PHP, VSCR_RATCHET_PHP];
+const EXT_LIST = [VSCF_FOUNDATION_PHP, VSCE_PHE_PHP];
 
 function getScannedIniDir()
 {

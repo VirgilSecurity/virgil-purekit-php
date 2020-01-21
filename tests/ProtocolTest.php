@@ -54,7 +54,7 @@ class ProtocolTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        (new Dotenv(__DIR__ . "/../../../"))->load();
+        (new Dotenv(__DIR__ . "/../../virgil-purekit-php/"))->load();
         $this->projects = explode(',',$_ENV['PROJECTS']);
 
         $this->password = "password123456";
