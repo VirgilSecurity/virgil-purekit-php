@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,13 +37,23 @@
 
 namespace Virgil\PureKit\Pure\Util;
 
-
 use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
 use Virgil\PureKit\Pure\Exception\IllegalStateException;
 use Virgil\PureKit\Pure\Exception\NullArgumentException;
 
+/**
+ * Class ValidateUtil
+ * @package Virgil\PureKit\Pure\Util
+ */
 class ValidateUtil
 {
+    /**
+     * @param string $argument
+     * @param string $name
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
+     */
     public static function checkNullOrEmpty(string $argument, string $name)
     {
         if (is_null($name))
@@ -56,6 +66,12 @@ class ValidateUtil
             throw new EmptyArgumentException($name);
     }
 
+    /**
+     * @param string $argument
+     * @param string $name
+     * @throws IllegalStateException
+     * @throws NullArgumentException
+     */
     public static function checkNull(string $argument, string $name)
     {
         if (is_null($name))

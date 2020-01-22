@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Pure\model;
 
 use Virgil\CryptoImpl\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Helper\Date;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class PureGrant
@@ -48,7 +47,7 @@ class PureGrant
     private $sessionId;
     private $creationDate;
 
-    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId, Date $creationDate)
+    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId, \DateTime $creationDate)
     {
         ValidateUtil::checkNull($ukp, "ukp");
         ValidateUtil::checkNullOrEmpty($userId, "userId");
@@ -75,7 +74,7 @@ class PureGrant
         return $this->sessionId;
     }
 
-    public function getCreationDate(): Date
+    public function getCreationDate(): \DateTime
     {
         return $this->creationDate;
     }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,10 +35,59 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Helper;
+namespace Virgil\PureKit\Core\Protobuf;
 
+use Purekit\DatabaseRecord as ProtobufDatabaseRecord;
+use Virgil\PureKit\Exceptions\ProtocolContextException;
 
-class Date
+/**
+ * Class DatabaseRecord
+ * @package Virgil\PureKit\Core\Protobuf
+ */
+class DatabaseRecord
 {
+    /**
+     * @return ProtobufDatabaseRecord
+     */
+    private static function initInstance()
+    {
+        return new ProtobufDatabaseRecord();
+    }
 
+    /**
+     * @param string $value
+     * @param string $type
+     * @return string
+     * @throws ProtocolContextException
+     */
+    public static function getValue(string $value, string $type): string
+    {
+        $typeArr = ['record', 'version'];
+
+        if(!in_array($type, $typeArr))
+            throw new ProtocolContextException("Incorrect type value");
+
+        $db = self::initInstance();
+        $db->mergeFromString($value);
+
+        $res["record"] = $db->getRecord();
+        $res["version"] = $db->getVersion();
+
+        return $res[$type];
+    }
+
+    /**
+     * @param string $value
+     * @param int $version
+     * @return string
+     * @throws \Exception
+     */
+    public static function setup(string $value, int $version): string
+    {
+        $dbRecord = self::initInstance();
+        $dbRecord->setRecord($value);
+        $dbRecord->setVersion($version);
+
+        return $dbRecord->serializeToString();
+    }
 }

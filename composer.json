@@ -26,7 +26,12 @@
     "psr-4": {
       "Virgil\\PureKit\\": "src",
       "src\\": "src/Core/Protobuf/build/Purekit",
-      "GPBMetadata\\": "src/Core/Protobuf/build/GPBMetadata"
+      "GPBMetadata\\": "src/Protobuf/build/GPBMetadata",
+      "Purekit\\": "src/Protobuf/build/Purekit",
+      "PurekitV3Client\\": "src/Protobuf/build/PurekitV3Client",
+      "PurekitV3Crypto\\": "src/Protobuf/build/PurekitV3Crypto",
+      "PurekitV3Grant\\": "src/Protobuf/build/PurekitV3Grant",
+      "PurekitV3Storage\\": "src/Protobuf/build/PurekitV3Storage"
     }
   },
   "autoload-dev": {
