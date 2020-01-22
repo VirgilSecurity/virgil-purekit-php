@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -38,7 +38,15 @@
 namespace Virgil\PureKit\Pure\Collection;
 
 
-class UserRecordCollection extends BaseCollection
+class BaseCollection
 {
+    protected $collection;
 
+    /**
+     * @return array
+     */
+    public function getAsArray(): array
+    {
+        return [];
+    }
 }

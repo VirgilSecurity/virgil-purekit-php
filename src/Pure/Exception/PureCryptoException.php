@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,10 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Collection;
+namespace Virgil\PureKit\Pure\Exception;
 
 
-class UserRecordCollection extends BaseCollection
+class PureCryptoException extends PureException
 {
 
 }

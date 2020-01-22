@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure\Collection;
 
 
-class RoleCollection
+class RoleCollection extends BaseCollection
 {
 
 }

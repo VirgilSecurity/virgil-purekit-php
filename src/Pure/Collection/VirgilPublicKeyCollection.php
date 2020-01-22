@@ -38,7 +38,12 @@
 namespace Virgil\PureKit\Pure\Collection;
 
 
-class VirgilPublicKeyCollection
-{
+use Virgil\CryptoImpl\Core\VirgilPublicKey;
 
+class VirgilPublicKeyCollection extends BaseCollection
+{
+    public function add(VirgilPublicKey $virgilPublicKey): void
+    {
+        $this->collection[] = $virgilPublicKey;
+    }
 }
