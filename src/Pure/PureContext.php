@@ -230,7 +230,7 @@ class PureContext
      * @throws PureLogicException
      * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
      */
-    private static function createContext(VirgilCrypto $crypto, string $appToken, string $ak, string $bu, string $hb,
+    public static function createContext(VirgilCrypto $crypto, string $appToken, string $ak, string $bu, string $hb,
                                           string $os, string $sk, string $pk, PureStorage $storage,
                                           VirgilPublicKeyCollection $externalPublicKeys,
                                           string $pheServiceAddress): PureContext

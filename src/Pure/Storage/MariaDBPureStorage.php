@@ -38,7 +38,13 @@
 namespace Virgil\PureKit\Pure\Storage;
 
 
-class MariaDBStorage
-{
+use Virgil\PureKit\Pure\PureModelSerializer;
 
+class MariaDBPureStorage
+{
+    public function __construct(string $addr, PureModelSerializer $modelSerializer)
+    {
+        $this->addr = $addr;
+        $this->modelSerializer = $modelSerializer;
+    }
 }

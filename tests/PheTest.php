@@ -42,7 +42,7 @@ use Virgil\PureKit\Phe\Protocol;
 use Virgil\PureKit\Phe\ProtocolContext;
 use Virgil\PureKit\Phe\RecordUpdater;
 
-class ProtocolTest extends \PHPUnit\Framework\TestCase
+class PheTest extends \PHPUnit\Framework\TestCase
 {
     protected $protocol;
     protected $protocol1;

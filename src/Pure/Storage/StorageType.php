@@ -38,7 +38,11 @@
 namespace Virgil\PureKit\Pure\Storage;
 
 
-class RamStorage
-{
+use MyCLabs\Enum\Enum;
 
+class StorageType extends Enum
+{
+    private const RAM = "RAM";
+    private const VIRGIL_CLOUD = "VirgilCloud";
+    private const MARIADB = "MariaDB";
 }
