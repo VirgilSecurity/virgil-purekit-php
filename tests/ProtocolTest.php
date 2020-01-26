@@ -38,9 +38,9 @@
 use Dotenv\Dotenv;
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Virgil\PureKit\Exceptions\ProtocolException;
-use Virgil\PureKit\Protocol\Protocol;
-use Virgil\PureKit\Protocol\ProtocolContext;
-use Virgil\PureKit\Protocol\RecordUpdater;
+use Virgil\PureKit\Phe\Protocol;
+use Virgil\PureKit\Phe\ProtocolContext;
+use Virgil\PureKit\Phe\RecordUpdater;
 
 class ProtocolTest extends \PHPUnit\Framework\TestCase
 {

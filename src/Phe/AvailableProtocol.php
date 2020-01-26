@@ -35,47 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\model;
+namespace Virgil\PureKit\Phe;
 
 /**
- * Class Role
- * @package Virgil\PureKit\Pure\model
+ * Interface AvailableProtocol
+ * @package Virgil\PureKit\Protocol
  */
-class Role
+interface AvailableProtocol
 {
-    /**
-     * @var string
-     */
-    private $roleName;
-    /**
-     * @var string
-     */
-    private $rpk;
-
-    /**
-     * Role constructor.
-     * @param string $roleName
-     * @param string $rpk
-     */
-    public function __construct(string $roleName, string $rpk)
-    {
-        $this->roleName = $roleName;
-        $this->rpk = $rpk;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRoleName(): string
-    {
-        return $this->roleName;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRpk(): string
-    {
-        return $this->getRpk();
-    }
+    const ENDPOINTS = ['enrollAccount', 'verifyPassword', 'updateEnrollmentRecord'];
 }

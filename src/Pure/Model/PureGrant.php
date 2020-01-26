@@ -35,11 +35,47 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Response;
+namespace Virgil\PureKit\Pure\Model;
 
-use GuzzleHttp\Psr7\Response;
+use Virgil\CryptoImpl\Core\VirgilKeyPair;
+use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class BaseHttpResponse extends Response
+class PureGrant
 {
+    private $ukp;
+    private $userId;
+    private $sessionId;
+    private $creationDate;
 
+    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId, \DateTime $creationDate)
+    {
+        ValidateUtil::checkNull($ukp, "ukp");
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNull($creationDate, "creationDate");
+
+        $this->ukp = $ukp;
+        $this->userId = $userId;
+        $this->sessionId = $sessionId;
+        $this->creationDate = $creationDate;
+    }
+
+    public function getUpk(): VirgilKeyPair
+    {
+        return $this->ukp;
+    }
+
+    public function getUserId(): string
+    {
+        return $this->userId;
+    }
+
+    public function getSessionId(): string
+    {
+        return $this->sessionId;
+    }
+
+    public function getCreationDate(): \DateTime
+    {
+        return $this->creationDate;
+    }
 }

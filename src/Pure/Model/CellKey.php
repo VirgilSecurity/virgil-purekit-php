@@ -35,51 +35,48 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http;
+namespace Virgil\PureKit\Pure\Model;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Psr7\Response;
-use Virgil\PureKit\Http\Request\BaseRequest;
 
-/**
- * Class HttpClient
- * @package Virgil\PureKit\Http
- */
-class HttpClient
+class CellKey
 {
-    /**
-     * @var GuzzleClient
-     */
-    protected $httpClient;
-    /**
-     * @var
-     */
-    private $request;
+    private $userId;
+    private $dataId;
+    private $cpk;
+    private $encryptedCskCms;
+    private $encryptedCskBody;
 
-    /**
-     * HttpClient constructor.
-     */
-    public function __construct()
+    public function __construct(string $userId, string $dataId, string $cpk, string $encryptedCskCms, string $encryptedCskBody)
     {
-        $this->httpClient = new GuzzleClient();
+        $this->userId = $userId;
+        $this->dataId = $dataId;
+        $this->cpk = $cpk;
+        $this->encryptedCskCms = $encryptedCskCms;
+        $this->encryptedCskBody = $encryptedCskBody;
     }
 
-    /**
-     * @param BaseRequest $request
-     */
-    public function setRequest(BaseRequest $request)
+    public function getUserId(): string
     {
-        $this->request = $request;
+        return $this->userId;
     }
 
-    /**
-     * @param bool $debug
-     * @return Response
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function getResponse(bool $debug=false): Response
+    public function getDataId(): string
     {
-        return $this->httpClient->request($this->request->getMethod(), $this->request->getUri(),
-            ["headers" => $this->request->getOptionsHeader(), "body" => $this->request->getOptionsBody(), 'debug' => $debug]);
+        return $this->dataId;
+    }
+
+    public function getCpk(): string
+    {
+        return $this->cpk;
+    }
+
+    public function getEncryptedCskCms(): string
+    {
+        return $this->encryptedCskCms;
+    }
+
+    public function getEncryptedCskBody(): string
+    {
+        return $this->encryptedCskBody;
     }
 }

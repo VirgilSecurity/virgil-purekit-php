@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\PureKit\Pure\model\PureGrant;
+use Virgil\PureKit\Pure\Model\PureGrant;
 
 /**
  * Class AuthResult

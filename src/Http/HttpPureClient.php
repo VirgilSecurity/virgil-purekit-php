@@ -38,14 +38,22 @@
 namespace Virgil\PureKit\Pure;
 
 
+use Virgil\PureKit\Client\AvailableRequests;
+use Virgil\PureKit\Credentials\UpdateToken;
+use Virgil\PureKit\Http\HttpClient;
+use Virgil\PureKit\Http\Request\GetUsersRequest;
+use Virgil\PureKit\Http\Request\InsertUserRequest;
+use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
+use PurekitV3Storage\UserRecords as ProtoUserRecords;
 
-class HttpPheClient
+class HttpPureClient
 {
     private $appToken;
     private $client;
 
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1";
+    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1";
+    public const KEY_CASCADE = "cascade";
 
     public function __construct(string $appToken, string $serviceAddress)
     {
@@ -53,6 +61,22 @@ class HttpPheClient
         ValidateUtil::checkNullOrEmpty($serviceAddress, "serviceAddress");
 
         $this->appToken = $appToken;
-        $this->client = new HttpClientProtobuf($serviceAddress);
+        $this->client = new HttpClient($serviceAddress);
+    }
+
+    public function insertUser(InsertUserRequest $request): void
+    {
+        $this->client->send($request, AvailableRequests::INSERT_USER(), $this->appToken);
+    }
+
+    public function updateUser(UpdateUserRequest $request): void
+    {
+        $this->client->send($request, AvailableRequests::UPDATE_USER(), $this->appToken);
+    }
+
+    // TODO!
+    public function getUsers(GetUsersRequest $request): ProtoUserRecords
+    {
+        return $this->client->send($request, AvailableRequests::GET_USERS(), $this->appToken);
     }
 }

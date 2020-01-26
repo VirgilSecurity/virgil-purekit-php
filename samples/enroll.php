@@ -4,8 +4,8 @@ require_once 'vendor/autoload.php';
 
 use Dotenv\Dotenv;
 use Virgil\CryptoImpl\VirgilCrypto;
-use Virgil\PureKit\Protocol\Protocol;
-use Virgil\PureKit\Protocol\ProtocolContext;
+use Virgil\PureKit\Phe\Protocol;
+use Virgil\PureKit\Phe\ProtocolContext;
 use VirgilCrypto\Phe\PheCipher;
 
 try {

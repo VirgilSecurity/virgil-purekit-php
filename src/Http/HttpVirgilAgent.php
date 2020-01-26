@@ -45,17 +45,14 @@ class HttpVirgilAgent
 {
     const PRODUCT = 'purekit';
     const FAMILY = 'php';
-    const VERSION = '2.1.1'; // TODO: Add composer.lock parser!
-
-    private $platform;
+    const VERSION = '3.0.0'; // TODO: Add composer.lock parser!
 
     /**
      * @return string
      */
     private function getPlatform(): string
     {
-        $this->platform = strtolower(php_uname('s'));
-        return $this->platform;
+        return strtolower(php_uname('s'));
     }
 
     /**
@@ -71,6 +68,7 @@ class HttpVirgilAgent
      */
     public function getFormatString(): string
     {
-        return self::PRODUCT . ";" . self::FAMILY . ";" . $this->getPlatform() . ";" . self::VERSION;
+        return self::PRODUCT . ";" . self::FAMILY . $this->getPHPVersion() . ";" . $this->getPlatform() . ";" .
+    self::VERSION;
     }
 }

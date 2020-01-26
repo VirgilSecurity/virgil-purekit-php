@@ -35,9 +35,48 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Response;
+namespace Virgil\PureKit\Pure;
 
-class VerifyPasswordResponse extends BaseHttpResponse
+use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
+use Purekit\EnrollmentResponse as ProtoEnrollmentResponse;
+use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
+use Purekit\VerifyPasswordResponse as ProtoVerifyPasswordResponse;
+use Virgil\PureKit\Client\AvailableRequests;
+use Virgil\PureKit\Http\BaseHttpClient;
+use Virgil\PureKit\Http\Request\EnrollRequest;
+use Virgil\PureKit\Http\Request\TttRequest;
+use Virgil\PureKit\Http\Request\VerifyPasswordRequest;
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
+class HttpPheClient extends BaseHttpClient
 {
+    protected $appToken;
+    private $client;
 
+    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1";
+
+    public function __construct(string $appToken, string $sa = self::SERVICE_ADDRESS)
+    {
+        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
+        ValidateUtil::checkNullOrEmpty(self::SERVICE_ADDRESS, "serviceAddress");
+
+        parent::__construct(self::SERVICE_ADDRESS, $appToken);
+    }
+
+    public function test(TttRequest $request)
+    {
+        return $this->send($request);
+    }
+
+    public function enrollAccount(EnrollRequest $request): ProtoEnrollmentResponse
+    {
+        $response = $this->send($request);
+        $response->getBody();
+        return $response->getBody();
+    }
+
+    public function verifyPassword(VerifyPasswordRequest $request): ProtoVerifyPasswordResponse
+    {
+        return $this->client->send($request, AvailableRequests::VERIFY_PASSWORD(), $this->appToken);
+    }
 }

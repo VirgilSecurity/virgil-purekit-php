@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,41 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\model;
+namespace Virgil\PureKit\Http\Request;
 
 
-class RoleAssignment
+class InsertUserRequest extends BaseRequest
 {
-    private $roleName;
-    private $userId;
-    private $publicKeyId;
-    private $encryptedRsk;
-
-    public function __construct(string $roleName, string $userId, string $publicKeyId, string $encryptedRsk)
+    public function formatBody(): string
     {
-        $this->roleName = $roleName;
-        $this->userId = $userId;
-        $this->publicKeyId = $publicKeyId;
-        $this->encryptedRsk = $encryptedRsk;
-    }
-
-    public function getRoleName(): string
-    {
-        return $this->roleName;
-    }
-
-    public function getUserId(): string
-    {
-        return $this->userId;
-    }
-
-    public function getPublicKeyId(): string
-    {
-        return $this->publicKeyId;
-    }
-
-    public function getEncryptedRsk(): string
-    {
-        return $this->encryptedRsk;
+        // TODO: Implement formatBody() method.
     }
 }

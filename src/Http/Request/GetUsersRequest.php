@@ -35,26 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Http\Request;
 
 
-use Virgil\PureKit\Client\HttpClientProtobuf;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
-
-class HttpPureClient
+class GetUsersRequest extends BaseRequest
 {
-    private $appToken;
-    private $client;
-
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1";
-    public const KEY_CASCADE = "cascade";
-
-    public function __construct(string $appToken, string $serviceAddress)
+    public function formatBody(): string
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceAddress, "serviceAddress");
-
-        $this->appToken = $appToken;
-        $this->client = new HttpClientProtobuf($serviceAddress);
+        // TODO: Implement formatBody() method.
     }
 }

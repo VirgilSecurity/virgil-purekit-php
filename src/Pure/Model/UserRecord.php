@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\model;
+namespace Virgil\PureKit\Pure\Model;
 
 /**
  * Class UserRecord

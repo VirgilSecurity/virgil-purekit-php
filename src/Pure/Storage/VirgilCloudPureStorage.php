@@ -35,13 +35,33 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Protocol;
+namespace Virgil\PureKit\Pure;
 
-/**
- * Interface AvailableProtocol
- * @package Virgil\PureKit\Protocol
- */
-interface AvailableProtocol
+
+use Virgil\CryptoImpl\Core\VirgilKeyPair;
+use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
+class VirgilCloudPureStorage
 {
-    const ENDPOINTS = ['enrollAccount', 'verifyPassword', 'updateEnrollmentRecord'];
+    private $pureModelSerializer;
+    private $client;
+
+    /**
+     * VirgilCloudPureStorage constructor.
+     * @param VirgilCrypto $crypto
+     * @param HttpPureClient $client
+     * @param VirgilKeyPair $signingKey
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     */
+    public function __construct(VirgilCrypto $crypto, HttpPureClient $client, VirgilKeyPair $signingKey)
+    {
+        ValidateUtil::checkNull($crypto, "crypto");
+        ValidateUtil::checkNull($client, "client");
+        ValidateUtil::checkNull($signingKey, "signingKey");
+
+        $this->pureModelSerializer = new PureModelSerializer($crypto, $signingKey);
+        $this->client = $client;
+    }
 }

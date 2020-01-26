@@ -38,6 +38,7 @@
 namespace Virgil\PureKit\Http\Request;
 
 use Purekit\EnrollmentRequest as ProtobufEnrollmentRequest;
+use Virgil\PureKit\Client\AvailableRequests;
 
 class EnrollRequest extends BaseRequest
 {
@@ -52,9 +53,8 @@ class EnrollRequest extends BaseRequest
      * @param int $version
      * @param $appToken
      */
-    public function __construct(string $endpoint, int $version, $appToken)
+    public function __construct(AvailableRequests $endpoint, int $version)
     {
-        $this->appToken = $appToken;
         $this->version = $version;
         parent::__construct($endpoint);
     }

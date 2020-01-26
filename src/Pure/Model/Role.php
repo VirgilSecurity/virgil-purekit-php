@@ -35,48 +35,47 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\model;
+namespace Virgil\PureKit\Pure\Model;
 
-
-class CellKey
+/**
+ * Class Role
+ * @package Virgil\PureKit\Pure\model
+ */
+class Role
 {
-    private $userId;
-    private $dataId;
-    private $cpk;
-    private $encryptedCskCms;
-    private $encryptedCskBody;
+    /**
+     * @var string
+     */
+    private $roleName;
+    /**
+     * @var string
+     */
+    private $rpk;
 
-    public function __construct(string $userId, string $dataId, string $cpk, string $encryptedCskCms, string $encryptedCskBody)
+    /**
+     * Role constructor.
+     * @param string $roleName
+     * @param string $rpk
+     */
+    public function __construct(string $roleName, string $rpk)
     {
-        $this->userId = $userId;
-        $this->dataId = $dataId;
-        $this->cpk = $cpk;
-        $this->encryptedCskCms = $encryptedCskCms;
-        $this->encryptedCskBody = $encryptedCskBody;
+        $this->roleName = $roleName;
+        $this->rpk = $rpk;
     }
 
-    public function getUserId(): string
+    /**
+     * @return string
+     */
+    public function getRoleName(): string
     {
-        return $this->userId;
+        return $this->roleName;
     }
 
-    public function getDataId(): string
+    /**
+     * @return string
+     */
+    public function getRpk(): string
     {
-        return $this->dataId;
-    }
-
-    public function getCpk(): string
-    {
-        return $this->cpk;
-    }
-
-    public function getEncryptedCskCms(): string
-    {
-        return $this->encryptedCskCms;
-    }
-
-    public function getEncryptedCskBody(): string
-    {
-        return $this->encryptedCskBody;
+        return $this->getRpk();
     }
 }

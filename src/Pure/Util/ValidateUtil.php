@@ -80,4 +80,10 @@ class ValidateUtil
         if (is_null($argument))
             throw new NullArgumentException($name);
     }
+
+    // TODO!
+    public static function checkStringInArray(array $argument): bool
+    {
+        return true;
+    }
 }

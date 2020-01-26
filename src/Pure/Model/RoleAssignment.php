@@ -35,33 +35,27 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\model;
+namespace Virgil\PureKit\Pure\Model;
 
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class PureGrant
+class RoleAssignment
 {
-    private $ukp;
+    private $roleName;
     private $userId;
-    private $sessionId;
-    private $creationDate;
+    private $publicKeyId;
+    private $encryptedRsk;
 
-    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId, \DateTime $creationDate)
+    public function __construct(string $roleName, string $userId, string $publicKeyId, string $encryptedRsk)
     {
-        ValidateUtil::checkNull($ukp, "ukp");
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNull($creationDate, "creationDate");
-
-        $this->ukp = $ukp;
+        $this->roleName = $roleName;
         $this->userId = $userId;
-        $this->sessionId = $sessionId;
-        $this->creationDate = $creationDate;
+        $this->publicKeyId = $publicKeyId;
+        $this->encryptedRsk = $encryptedRsk;
     }
 
-    public function getUpk(): VirgilKeyPair
+    public function getRoleName(): string
     {
-        return $this->ukp;
+        return $this->roleName;
     }
 
     public function getUserId(): string
@@ -69,13 +63,13 @@ class PureGrant
         return $this->userId;
     }
 
-    public function getSessionId(): string
+    public function getPublicKeyId(): string
     {
-        return $this->sessionId;
+        return $this->publicKeyId;
     }
 
-    public function getCreationDate(): \DateTime
+    public function getEncryptedRsk(): string
     {
-        return $this->creationDate;
+        return $this->encryptedRsk;
     }
 }

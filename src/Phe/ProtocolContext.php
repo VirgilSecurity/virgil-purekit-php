@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Protocol;
+namespace Virgil\PureKit\Phe;
 
 use Virgil\PureKit\Credentials\InputCredentialsChecker;
 use Virgil\PureKit\Exceptions\ProtocolContextException;
@@ -215,7 +215,7 @@ class ProtocolContext
     }
 
     /**
-     * @return \Virgil\PureKit\Protocol\PheClient
+     * @return \Virgil\PureKit\Phe\PheClient
      */
     public function getPheImpl(): PheClient
     {

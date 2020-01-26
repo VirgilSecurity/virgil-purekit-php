@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,25 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Http\Request;
 
 
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
-use Virgil\CryptoImpl\VirgilCrypto;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
-
-class VirgilCloudPureStorage
+class UpdateUserRequest extends BaseRequest
 {
-    private $pureModelSerializer;
-    private $client;
 
-    public function __construct(VirgilCrypto $crypto, HttpPureClient $client, VirgilKeyPair $signingKey)
-    {
-        ValidateUtil::checkNull($crypto, "crypto");
-        ValidateUtil::checkNull($client, "client");
-        ValidateUtil::checkNull($signingKey, "signingKey");
-
-        $this->pureModelSerializer = new PureModelSerializer($crypto, $signingKey);
-        $this->client = $client;
-    }
 }

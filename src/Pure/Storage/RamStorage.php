@@ -35,9 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Response;
+namespace Virgil\PureKit\Pure\Storage;
 
-class EnrollResponse extends BaseHttpResponse
+
+class RamStorage
 {
 
 }

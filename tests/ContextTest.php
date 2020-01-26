@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\_tests\feature;
 
 use Dotenv\Dotenv;
-use Virgil\PureKit\Protocol\ProtocolContext;
+use Virgil\PureKit\Phe\ProtocolContext;
 
 class ContextTest extends \PHPUnit\Framework\TestCase
 {

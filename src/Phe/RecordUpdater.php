@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Protocol;
+namespace Virgil\PureKit\Phe;
 
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Virgil\PureKit\Credentials\UpdateToken;

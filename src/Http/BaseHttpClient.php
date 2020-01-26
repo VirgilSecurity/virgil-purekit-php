@@ -35,15 +35,35 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Client;
+namespace Virgil\PureKit\Http;
 
+use GuzzleHttp\Client as GuzzleClient;
+use Psr\Http\Message\ResponseInterface;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
-class HttpClientProtobuf
+/**
+ * Class HttpClient
+ * @package Virgil\PureKit\Http
+ */
+class BaseHttpClient
 {
-    private $serviceBaseUrl;
+    /**
+     * @var GuzzleClient
+     */
+    protected $httpClient;
+    protected $serviceBaseUrl;
+    protected $appToken;
 
-    public function __construct(string $serviceBaseUrl)
+    public function __construct(string $serviceBaseUrl, string $appToken)
     {
+        $this->httpClient = new GuzzleClient();
         $this->serviceBaseUrl = $serviceBaseUrl;
+        $this->appToken = $appToken;
+    }
+
+    public function send(BaseRequest $request, bool $debug=true): ResponseInterface
+    {
+        return $this->httpClient->request($request->getMethod(), $this->serviceBaseUrl,
+            ["headers" => $request->getOptionsHeader(), "body" => $request->getOptionsBody(), 'debug' => $debug]);
     }
 }

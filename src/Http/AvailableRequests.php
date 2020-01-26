@@ -35,21 +35,28 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Client;
 
-/**
- * Class RequestHelper
- * @package Virgil\PureKit\Http
- */
-class RequestParamsHelper
+use MyCLabs\Enum\Enum;
+
+class AvailableRequests extends Enum
 {
-    /**
-     * @param array|null $header
-     * @param array|null $body
-     * @return array
-     */
-    public static function format(array $header = null, array $body = null): array
-    {
-        return ["header" => $header, "body" => $body];
-    }
+    private const ENROLL = "/enroll";
+    private const VERIFY_PASSWORD = "/verify-password";
+
+    private const INSERT_USER = "/user";
+    private const UPDATE_USER = "/user/%s";
+    private const GET_USER = "/user/%s";
+    private const GET_USERS = "/get-users";
+    private const DELETE_USER = "/user/%s";
+    private const INSERT_CELL_KEY = "/cell-key";
+    private const UPDATE_CELL_KEY = "/cell-key/%s/%s";
+    private const GET_CELL_KEY = "/cell-key/%s/%s";
+    private const DELETE_CELL_KEY = "/cell-key/%s/%s";
+    private const INSERT_ROLE = "/roles";
+    private const GET_ROLES = "/get-roles";
+    private const INSERT_ROLE_ASSIGNMENTS = "/role-assignments";
+    private const GET_ROLE_ASSIGNMENTS = "/get-role-assignments";
+    private const GET_ROLE_ASSIGNMENT = "/get-role-assignment";
+    private const DELETE_ROLE_ASSIGNMENTS = "/delete-role-assignments";
 }

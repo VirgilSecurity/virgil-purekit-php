@@ -50,10 +50,10 @@ use Virgil\CryptoImpl\Core\VirgilKeyPair;
 use Virgil\CryptoImpl\VirgilCrypto;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
-use Virgil\PureKit\Pure\model\CellKey;
-use Virgil\PureKit\Pure\model\Role;
-use Virgil\PureKit\Pure\model\RoleAssignment;
-use Virgil\PureKit\Pure\model\UserRecord;
+use Virgil\PureKit\Pure\Model\CellKey;
+use Virgil\PureKit\Pure\Model\Role;
+use Virgil\PureKit\Pure\Model\RoleAssignment;
+use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 /**
