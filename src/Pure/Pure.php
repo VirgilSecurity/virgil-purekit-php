@@ -73,7 +73,6 @@ class Pure
     private $previousClient;
     private $ak;
     private $buppk;
-    private $hpk;
     private $oskp;
     private $httpPheClient;
     private $externalPublicKeys;
@@ -115,10 +114,9 @@ class Pure
                 $this->previousClient = null;
             }
 
-            $this->ak = $context->getAk()->getPayload();
+            $this->ak = $context->getNonrotableSecrets()->getAk();
             $this->buppk = $context->getBuppk();
-            $this->hpk = $context->getHpk();
-            $this->oskp = $context->getOskp();
+            $this->oskp = $context->getNonrotableSecrets()->getAk();
             $this->httpPheClient = $context->getPheClient();
             $this->externalPublicKeys = $context->getExternalPublicKeys();
         } catch (\Exception $exception) {
@@ -617,7 +615,7 @@ class Pure
 
             $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
 
-            $encryptedPwdHash = $this->crypto->encrypt($passwordHash, $this->hpk);
+            $encryptedPwdHash = $this->crypto->encrypt($passwordHash, $this->buppk);
 
             $result = $this->currentClient->enrollAccount($response->getResponse(), $passwordHash);
 
@@ -683,7 +681,7 @@ class Pure
 
             $newEncryptedUsk = $this->cipher->encrypt($privateKeyData, $enrollResult->getAccountKey());
 
-            $encryptedPwdHash = $this->crypto->encrypt($newPasswordHash, $this->hpk);
+            $encryptedPwdHash = $this->crypto->encrypt($newPasswordHash, $this->buppk);
 
             $newUserRecord = new UserRecord(
                 $userRecord->getUserId(),
@@ -775,10 +773,6 @@ class Pure
 
     public function getBuppk(): VirgilPublicKey {
         return $this->buppk;
-    }
-
-    public function getHpk(): VirgilPublicKey {
-        return $this->hpk;
     }
 
     public function getOskp(): VirgilKeyPair {

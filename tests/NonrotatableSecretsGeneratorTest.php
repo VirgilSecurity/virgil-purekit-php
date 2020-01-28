@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,30 +35,43 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage;
+namespace Virgil\PureKit\Tests;
 
 
-use Virgil\PureKit\Pure\PureModelSerializer;
-use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
+use Virgil\PureKit\Pure\NonrotatableSecretsGenerator;
 
-class MariaDBPureStorage implements PureStorage, PureModelSerializerDependent
+class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
 {
-    private $url;
-    private $pureModelSerializer;
+    private $nms;
+    private $ak;
+    private $oskpId;
+    private $vskpId;
 
-    public function __construct(string $url)
+    protected function setUp(): void
     {
-        $this->url = $url;
+        $this->nms = "6PvWsrUn/U6ggoabbXCriBk7dtV3NfT+cvqbFGG3DGU=";
+        $this->ak = "67s7EAt22cKY+M+OFFG7qBbT0f8J0ZIYlCph8rb8vJo=";
+        $this->oskpId = "tySWEnktveE=";
+        $this->vskpId = "Zv2gWu+5YeY=";
+
     }
 
-    public function getPureModelSerializer(): PureModelSerializer
+    public function testGenerateSecretsFixedSeedShouldMatch()
     {
-        return $this->pureModelSerializer;
+        try {
+            $data = base64_decode($this->nms);
+
+            $nonrotatableSecrets = NonrotatableSecretsGenerator::generateSecrets($data);
+
+            $this->assertEquals(base64_decode($this->ak), $nonrotatableSecrets->getAk());
+            $this->assertEquals(base64_decode($this->oskpId), $nonrotatableSecrets->getOskp()->getPublicKey()
+                ->getIdentifier());
+            $this->assertEquals(base64_decode($this->vskpId), $nonrotatableSecrets->getVskp()->getPublicKey()
+                ->getIdentifier());
+
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
     }
 
-    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
-    {
-        $this->pureModelSerializer = $pureModelSerializer;
-    }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,30 +35,46 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage;
+namespace Virgil\PureKit\Pure;
 
 
-use Virgil\PureKit\Pure\PureModelSerializer;
-use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
+use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\PureKit\Pure\Exception\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\PureLogicException;
+use VirgilCrypto\Foundation\KeyMaterialRng;
 
-class MariaDBPureStorage implements PureStorage, PureModelSerializerDependent
+/**
+ * Class NonrotatableSecretsGenerator
+ * @package Virgil\PureKit\Pure
+ */
+class NonrotatableSecretsGenerator
 {
-    private $url;
-    private $pureModelSerializer;
+    private const NONROTATABLE_MASTER_SECRET_LENGTH = 32;
+    private const AK_LENGTH = 32;
 
-    public function __construct(string $url)
+    /**
+     * @param string $masterSecret
+     * @return NonrotableSecrets
+     * @throws PureLogicException
+     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     */
+    public static function generateSecrets(string $masterSecret): NonrotableSecrets
     {
-        $this->url = $url;
-    }
+        if (self::NONROTATABLE_MASTER_SECRET_LENGTH != strlen($masterSecret))
+            throw new PureLogicException(ErrorStatus::NONROTABLE_MASTER_SECRET_INVALID_LENGTH());
 
-    public function getPureModelSerializer(): PureModelSerializer
-    {
-        return $this->pureModelSerializer;
-    }
+        $rng = new KeyMaterialRng();
+        $rng->resetKeyMaterial($masterSecret);
 
-    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
-    {
-        $this->pureModelSerializer = $pureModelSerializer;
+        $ak = $rng->random(self::AK_LENGTH);
+
+        // TODO! Replace rng
+
+        $crypto = new VirgilCrypto();
+
+        $vskp = $crypto->generateKeyPair();
+        $oskp = $crypto->generateKeyPair();
+
+        return new NonrotableSecrets($ak, $vskp, $oskp);
     }
 }

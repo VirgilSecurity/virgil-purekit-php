@@ -38,30 +38,36 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
 use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class VirgilCloudPureStorage
+class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependent
 {
     private $pureModelSerializer;
     private $client;
-
     /**
      * VirgilCloudPureStorage constructor.
      * @param VirgilCrypto $crypto
      * @param HttpPureClient $client
-     * @param VirgilKeyPair $signingKey
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      */
-    public function __construct(VirgilCrypto $crypto, HttpPureClient $client, VirgilKeyPair $signingKey)
+    public function __construct(VirgilCrypto $crypto, HttpPureClient $client)
     {
         ValidateUtil::checkNull($crypto, "crypto");
         ValidateUtil::checkNull($client, "client");
-        ValidateUtil::checkNull($signingKey, "signingKey");
 
-        $this->pureModelSerializer = new PureModelSerializer($crypto, $signingKey);
         $this->client = $client;
+    }
+
+    public function getPureModelSerializer(): PureModelSerializer
+    {
+        return $this->pureModelSerializer;
+    }
+
+    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
+    {
+        $this->pureModelSerializer = $pureModelSerializer;
     }
 }

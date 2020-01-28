@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,30 +35,36 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage;
+namespace Virgil\PureKit\Pure;
 
 
-use Virgil\PureKit\Pure\PureModelSerializer;
-use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
+use Virgil\CryptoImpl\Core\VirgilKeyPair;
 
-class MariaDBPureStorage implements PureStorage, PureModelSerializerDependent
+class NonrotableSecrets
 {
-    private $url;
-    private $pureModelSerializer;
+    private $ak;
+    private $vskp;
+    private $oskp;
 
-    public function __construct(string $url)
+    public function __construct(string $ak, VirgilKeyPair $vskp, VirgilKeyPair $oskp)
     {
-        $this->url = $url;
+        $this->ak = $ak;
+        $this->vskp = $vskp;
+        $this->oskp = $oskp;
     }
 
-    public function getPureModelSerializer(): PureModelSerializer
+    public function getAk(): string
     {
-        return $this->pureModelSerializer;
+        return $this->ak;
     }
 
-    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
+    public function getVskp(): VirgilKeyPair
     {
-        $this->pureModelSerializer = $pureModelSerializer;
+        return $this->vskp;
+    }
+
+    public function getOskp(): VirgilKeyPair
+    {
+        return $this->oskp;
     }
 }

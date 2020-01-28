@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage;
+namespace Virgil\PureKit\Pure\Storage\_;
 
 
 use MyCLabs\Enum\Enum;

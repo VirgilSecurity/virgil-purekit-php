@@ -38,7 +38,10 @@
 namespace Virgil\PureKit\Pure\Storage;
 
 
-class RamPureStorage
+use Virgil\PureKit\Pure\PureModelSerializerDependent;
+use Virgil\PureKit\Pure\Storage\_\PureStorage;
+
+class RamPureStorage implements PureStorage, PureModelSerializerDependent
 {
 
 }

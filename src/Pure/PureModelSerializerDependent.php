@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,30 +35,21 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage;
+namespace Virgil\PureKit\Pure;
 
-
-use Virgil\PureKit\Pure\PureModelSerializer;
-use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
-
-class MariaDBPureStorage implements PureStorage, PureModelSerializerDependent
+/**
+ * Interface PureModelSerializerDependent
+ * @package Virgil\PureKit\Pure
+ */
+interface PureModelSerializerDependent
 {
-    private $url;
-    private $pureModelSerializer;
+    /**
+     * @return PureModelSerializer
+     */
+    public function getPureModelSerializer(): PureModelSerializer;
 
-    public function __construct(string $url)
-    {
-        $this->url = $url;
-    }
-
-    public function getPureModelSerializer(): PureModelSerializer
-    {
-        return $this->pureModelSerializer;
-    }
-
-    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
-    {
-        $this->pureModelSerializer = $pureModelSerializer;
-    }
+    /**
+     * @param PureModelSerializer $pureModelSerializer
+     */
+    public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void;
 }

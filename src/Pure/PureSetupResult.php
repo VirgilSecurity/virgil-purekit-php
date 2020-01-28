@@ -53,10 +53,6 @@ class PureSetupResult
      * @var VirgilKeyPair
      */
     private $bupkp;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $hkp;
 
     /**
      * PureSetupResult constructor.
@@ -64,11 +60,10 @@ class PureSetupResult
      * @param VirgilKeyPair $bupkp
      * @param VirgilKeyPair $hkp
      */
-    public function __construct(PureContext $context, VirgilKeyPair $bupkp, VirgilKeyPair $hkp)
+    public function __construct(PureContext $context, VirgilKeyPair $bupkp)
     {
         $this->context = $context;
         $this->bupkp = $bupkp;
-        $this->hkp = $hkp;
     }
 
     /**
@@ -84,12 +79,5 @@ class PureSetupResult
      */
     public function getBupkp(): VirgilKeyPair {
         return $this->bupkp;
-    }
-
-    /**
-     * @return VirgilKeyPair
-     */
-    public function getHkp(): VirgilKeyPair {
-        return $this->hkp;
     }
 }

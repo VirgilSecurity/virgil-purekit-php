@@ -45,9 +45,9 @@ use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
 use Virgil\PureKit\Pure\PureModelSerializer;
 use Virgil\PureKit\Pure\PureSetupResult;
+use Virgil\PureKit\Pure\Storage\_\StorageType;
 use Virgil\PureKit\Pure\Storage\MariaDBPureStorage;
 use Virgil\PureKit\Pure\Storage\RamPureStorage;
-use Virgil\PureKit\Pure\Storage\StorageType;
 
 class PureTest extends \PHPUnit\Framework\TestCase
 {
@@ -92,35 +92,25 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->crypto = new VirgilCrypto();
 
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
-        $hkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
-        $oskp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
 
-        $akData = $this->crypto->generateRandomData(32);
-        $akString = "AK." . base64_encode($akData);
+        $nmsData = $this->crypto->generateRandomData(32);
+        $nmsString = "NM." . base64_encode($nmsData);
 
         $bupkpString = "BU." . base64_encode($this->crypto->exportPublicKey($bupkp->getPublicKey()));
-        $hkpString = "HB." . base64_encode($this->crypto->exportPublicKey($hkp->getPublicKey()));
-        $oskpString = "OS." . base64_encode($this->crypto->exportPrivateKey($oskp->getPrivateKey()));
-
-        $signingKeyPair = $this->crypto->generateKeyPair();
-        $vsString = "VS." . base64_encode($this->crypto->exportPrivateKey($signingKeyPair->getPrivateKey()));
 
         switch ($storageType) {
             case StorageType::RAM():
-                $context = PureContext::createContext($appToken, $akString, $bupkpString, $hkpString, $oskpString,
+                $context = PureContext::createContext($appToken, $nmsString, $bupkpString,
                     new RamPureStorage(), $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress);
                 break;
 
             case StorageType::VIRGIL_CLOUD():
-                $context = PureContext::createContext($appToken, $akString, $bupkpString, $hkpString, $oskpString,
-                    $vsString, $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress, $pureServerAddress);
+                $context = PureContext::createContext($appToken, $nmsString, $bupkpString, $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress, $pureServerAddress);
                 break;
 
             case StorageType::MARIADB():
-                $pureModelSerializer = new PureModelSerializer($this->crypto, $signingKeyPair);
-                $mariaDbPureStorage = new MariaDbPureStorage("jdbc:mariadb://localhost/puretest?user=root&password=qwerty",
-                    $pureModelSerializer);
-                $context = PureContext::createContext($appToken, $akString, $bupkpString, $hkpString, $oskpString,
+                $mariaDbPureStorage = new MariaDbPureStorage("jdbc:mariadb://localhost/puretest?user=root&password=qwerty");
+                $context = PureContext::createContext($appToken, $nmsString, $bupkpString,
                     $mariaDbPureStorage, $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress);
                 break;
 
@@ -131,7 +121,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         if (!is_null($updateToken))
             $context->setUpdateToken($updateToken);
 
-        return new PureSetupResult($context, $bupkp, $hkp);
+        return new PureSetupResult($context, $bupkp);
     }
 
     /**
@@ -164,7 +154,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, publicKey, $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
+                    $secretKey, null, null, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -902,7 +893,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
                 $record = $pure->getStorage()->selectUser($userId);
 
-                $pwdHashDecrypted = $pure->getCrypto()->decrypt($record->getEncryptedPwdHash(), $pureResult->getHkp()->getPrivateKey());
+                $pwdHashDecrypted = $pure->getCrypto()->decrypt($record->getEncryptedPwdHash(),
+                    $pureResult->getBupkp()->getPrivateKey());
+
                 $pwdHash = $pure->getCrypto()->computeHash($password);
 
                 $this->assertEquals($pwdHash, $pwdHashDecrypted);
