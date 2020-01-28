@@ -68,9 +68,7 @@ class NonrotatableSecretsGenerator
 
         $ak = $rng->random(self::AK_LENGTH);
 
-        // TODO! Replace rng
-
-        $crypto = new VirgilCrypto();
+        $crypto = new VirgilCrypto($rng);
 
         $vskp = $crypto->generateKeyPair();
         $oskp = $crypto->generateKeyPair();

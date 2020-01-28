@@ -55,6 +55,7 @@ use Virgil\PureKit\Pure\Model\PureGrant;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
+use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use VirgilCrypto\Phe\PheCipher;

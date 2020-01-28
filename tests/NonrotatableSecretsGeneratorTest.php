@@ -51,8 +51,8 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
     {
         $this->nms = "6PvWsrUn/U6ggoabbXCriBk7dtV3NfT+cvqbFGG3DGU=";
         $this->ak = "67s7EAt22cKY+M+OFFG7qBbT0f8J0ZIYlCph8rb8vJo=";
-        $this->oskpId = "tySWEnktveE=";
-        $this->vskpId = "Zv2gWu+5YeY=";
+        $this->oskpId = "45IvIXkOQ7c=";
+        $this->vskpId = "7QksLSjG56g=";
 
     }
 

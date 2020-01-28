@@ -43,7 +43,6 @@ use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
-use Virgil\PureKit\Pure\PureModelSerializer;
 use Virgil\PureKit\Pure\PureSetupResult;
 use Virgil\PureKit\Pure\Storage\_\StorageType;
 use Virgil\PureKit\Pure\Storage\MariaDBPureStorage;
