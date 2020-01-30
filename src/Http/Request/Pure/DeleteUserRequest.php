@@ -41,8 +41,10 @@ namespace Virgil\PureKit\Http\Request;
 use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
 
-class GetUsersRequest extends BaseRequest
+class DeleteUserRequest extends BaseRequest
 {
+    private const KEY_CASCADE = "cascade";
+
     public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
     {
         parent::__construct($endpoint, $method);

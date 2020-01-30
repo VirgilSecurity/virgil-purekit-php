@@ -38,7 +38,18 @@
 namespace Virgil\PureKit\Http\Request;
 
 
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
+
 class UpdateUserRequest extends BaseRequest
 {
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    {
+        parent::__construct($endpoint, $method);
+    }
 
+    public function getOptionsBody(): string
+    {
+        return "";
+    }
 }

@@ -38,10 +38,18 @@
 namespace Virgil\PureKit\Http\Request;
 
 
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
+
 class InsertUserRequest extends BaseRequest
 {
-    public function formatBody(): string
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
     {
-        // TODO: Implement formatBody() method.
+        parent::__construct($endpoint, $method);
+    }
+
+    public function getOptionsBody(): string
+    {
+        return "";
     }
 }

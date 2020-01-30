@@ -41,7 +41,7 @@ namespace Virgil\PureKit\Http\Request;
 use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
 
-class GetUsersRequest extends BaseRequest
+class InsertRoleAssignmentsRequest extends BaseRequest
 {
     public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
     {

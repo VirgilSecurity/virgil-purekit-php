@@ -578,10 +578,11 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
 
     public function testPerformance(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey, string $updateToken): void
+                                    string $pureServerAddress,
+                                    string $appToken,
+                                    string $publicKey,
+                                    string $secretKey,
+                                    string $updateToken): void
     {
 
         $this->sleep();

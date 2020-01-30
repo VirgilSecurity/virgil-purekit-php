@@ -35,48 +35,218 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Http;
 
-
-use Virgil\PureKit\Client\AvailableRequests;
-use Virgil\PureKit\Credentials\UpdateToken;
-use Virgil\PureKit\Http\HttpClient;
+use PurekitV3Storage\CellKey as ProtoCellKey;
+use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
+use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
+use PurekitV3Storage\Roles as ProtoRoles;
+use PurekitV3Storage\UserRecord as ProtoUserRecord;
+use PurekitV3Storage\UserRecords as ProtoUserRecords;
+use Virgil\PureKit\Http\Request\DeleteCellKeyRequest;
+use Virgil\PureKit\Http\Request\DeleteRoleAssignmentRequest;
+use Virgil\PureKit\Http\Request\DeleteUserRequest;
+use Virgil\PureKit\Http\Request\GetCellKeyRequest;
+use Virgil\PureKit\Http\Request\GetRoleAssignmentRequest;
+use Virgil\PureKit\Http\Request\GetRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\GetRolesRequest;
 use Virgil\PureKit\Http\Request\GetUsersRequest;
+use Virgil\PureKit\Http\Request\InsertCellKeyRequest;
+use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\InsertUserRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
-use PurekitV3Storage\UserRecords as ProtoUserRecords;
 
-class HttpPureClient
+class HttpPureClient extends HttpBaseClient
 {
-    private $appToken;
-    private $client;
+    /**
+     * @var string
+     */
+    protected $appToken;
+    /**
+     * @var string
+     */
+    protected $serviceAddress;
 
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
-    public const KEY_CASCADE = "cascade";
+    private const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
 
-    public function __construct(string $appToken, string $serviceAddress)
+    /**
+     * HttpPureClient constructor.
+     * @param string $appToken
+     * @param string $serviceBaseUrl
+     * @param bool $debug
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
+    public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
     {
         ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceAddress, "serviceAddress");
+        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
 
-        $this->appToken = $appToken;
-        $this->client = new HttpClient($serviceAddress);
+        parent::__construct($serviceBaseUrl, $appToken, $debug);
     }
 
+    /**
+     * @param InsertUserRequest $request
+     */
     public function insertUser(InsertUserRequest $request): void
     {
-        $this->client->send($request, AvailableRequests::INSERT_USER(), $this->appToken);
+        $this->_send($request);
     }
 
+    /**
+     * @param UpdateUserRequest $request
+     */
     public function updateUser(UpdateUserRequest $request): void
     {
-        $this->client->send($request, AvailableRequests::UPDATE_USER(), $this->appToken);
+        $this->_send($request);
     }
 
-    // TODO!
+    /**
+     * @param GetUsersRequest $request
+     * @return ProtoUserRecord
+     * @throws \Exception
+     */
+    public function getUser(GetUsersRequest $request): ProtoUserRecord
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoUserRecord();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param GetUsersRequest $request
+     * @return ProtoUserRecords
+     * @throws \Exception
+     */
     public function getUsers(GetUsersRequest $request): ProtoUserRecords
     {
-        return $this->client->send($request, AvailableRequests::GET_USERS(), $this->appToken);
+        $r = $this->_send($request);
+
+        $res = new ProtoUserRecords();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param DeleteUserRequest $request
+     */
+    public function deleteUser(DeleteUserRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param InsertCellKeyRequest $request
+     */
+    public function insertCellKey(InsertCellKeyRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param UpdateUserRequest $request
+     */
+    public function updateCellKey(UpdateUserRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param GetCellKeyRequest $request
+     * @return ProtoCellKey
+     * @throws \Exception
+     */
+    public function getCellKey(GetCellKeyRequest $request): ProtoCellKey
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoCellKey();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param DeleteCellKeyRequest $request
+     */
+    public function deleteCellKey(DeleteCellKeyRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param InsertRoleRequest $request
+     */
+    public function insertRole(InsertRoleRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param GetRolesRequest $request
+     * @return ProtoRoles
+     * @throws \Exception
+     */
+    public function getRoles(GetRolesRequest $request): ProtoRoles
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoRoles();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param InsertRoleAssignmentsRequest $request
+     */
+    public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param GetRoleAssignmentsRequest $request
+     * @return ProtoRoleAssignments
+     * @throws \Exception
+     */
+    public function getRoleAssignments(GetRoleAssignmentsRequest $request): ProtoRoleAssignments
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoRoleAssignments();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param GetRoleAssignmentRequest $request
+     * @return ProtoRoleAssignment
+     * @throws \Exception
+     */
+    public function getRoleAssignment(GetRoleAssignmentRequest $request): ProtoRoleAssignment
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoRoleAssignment();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param DeleteRoleAssignmentRequest $request
+     */
+    public function deleteRoleAssignment(DeleteRoleAssignmentRequest $request): void
+    {
+        $this->_send($request);
     }
 }
