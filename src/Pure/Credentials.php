@@ -37,23 +37,43 @@
 
 namespace Virgil\PureKit\Pure;
 
-
+/**
+ * Class Credentials
+ * @package Virgil\PureKit\Pure
+ */
 class Credentials
 {
+    /**
+     * @var string
+     */
     private $payload;
+    /**
+     * @var int
+     */
     private $version;
 
+    /**
+     * Credentials constructor.
+     * @param string $payload
+     * @param int $version
+     */
     public function __construct(string $payload, int $version)
     {
         $this->payload = $payload;
         $this->version = $version;
     }
 
+    /**
+     * @return string
+     */
     public function getPayload(): string
     {
         return $this->payload;
     }
 
+    /**
+     * @return int
+     */
     public function getVersion(): int
     {
         return $this->version;

@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilKeyPair;
 
 /**
  * Class PureSetupResult
@@ -58,7 +58,6 @@ class PureSetupResult
      * PureSetupResult constructor.
      * @param PureContext $context
      * @param VirgilKeyPair $bupkp
-     * @param VirgilKeyPair $hkp
      */
     public function __construct(PureContext $context, VirgilKeyPair $bupkp)
     {

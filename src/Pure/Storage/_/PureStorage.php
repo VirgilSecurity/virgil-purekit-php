@@ -45,40 +45,104 @@ use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
 
+/**
+ * Interface PureStorage
+ * @package Virgil\PureKit\Pure\Storage\_
+ */
 interface PureStorage
 {
+    /**
+     * @param UserRecord $userRecord
+     */
     public function insertUser(UserRecord $userRecord): void;
 
+    /**
+     * @param UserRecord $userRecord
+     */
     public function updateUser(UserRecord $userRecord): void;
 
+    /**
+     * @param UserRecordCollection $userRecords
+     * @param int $previousPheVersion
+     */
     public function updateUsers(UserRecordCollection $userRecords, int $previousPheVersion): void;
 
+    /**
+     * @param string $userId
+     * @return UserRecord
+     */
     public function selectUser(string $userId): UserRecord;
 
+    /**
+     * @param string ...$userIds
+     * @return UserRecordCollection
+     */
     public function selectUsers(string ...$userIds): UserRecordCollection;
 
     // TODO!
     // public function selectUsers(int $pheRecordVersion): UserRecords;
 
+    /**
+     * @param string $userId
+     * @param bool $cascade
+     */
     public function deleteUser(string $userId, bool $cascade): void;
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     * @return CellKey
+     */
     public function selectCellKey(string $userId, string $dataId): CellKey;
 
+    /**
+     * @param CellKey $cellKey
+     */
     public function insertCellKey(CellKey $cellKey): void;
 
+    /**
+     * @param CellKey $cellKey
+     */
     public function updateCellKey(CellKey $cellKey): void;
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     */
     public function deleteCellKey(string $userId, string $dataId): void;
 
+    /**
+     * @param Role $role
+     */
     public function insertRole(Role $role): void;
 
+    /**
+     * @param string ...$roleNames
+     * @return RoleCollection
+     */
     public function selectRoles(string ...$roleNames): RoleCollection;
 
+    /**
+     * @param RoleAssignmentCollection $roleAssignments
+     */
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void;
 
+    /**
+     * @param string $userId
+     * @return RoleAssignmentCollection
+     */
     public function selectRoleAssignments(string $userId): RoleAssignmentCollection;
 
+    /**
+     * @param string $roleName
+     * @param string $userId
+     * @return RoleAssignment
+     */
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment;
 
+    /**
+     * @param string $roleName
+     * @param string ...$userIds
+     */
     public function deleteRoleAssignments(string $roleName, string ...$userIds): void;
 }

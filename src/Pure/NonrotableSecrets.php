@@ -37,15 +37,33 @@
 
 namespace Virgil\PureKit\Pure;
 
-
 use Virgil\Crypto\Core\VirgilKeyPair;
 
+/**
+ * Class NonrotableSecrets
+ * @package Virgil\PureKit\Pure
+ */
 class NonrotableSecrets
 {
+    /**
+     * @var string
+     */
     private $ak;
+    /**
+     * @var VirgilKeyPair
+     */
     private $vskp;
+    /**
+     * @var VirgilKeyPair
+     */
     private $oskp;
 
+    /**
+     * NonrotableSecrets constructor.
+     * @param string $ak
+     * @param VirgilKeyPair $vskp
+     * @param VirgilKeyPair $oskp
+     */
     public function __construct(string $ak, VirgilKeyPair $vskp, VirgilKeyPair $oskp)
     {
         $this->ak = $ak;
@@ -53,16 +71,25 @@ class NonrotableSecrets
         $this->oskp = $oskp;
     }
 
+    /**
+     * @return string
+     */
     public function getAk(): string
     {
         return $this->ak;
     }
 
+    /**
+     * @return VirgilKeyPair
+     */
     public function getVskp(): VirgilKeyPair
     {
         return $this->vskp;
     }
 
+    /**
+     * @return VirgilKeyPair
+     */
     public function getOskp(): VirgilKeyPair
     {
         return $this->oskp;

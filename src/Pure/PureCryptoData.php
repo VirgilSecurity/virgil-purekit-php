@@ -37,23 +37,43 @@
 
 namespace Virgil\PureKit\Pure;
 
-
+/**
+ * Class PureCryptoData
+ * @package Virgil\PureKit\Pure
+ */
 class PureCryptoData
 {
+    /**
+     * @var string
+     */
     private $cms;
+    /**
+     * @var string
+     */
     private $body;
 
+    /**
+     * PureCryptoData constructor.
+     * @param string $cms
+     * @param string $body
+     */
     public function __construct(string $cms, string $body)
     {
         $this->cms = $cms;
         $this->body = $body;
     }
 
+    /**
+     * @return string
+     */
     public function getCms(): string
     {
         return $this->cms;
     }
 
+    /**
+     * @return string
+     */
     public function getBody(): string
     {
         return $this->body;

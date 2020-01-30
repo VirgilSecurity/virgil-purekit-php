@@ -37,8 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Collection;
 
-
-use Virgil\CryptoImpl\Core\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilPublicKey;
 
 class VirgilPublicKeyCollection extends BaseCollection
 {

@@ -41,12 +41,12 @@ use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
 use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
-use Virgil\CryptoImpl\Core\VirgilPrivateKey;
-use Virgil\CryptoImpl\Core\VirgilPublicKey;
-use Virgil\CryptoImpl\VirgilCrypto;
-use Virgil\PureKit\Client\AvailableRequests;
-use Virgil\PureKit\Http\Request\EnrollRequest;
+use Virgil\Crypto\Core\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilPrivateKey;
+use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\VirgilCrypto;
+use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
@@ -58,9 +58,9 @@ use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
-use VirgilCrypto\Phe\PheCipher;
-use VirgilCrypto\Phe\PheClient;
-use Virgil\CryptoImpl\Core\HashAlgorithms;
+use Virgil\CryptoWrapper\Phe\PheCipher;
+use Virgil\CryptoWrapper\Phe\PheClient;
+use Virgil\Crypto\Core\HashAlgorithms;
 
 class Pure
 {
@@ -610,7 +610,7 @@ class Pure
             ValidateUtil::checkNullOrEmpty($userId, "userId");
             ValidateUtil::checkNullOrEmpty($password, "password");
 
-            $request = new EnrollRequest(AvailableRequests::ENROLL(), $this->currentVersion);
+            $request = new EnrollRequest(AvailableRequest::ENROLL(), $this->currentVersion);
 
             $response = $this->httpPheClient->enrollAccount($request);
 

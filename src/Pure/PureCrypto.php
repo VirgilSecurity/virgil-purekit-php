@@ -37,17 +37,17 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\CryptoImpl\Core\VirgilPrivateKey;
-use Virgil\CryptoImpl\Core\VirgilPublicKey;
-use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\Crypto\Core\VirgilPrivateKey;
+use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
-use VirgilCrypto\Foundation\Aes256Gcm;
-use VirgilCrypto\Foundation\MessageInfoDerSerializer;
-use VirgilCrypto\Foundation\MessageInfoEditor;
-use VirgilCrypto\Foundation\RecipientCipher;
-use VirgilCrypto\Foundation\Sha512;
+use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
+use Virgil\CryptoWrapper\Foundation\MessageInfoDerSerializer;
+use Virgil\CryptoWrapper\Foundation\MessageInfoEditor;
+use Virgil\CryptoWrapper\Foundation\RecipientCipher;
+use Virgil\CryptoWrapper\Foundation\Sha512;
 
 /**
  * Class PureCrypto

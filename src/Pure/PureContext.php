@@ -38,8 +38,8 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\CryptoImpl\Core\VirgilPublicKey;
-use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;

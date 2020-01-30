@@ -37,9 +37,12 @@
 
 namespace Virgil\PureKit\Pure\Storage\_;
 
-
 use MyCLabs\Enum\Enum;
 
+/**
+ * Class StorageType
+ * @package Virgil\PureKit\Pure\Storage\_
+ */
 class StorageType extends Enum
 {
     private const RAM = "RAM";

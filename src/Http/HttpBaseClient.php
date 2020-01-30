@@ -39,7 +39,7 @@ namespace Virgil\PureKit\Http;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Psr\Http\Message\ResponseInterface;
-use Virgil\PureKit\Exceptions\ProtocolException;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
