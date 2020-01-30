@@ -47,7 +47,7 @@ class ContextTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp(): void
     {
-        (new Dotenv(__DIR__ . "/../../virgil-purekit-php/"))->load();
+        (new Dotenv(__DIR__ . "/../"))->load();
         $this->appToken = $_ENV["APP_TOKEN"];
     }
 

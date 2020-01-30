@@ -156,7 +156,7 @@ class PureContext
                                                VirgilPublicKeyCollection $externalPublicKeys,
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS): PureContext
     {
-        return self::createContext(
+        return self::_createContext(
             new VirgilCrypto(),
             $appToken,
             $nms, $bu,
@@ -194,7 +194,7 @@ class PureContext
 
         $storage = new VirgilCloudPureStorage($crypto, $pureClient);
 
-        return self::createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys,
+        return self::_createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys,
             $pheServiceAddress);
     }
 
@@ -215,7 +215,7 @@ class PureContext
      * @throws PureLogicException
      * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
      */
-    public static function createContext(VirgilCrypto $crypto, string $appToken, string $nms, string $bu,
+    private static function _createContext(VirgilCrypto $crypto, string $appToken, string $nms, string $bu,
                                          string $sk, string $pk, PureStorage $storage,
                                          VirgilPublicKeyCollection $externalPublicKeys,
                                          string $pheServiceAddress): PureContext

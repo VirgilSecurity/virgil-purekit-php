@@ -37,36 +37,49 @@
 
 namespace Virgil\PureKit\Http\Request;
 
-use Purekit\EnrollmentRequest as ProtobufEnrollmentRequest;
-use Virgil\PureKit\Client\AvailableRequests;
+use Purekit\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
 
-class EnrollRequest extends BaseRequest
+/**
+ * Class VerifyPasswordRequest
+ * @package Virgil\PureKit\Http\Request
+ */
+class VerifyPasswordRequest extends BaseRequest
 {
     /**
      * @var int
      */
     private $version;
+    /**
+     * @var string
+     */
+    private $verifyPasswordRequest;
 
     /**
-     * EnrollRequest constructor.
-     * @param string $endpoint
+     * VerifyPasswordRequest constructor.
+     * @param AvailableRequest $endpoint
+     * @param AvailableHttpMethod $method
+     * @param string $verifyPasswordRequest
      * @param int $version
-     * @param $appToken
      */
-    public function __construct(AvailableRequests $endpoint, int $version)
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
+                                string $verifyPasswordRequest, int $version)
     {
         $this->version = $version;
-        parent::__construct($endpoint);
+        $this->verifyPasswordRequest = $verifyPasswordRequest;
+        parent::__construct($endpoint, $method);
     }
 
     /**
      * @return string
      */
-    protected function formatBody(): string
+    public function getOptionsBody(): string
     {
-        $protobufEnrollmentRequest = new ProtobufEnrollmentRequest();
-        $protobufEnrollmentRequest = $protobufEnrollmentRequest->setVersion($this->version);
-        $body = $protobufEnrollmentRequest->serializeToString();
+        $r = new ProtobufVerifyPasswordRequest();
+        $r->setVersion($this->version);
+        $r->setRequest($this->verifyPasswordRequest);
+        $body = $r->serializeToString();
         return $body;
     }
 }

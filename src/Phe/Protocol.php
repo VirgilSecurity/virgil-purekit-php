@@ -39,14 +39,14 @@ namespace Virgil\PureKit\Phe;
 
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Purekit\EnrollmentResponse;
-use Virgil\PureKit\Exceptions\ProtocolException;
+use Virgil\PureKit\Http\HttpPheClient;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Helpers\ArrayHelperTrait;
-use Virgil\PureKit\Http\HttpClient;
 use Virgil\PureKit\Http\Request\EnrollRequest;
 use Virgil\PureKit\Http\Request\VerifyPasswordRequest;
 use Purekit\VerifyPasswordResponse;
-use VirgilCrypto\Phe\PheCipher;
-use VirgilCrypto\Phe\PheClient;
+use Virgil\CryptoWrapper\Phe\PheCipher;
+use Virgil\CryptoWrapper\Phe\PheClient;
 
 /**
  *
@@ -55,62 +55,28 @@ use VirgilCrypto\Phe\PheClient;
  * Class Protocol
  * @package Virgil\PureKit\Protocol
  */
-class Protocol implements AvailableProtocol
+class Protocol
 {
     use ArrayHelperTrait;
 
-    /**
-     * @var HttpClient
-     */
     private $httpClient;
 
-    /**
-     * @var PHECipher
-     */
     private $PHECipher;
 
-    /**
-     * @var ProtocolContext
-     */
     private $context;
 
-    /**
-     *
-     * NewProtocol initializes new protocol instance with proper Context
-     *
-     * Protocol constructor.
-     * @param ProtocolContext $context
-     * @throws \Exception
-     */
     public function __construct(ProtocolContext $context)
     {
-        $this->httpClient = new HttpClient();
+        $this->httpClient = new HttpPheClient();
         $this->PHECipher = new PheCipher();
         $this->context = $context;
     }
 
-    /**
-     * @param string $name
-     * @param array $arguments
-     * @throws ProtocolException
-     */
-    public function __call(string $name, array $arguments)
+    public function __call(string $name)
     {
-        if(!in_array($name, AvailableProtocol::ENDPOINTS))
-            throw new ProtocolException("Incorrect endpoint: $name. Correct endpoints: {$this->toString(AvailableProtocol::ENDPOINTS)}");
-
-        return;
+        throw new ProtocolException("Incorrect endpoint: $name");
     }
 
-    /**
-     *
-     * EnrollAccount requests pseudo-random data from server and uses it to protect password and daa encryption key
-     *
-     * @param string $password
-     * @return array
-     * @throws ProtocolException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
     public function enrollAccount(string $password): array
     {
         if(""==$password)
@@ -145,16 +111,6 @@ class Protocol implements AvailableProtocol
         return $enroll; // [record, enrollment key]
     }
 
-    /**
-     *
-     * VerifyPassword verifies a password against enrollment record using passw0rd service
-     *
-     * @param string $password
-     * @param string $record
-     * @return string
-     * @throws ProtocolException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
     public function verifyPassword(string $password, string $record): string
     {
         // PHE Request
@@ -202,24 +158,12 @@ class Protocol implements AvailableProtocol
         return $encryptionKey;
     }
 
-    /**
-     * @param string $plainText
-     * @param string $accountKey
-     * @return string
-     * @throws \Exception
-     */
     public function encrypt(string $plainText, string $accountKey): string
     {
         $this->getPHECipher()->setupDefaults();
         return $this->getPheCipher()->encrypt($plainText, $accountKey);
     }
 
-    /**
-     * @param string $cipherText
-     * @param string $accountKey
-     * @return string
-     * @throws \Exception
-     */
     public function decrypt(string $cipherText, string $accountKey): string
     {
         return $this->getPheCipher()->decrypt($cipherText, $accountKey);

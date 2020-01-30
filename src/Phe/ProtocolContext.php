@@ -38,8 +38,8 @@
 namespace Virgil\PureKit\Phe;
 
 use Virgil\PureKit\Credentials\InputCredentialsChecker;
-use Virgil\PureKit\Exceptions\ProtocolContextException;
-use VirgilCrypto\Phe\PheClient;
+use Virgil\PureKit\Phe\Exceptions\ProtocolContextException;
+use Virgil\CryptoWrapper\Phe\PheClient;
 
 /**
  * Class ProtocolContext
@@ -215,7 +215,7 @@ class ProtocolContext
     }
 
     /**
-     * @return \Virgil\PureKit\Phe\PheClient
+     * @return PheClient
      */
     public function getPheImpl(): PheClient
     {

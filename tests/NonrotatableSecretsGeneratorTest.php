@@ -60,7 +60,6 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
     {
         try {
             $data = base64_decode($this->nms);
-
             $nonrotatableSecrets = NonrotatableSecretsGenerator::generateSecrets($data);
 
             $this->assertEquals(base64_decode($this->ak), $nonrotatableSecrets->getAk());

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,13 +35,15 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Phe;
+namespace Virgil\PureKit\Http\_;
 
-/**
- * Interface AvailableProtocol
- * @package Virgil\PureKit\Protocol
- */
-interface AvailableProtocol
+
+use MyCLabs\Enum\Enum;
+
+class AvailableHttpMethod extends Enum
 {
-    const ENDPOINTS = ['enrollAccount', 'verifyPassword', 'updateEnrollmentRecord'];
+    private const GET = "GET";
+    private const POST = "POST";
+    private const PUT = "PUT";
+    private const DELETE = "DELETE";
 }

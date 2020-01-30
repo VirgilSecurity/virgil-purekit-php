@@ -3,9 +3,12 @@
          colors="true"
          verbose="true"
          stopOnFailure="false">
-<testsuites>
-    <testsuite name="tests">
-        <directory>tests/</directory>
-    </testsuite>
-</testsuites>
+    <testsuites>
+        <testsuite name="tests">
+            <directory suffix=".php">./tests/</directory>
+            <exclude>./tests/PheTest.php</exclude>
+            <exclude>./tests/PheCipherTest.php</exclude>
+            <exclude>./tests/PureTest.php</exclude>
+        </testsuite>
+    </testsuites>
 </phpunit>

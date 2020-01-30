@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Exceptions;
+namespace Virgil\PureKit\Phe\Exceptions;
 
 /**
  * Class RequestClassException

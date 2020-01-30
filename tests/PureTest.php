@@ -37,8 +37,8 @@
 
 namespace Virgil\PureKit\Tests;
 
-use Virgil\CryptoImpl\Core\KeyPairType;
-use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\Crypto\Core\KeyPairType;
+use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Pure;
@@ -72,11 +72,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
      * @param VirgilPublicKeyCollection $externalPublicKeys
      * @param StorageType $storageType
      * @return PureSetupResult
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     private function setupPure(
         string $pheServerAddress,

@@ -39,8 +39,8 @@ namespace Virgil\PureKit\Phe;
 
 use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
 use Virgil\PureKit\Credentials\UpdateToken;
-use Virgil\PureKit\Exceptions\RecordUpdaterException;
-use VirgilCrypto\Phe\PheClient;
+use Virgil\PureKit\Phe\Exceptions\RecordUpdaterException;
+use Virgil\CryptoWrapper\Phe\PheClient;
 
 /**
  *
@@ -58,7 +58,7 @@ class RecordUpdater
     /**
      * RecordUpdater constructor.
      * @param string $updateToken
-     * @throws \Virgil\PureKit\Exceptions\UpdateTokenException
+     * @throws \Exception
      */
     public function __construct(string $updateToken)
     {
@@ -71,7 +71,6 @@ class RecordUpdater
      * @param string $record
      * @return null|string
      * @throws RecordUpdaterException
-     * @throws \Virgil\PureKit\Exceptions\ProtocolContextException
      */
     public function update(string $record)
     {
@@ -93,7 +92,6 @@ class RecordUpdater
      * @param string $record
      * @return bool
      * @throws RecordUpdaterException
-     * @throws \Virgil\PureKit\Exceptions\ProtocolContextException
      */
     private function validate(string $record): bool
     {

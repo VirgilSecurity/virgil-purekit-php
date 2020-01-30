@@ -38,10 +38,10 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
-use VirgilCrypto\Foundation\KeyMaterialRng;
+use Virgil\CryptoWrapper\Foundation\KeyMaterialRng;
 
 /**
  * Class NonrotatableSecretsGenerator
@@ -56,7 +56,7 @@ class NonrotatableSecretsGenerator
      * @param string $masterSecret
      * @return NonrotableSecrets
      * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public static function generateSecrets(string $masterSecret): NonrotableSecrets
     {
@@ -68,7 +68,7 @@ class NonrotatableSecretsGenerator
 
         $ak = $rng->random(self::AK_LENGTH);
 
-        $crypto = new VirgilCrypto($rng);
+        $crypto = new VirgilCrypto(null, false, $rng);
 
         $vskp = $crypto->generateKeyPair();
         $oskp = $crypto->generateKeyPair();

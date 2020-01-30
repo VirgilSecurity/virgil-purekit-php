@@ -35,50 +35,43 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
-
-use Purekit\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
+namespace Virgil\PureKit\Http\_;
 
 /**
- * Class VerifyPasswordRequest
- * @package Virgil\PureKit\Http\Request
+ * Class HttpVirgilAgent
+ * @package Virgil\PureKit\Http
  */
-class VerifyPasswordRequest extends BaseRequest
+class HttpVirgilAgent
 {
-    /**
-     * @var int
-     */
-    private $version;
+    const PRODUCT = 'purekit';
+    const FAMILY = 'php';
+    const VERSION = '3.0.0'; // TODO: Add composer.lock parser!
 
     /**
-     * @var string
+     * @return string
      */
-    private $verifyPasswordRequest;
-
-    /**
-     * VerifyPasswordRequest constructor.
-     * @param string $endpoint
-     * @param string $verifyPasswordRequest
-     * @param int $version
-     * @param string $appToken
-     */
-    public function __construct(string $endpoint, string $verifyPasswordRequest, int $version, string $appToken)
+    private static function getPlatform(): string
     {
-        $this->appToken = $appToken;
-        $this->version = $version;
-        $this->verifyPasswordRequest = $verifyPasswordRequest;
-        parent::__construct($endpoint);
+        return strtolower(php_uname('s'));
     }
 
     /**
      * @return string
      */
-    protected function formatBody(): string
+    private static function getPHPVersion(): string
     {
-        $protobufVerifyPasswordRequest = new ProtobufVerifyPasswordRequest();
-        $protobufVerifyPasswordRequest->setVersion($this->version);
-        $protobufVerifyPasswordRequest->setRequest($this->verifyPasswordRequest);
-        $body = $protobufVerifyPasswordRequest->serializeToString();
-        return $body;
+        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+    }
+
+    /**
+     * @return string
+     */
+    public static function getFormatted(): string
+    {
+        return
+            self::PRODUCT . ";" .
+            self::FAMILY . self::getPHPVersion() . ";" .
+            self::getPlatform() . ";" .
+            self::VERSION;
     }
 }

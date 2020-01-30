@@ -37,31 +37,43 @@
 
 namespace Virgil\PureKit\Http\Request;
 
-use Virgil\PureKit\Http\HttpVirgilAgent;
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\_\HttpVirgilAgent;
 
+/**
+ * Class BaseRequest
+ * @package Virgil\PureKit\Http\Request
+ */
 abstract class BaseRequest
 {
-    const POST = 'POST';
-    const GET = 'GET';
-
-    protected $method = self::POST;
+    /**
+     * @var AvailableRequest
+     */
     protected $endpoint;
-    protected $optionsHeader;
-    protected $optionsBody;
-
-    protected $virgilAgent;
-
-    protected $appToken;
+    /**
+     * @var AvailableHttpMethod
+     */
+    protected $method;
 
     /**
      * BaseRequest constructor.
-     * @param string $endpoint
+     * @param AvailableRequest $endpoint
+     * @param AvailableHttpMethod $method
      */
-    public function __construct(string $endpoint)
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
     {
         $this->endpoint = $endpoint;
-        $this->virgilAgent = new HttpVirgilAgent();
-        $this->optionsBody = $this->formatBody();
+        $this->method = $method;
+    }
+
+    /**
+     * @param string $appToken
+     * @return array
+     */
+    public function getOptionsHeader(string $appToken): array
+    {
+        return ["virgil-agent" => HttpVirgilAgent::getFormatted(), "AppToken" => $appToken];
     }
 
     /**
@@ -69,27 +81,19 @@ abstract class BaseRequest
      */
     public function getMethod(): string
     {
-        return $this->method;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptionsHeader(): array
-    {
-        return ["virgil-agent" => $this->virgilAgent->getFormatString(), "AppToken" => $this->appToken];
+        return $this->method->getValue();
     }
 
     /**
      * @return string
      */
-    public function getOptionsBody(): string
+    public function getEndpoint(): string
     {
-        return $this->optionsBody;
+        return $this->endpoint->getValue();
     }
 
     /**
      * @return string
      */
-    abstract protected function formatBody(): string;
+    abstract function getOptionsBody(): string;
 }

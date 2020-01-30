@@ -39,31 +39,80 @@ namespace Virgil\PureKit\Http;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Psr\Http\Message\ResponseInterface;
+use Virgil\PureKit\Exceptions\ProtocolException;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
  * Class HttpClient
  * @package Virgil\PureKit\Http
  */
-class BaseHttpClient
+class HttpBaseClient
 {
     /**
      * @var GuzzleClient
      */
-    protected $httpClient;
-    protected $serviceBaseUrl;
-    protected $appToken;
+    private $httpClient;
+    /**
+     * @var string
+     */
+    private $serviceBaseUrl;
+    /**
+     * @var bool
+     */
+    private $debug;
+    /**
+     * @var string
+     */
+    private $appToken;
 
-    public function __construct(string $serviceBaseUrl, string $appToken)
+    /**
+     * BaseHttpClient constructor.
+     * @param string $serviceBaseUrl
+     * @param string $appToken
+     * @param bool $debug
+     */
+    public function __construct(string $serviceBaseUrl, string $appToken, bool $debug = false)
     {
-        $this->httpClient = new GuzzleClient();
         $this->serviceBaseUrl = $serviceBaseUrl;
         $this->appToken = $appToken;
+        $this->debug = $debug;
+
+        $this->httpClient = new GuzzleClient(['base_uri' => $this->_getServiceBaseUrl()]);
     }
 
-    public function send(BaseRequest $request, bool $debug=true): ResponseInterface
+    /**
+     * @param BaseRequest $request
+     * @return ResponseInterface
+     * @throws ProtocolException
+     */
+    protected function _send(BaseRequest $request): ResponseInterface
     {
-        return $this->httpClient->request($request->getMethod(), $this->serviceBaseUrl,
-            ["headers" => $request->getOptionsHeader(), "body" => $request->getOptionsBody(), 'debug' => $debug]);
+        $r = $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
+            [
+                "headers" => $request->getOptionsHeader($this->appToken),
+                "body" => $request->getOptionsBody(),
+                'debug' => $this->debug
+            ]);
+
+        $this->_checkStatus($r);
+        return $r;
+    }
+
+    /**
+     * @return string
+     */
+    private function _getServiceBaseUrl(): string
+    {
+        return $this->serviceBaseUrl;
+    }
+
+    /**
+     * @param ResponseInterface $r
+     * @throws ProtocolException
+     */
+    private function _checkStatus(ResponseInterface $r): void
+    {
+        if (200 != $r->getStatusCode())
+            throw new ProtocolException("Api error. Status code: {$r->getStatusCode()}", $r->getStatusCode());
     }
 }

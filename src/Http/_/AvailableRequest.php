@@ -35,40 +35,28 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http;
+namespace Virgil\PureKit\Http\_;
 
-/**
- * Class HttpVirgilAgent
- * @package Virgil\PureKit\Http
- */
-class HttpVirgilAgent
+use MyCLabs\Enum\Enum;
+
+class AvailableRequest extends Enum
 {
-    const PRODUCT = 'purekit';
-    const FAMILY = 'php';
-    const VERSION = '3.0.0'; // TODO: Add composer.lock parser!
+    private const ENROLL = "/enroll";
+    private const VERIFY_PASSWORD = "/verify-password";
 
-    /**
-     * @return string
-     */
-    private function getPlatform(): string
-    {
-        return strtolower(php_uname('s'));
-    }
-
-    /**
-     * @return string
-     */
-    private function getPHPVersion(): string
-    {
-        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFormatString(): string
-    {
-        return self::PRODUCT . ";" . self::FAMILY . $this->getPHPVersion() . ";" . $this->getPlatform() . ";" .
-    self::VERSION;
-    }
+    private const INSERT_USER = "/user";
+    private const UPDATE_USER = "/user/%s";
+    private const GET_USER = "/user/%s";
+    private const GET_USERS = "/get-users";
+    private const DELETE_USER = "/user/%s";
+    private const INSERT_CELL_KEY = "/cell-key";
+    private const UPDATE_CELL_KEY = "/cell-key/%s/%s";
+    private const GET_CELL_KEY = "/cell-key/%s/%s";
+    private const DELETE_CELL_KEY = "/cell-key/%s/%s";
+    private const INSERT_ROLE = "/roles";
+    private const GET_ROLES = "/get-roles";
+    private const INSERT_ROLE_ASSIGNMENTS = "/role-assignments";
+    private const GET_ROLE_ASSIGNMENTS = "/get-role-assignments";
+    private const GET_ROLE_ASSIGNMENT = "/get-role-assignment";
+    private const DELETE_ROLE_ASSIGNMENTS = "/delete-role-assignments";
 }

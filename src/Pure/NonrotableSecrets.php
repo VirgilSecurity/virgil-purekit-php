@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\CryptoImpl\Core\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilKeyPair;
 
 class NonrotableSecrets
 {

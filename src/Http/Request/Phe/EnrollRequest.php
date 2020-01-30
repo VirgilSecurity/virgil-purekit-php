@@ -35,28 +35,43 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Client;
+namespace Virgil\PureKit\Http\Request;
 
-use MyCLabs\Enum\Enum;
+use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
 
-class AvailableRequests extends Enum
+/**
+ * Class EnrollRequest
+ * @package Virgil\PureKit\Http\Request
+ */
+class EnrollRequest extends BaseRequest
 {
-    private const ENROLL = "/enroll";
-    private const VERIFY_PASSWORD = "/verify-password";
+    /**
+     * @var int
+     */
+    private $version;
 
-    private const INSERT_USER = "/user";
-    private const UPDATE_USER = "/user/%s";
-    private const GET_USER = "/user/%s";
-    private const GET_USERS = "/get-users";
-    private const DELETE_USER = "/user/%s";
-    private const INSERT_CELL_KEY = "/cell-key";
-    private const UPDATE_CELL_KEY = "/cell-key/%s/%s";
-    private const GET_CELL_KEY = "/cell-key/%s/%s";
-    private const DELETE_CELL_KEY = "/cell-key/%s/%s";
-    private const INSERT_ROLE = "/roles";
-    private const GET_ROLES = "/get-roles";
-    private const INSERT_ROLE_ASSIGNMENTS = "/role-assignments";
-    private const GET_ROLE_ASSIGNMENTS = "/get-role-assignments";
-    private const GET_ROLE_ASSIGNMENT = "/get-role-assignment";
-    private const DELETE_ROLE_ASSIGNMENTS = "/delete-role-assignments";
+    /**
+     * EnrollRequest constructor.
+     * @param AvailableRequest $endpoint
+     * @param AvailableHttpMethod $method
+     * @param int $version
+     */
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method, int $version)
+    {
+        $this->version = $version;
+        parent::__construct($endpoint, $method);
+    }
+
+    /**
+     * @return string
+     */
+    public function getOptionsBody(): string
+    {
+        $r = new ProtoEnrollmentRequest();
+        $r = $r->setVersion($this->version);
+        $body = $r->serializeToString();
+        return $body;
+    }
 }

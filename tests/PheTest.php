@@ -180,8 +180,6 @@ class PheTest extends \PHPUnit\Framework\TestCase
      */
     public function testCaseHTC_4()
     {
-        self::markTestSkipped("temp skipped");
-
         $this->sleep();
 
         foreach ($this->projects as $project) {

@@ -5,3 +5,4 @@ vendor
 composer_dev.json
 composer_dev.lock
 _dev/
+.phpunit.result.cache
