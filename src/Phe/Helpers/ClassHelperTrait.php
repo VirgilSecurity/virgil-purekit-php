@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Helpers;
+namespace Virgil\PureKit\Phe\Helpers;
 
 trait ClassHelperTrait
 {

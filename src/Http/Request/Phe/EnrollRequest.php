@@ -35,11 +35,12 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Phe;
 
 use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
 use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
  * Class EnrollRequest

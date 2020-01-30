@@ -36,8 +36,9 @@
  */
 
 use Dotenv\Dotenv;
-use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
-use Virgil\PureKit\Exceptions\ProtocolException;
+use Virgil\PureKit\Phe\Exceptions\ProtocolContextException;
+use Virgil\PureKit\Protobuf\DatabaseRecord;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Phe\Protocol;
 use Virgil\PureKit\Phe\ProtocolContext;
 use Virgil\PureKit\Phe\RecordUpdater;
@@ -54,7 +55,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp(): void
     {
-        (new Dotenv(__DIR__ . "/../../virgil-purekit-php/"))->load();
+        (new Dotenv(__DIR__ . "/../"))->load();
         $this->projects = explode(',',$_ENV['PROJECTS']);
 
         $this->password = "password123456";
@@ -65,7 +66,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    private function sleep(int $seconds=5)
+    private function sleep(int $seconds=1)
     {
         sleep($seconds);
     }
@@ -93,7 +94,9 @@ class PheTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     *
      * @medium
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolContextException
      */
     public function testCaseHTC_1()
     {
@@ -111,7 +114,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
             $this->assertEquals(2, $recVersion);
 
             $this->assertNotEmpty($rec);
-            $this->assertInternalType('array', $rec);
+            $this->assertIsArray($rec);
             $this->assertEquals(207, strlen($recRecord));
             $this->assertEquals(32, strlen($recAccountKey));
 
@@ -124,6 +127,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @medium
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolContextException
      */
     public function testCaseHTC_2()
     {
@@ -140,7 +144,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
             $this->assertEquals(3, $recVersion);
 
             $this->assertNotEmpty($rec);
-            $this->assertInternalType('array', $rec);
+            $this->assertIsArray($rec);
             $this->assertEquals(207, strlen($recRecord));
             $this->assertEquals(32, strlen($recAccountKey));
 
@@ -166,7 +170,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
             $recAccountKey = $rec[1];
 
             $this->assertNotEmpty($rec);
-            $this->assertInternalType('array', $rec);
+            $this->assertIsArray($rec);
             $this->assertEquals(207, strlen($recRecord));
             $this->assertEquals(32, strlen($recAccountKey));
 
@@ -189,6 +193,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
             $rec1Record = $rec1[0];
             $rec1AccountKey = $rec1[1];
 
+            $this->expectException(ProtocolContextException::class);
             $this->protocol2[$project] = new Protocol($this->getContext($project, false, false));
 
             $this->expectException(ProtocolException::class);
@@ -245,6 +250,7 @@ class PheTest extends \PHPUnit\Framework\TestCase
 
     /**
      * @medium
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolContextException
      */
     public function testCaseHTC_7()
     {

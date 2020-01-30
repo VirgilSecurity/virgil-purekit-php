@@ -35,10 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Core\Protobuf;
+namespace Virgil\PureKit\Protobuf;
 
-use Purekit\DatabaseRecord as ProtobufDatabaseRecord;
-use Virgil\PureKit\Exceptions\ProtocolContextException;
+use Purekit\DatabaseRecord as ProtoDatabaseRecord;
+use Virgil\PureKit\Phe\Exceptions\ProtocolContextException;
 
 /**
  * Class DatabaseRecord
@@ -47,11 +47,11 @@ use Virgil\PureKit\Exceptions\ProtocolContextException;
 class DatabaseRecord
 {
     /**
-     * @return ProtobufDatabaseRecord
+     * @return ProtoDatabaseRecord
      */
     private static function initInstance()
     {
-        return new ProtobufDatabaseRecord();
+        return new ProtoDatabaseRecord();
     }
 
     /**

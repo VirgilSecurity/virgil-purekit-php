@@ -6,7 +6,6 @@
     <testsuites>
         <testsuite name="tests">
             <directory suffix=".php">./tests/</directory>
-            <exclude>./tests/PheTest.php</exclude>
             <exclude>./tests/PureTest.php</exclude>
         </testsuite>
     </testsuites>

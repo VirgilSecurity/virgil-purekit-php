@@ -39,8 +39,8 @@ namespace Virgil\PureKit\Http;
 
 use Purekit\EnrollmentResponse as ProtoEnrollmentResponse;
 use Purekit\VerifyPasswordResponse as ProtoVerifyPasswordResponse;
-use Virgil\PureKit\Http\Request\EnrollRequest;
-use Virgil\PureKit\Http\Request\VerifyPasswordRequest;
+use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
+use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class HttpPheClient extends HttpBaseClient
@@ -48,7 +48,7 @@ class HttpPheClient extends HttpBaseClient
     protected $appToken;
     protected $serviceAddress;
 
-    private const SERVICE_ADDRESS = "https://api-dev.virgilsecurity.com/phe/v1/";
+    private const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1/";
 
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
     {
@@ -76,7 +76,7 @@ class HttpPheClient extends HttpBaseClient
     /**
      * @param VerifyPasswordRequest $request
      * @return ProtoVerifyPasswordResponse
-     * @throws \Virgil\PureKit\Exceptions\ProtocolException
+     * @throws \Exception
      */
     public function verifyPassword(VerifyPasswordRequest $request): ProtoVerifyPasswordResponse
     {

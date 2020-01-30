@@ -83,9 +83,10 @@ class ProtocolContext
 
     /**
      * @param array $credentials
+     * @return void
      * @throws \Exception
      */
-    public function mainSetter(array $credentials)
+    public function mainSetter(array $credentials): void
     {
         $this->setCredentials($credentials);
 
@@ -238,15 +239,13 @@ class ProtocolContext
 
         if (!is_null($updateToken)) {
             $newKeys = $PHEClient->rotateKeys($updateToken);
-
             $this->newRawKeys = $newKeys;
 
             $nextPHEClient = new PheClient();
             $nextPHEClient->setupDefaults();
+
             $nextPHEClient->setKeys($newKeys[0], $newKeys[1]);
-
             $this->setUpdateTokenVersion();
-
             $this->pheImpl = $nextPHEClient;
         }
     }

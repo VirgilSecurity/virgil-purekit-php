@@ -37,16 +37,15 @@
 
 namespace Virgil\PureKit\Phe;
 
-use Virgil\PureKit\Core\Protobuf\DatabaseRecord;
-use Purekit\EnrollmentResponse;
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPheClient;
 use Virgil\PureKit\Phe\Exceptions\ProtocolException;
-use Virgil\PureKit\Helpers\ArrayHelperTrait;
-use Virgil\PureKit\Http\Request\EnrollRequest;
-use Virgil\PureKit\Http\Request\VerifyPasswordRequest;
-use Purekit\VerifyPasswordResponse;
+use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
+use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\CryptoWrapper\Phe\PheClient;
+use Virgil\PureKit\Protobuf\DatabaseRecord;
 
 /**
  *
@@ -57,8 +56,6 @@ use Virgil\CryptoWrapper\Phe\PheClient;
  */
 class Protocol
 {
-    use ArrayHelperTrait;
-
     private $httpClient;
 
     private $PHECipher;
@@ -67,42 +64,39 @@ class Protocol
 
     public function __construct(ProtocolContext $context)
     {
-        $this->httpClient = new HttpPheClient();
+        $this->httpClient = new HttpPheClient($context->getAppToken());
         $this->PHECipher = new PheCipher();
         $this->context = $context;
     }
 
-    public function __call(string $name)
+    /**
+     * @param string $name
+     * @param string $argument
+     * @throws ProtocolException
+     */
+    public function __call(string $name, string $argument)
     {
         throw new ProtocolException("Incorrect endpoint: $name");
     }
 
+    /**
+     * @param string $password
+     * @return array
+     * @throws ProtocolException
+     */
     public function enrollAccount(string $password): array
     {
-        if(""==$password)
+        if("" == $password)
             throw new ProtocolException("Empty password");
 
-        // API Request
-        $enrollRequest = new EnrollRequest('enroll', $this->getVersion(), $this->context->getAppToken());
-        $this->httpClient->setRequest($enrollRequest);
+        $request = new EnrollRequest(AvailableRequest::ENROLL(), AvailableHttpMethod::POST(), $this->getVersion());
 
-        // API Response
-        $response = $this->httpClient->getResponse(false);
+        $response = $this->httpClient->enrollAccount($request);
+        $enrollmentResponse = $response->getResponse();
 
-        if($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
-
-        $protobufResponse = $response->getBody()->getContents();
-
-        // Protobuf Response
-        $protoEnrollmentResponse = new EnrollmentResponse();
-        $protoEnrollmentResponse->mergeFromString($protobufResponse);
-        $enrollmentResponse = $protoEnrollmentResponse->getResponse();
-
-        // PHE Response
         try {
             $enroll = $this->getPHEClient()->enrollAccount($enrollmentResponse, $password);
-            $enroll[0] = DatabaseRecord::setup($enroll[0], (int) $protoEnrollmentResponse->getVersion());
+            $enroll[0] = DatabaseRecord::setup($enroll[0], (int) $response->getVersion());
         }
         catch(\Exception $e) {
             throw new ProtocolException("Invalid proof");
@@ -111,11 +105,17 @@ class Protocol
         return $enroll; // [record, enrollment key]
     }
 
+    /**
+     * @param string $password
+     * @param string $record
+     * @return string
+     * @throws ProtocolException
+     */
     public function verifyPassword(string $password, string $record): string
     {
         // PHE Request
         try {
-            if((int)DatabaseRecord::getValue($record, "version") !== (int)$this->getVersion())
+            if ((int) DatabaseRecord::getValue($record, "version") != (int) $this->getVersion())
                 throw new ProtocolException("Invalid User Version");
 
             $record = DatabaseRecord::getValue($record, "record");
@@ -125,26 +125,15 @@ class Protocol
             throw new ProtocolException($e->getMessage());
         }
 
-        // API Request
-        $verifyPassword = new VerifyPasswordRequest('verify-password', $verifyPasswordRequest, $this->getVersion(),
-            $this->context->getAppToken());
+        $request = new VerifyPasswordRequest(
+            AvailableRequest::VERIFY_PASSWORD(),
+            AvailableHttpMethod::POST(),
+            $verifyPasswordRequest,
+            $this->getVersion());
 
-        $this->httpClient->setRequest($verifyPassword);
+        $response = $this->httpClient->verifyPassword($request);
+        $verifyPasswordResponse = $response->getResponse();
 
-        // API Response
-        $response = $this->httpClient->getResponse(false);
-
-        if($response->getStatusCode() !== 200)
-            throw new ProtocolException("Api error. Status code: {$response->getStatusCode()}");
-
-        $protobufResponse = $response->getBody()->getContents();
-
-        // Protobuf Response
-        $protoVerifyPasswordResponse = new VerifyPasswordResponse();
-        $protoVerifyPasswordResponse->mergeFromString($protobufResponse);
-        $verifyPasswordResponse = $protoVerifyPasswordResponse->getResponse();
-
-        // PHE Response
         try {
             $encryptionKey = $this->getPHEClient()->checkResponseAndDecrypt($password, $record, $verifyPasswordResponse);
 
@@ -158,12 +147,24 @@ class Protocol
         return $encryptionKey;
     }
 
+    /**
+     * @param string $plainText
+     * @param string $accountKey
+     * @return string
+     * @throws \Exception
+     */
     public function encrypt(string $plainText, string $accountKey): string
     {
         $this->getPHECipher()->setupDefaults();
         return $this->getPheCipher()->encrypt($plainText, $accountKey);
     }
 
+    /**
+     * @param string $cipherText
+     * @param string $accountKey
+     * @return string
+     * @throws \Exception
+     */
     public function decrypt(string $cipherText, string $accountKey): string
     {
         return $this->getPheCipher()->decrypt($cipherText, $accountKey);
