@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\_tests\feature;
 
-use VirgilCrypto\Phe\PheCipher;
+use Virgil\CryptoWrapper\Phe\PheCipher;
 
 class PheCipherTest extends \PHPUnit\Framework\TestCase
 {
