@@ -39,12 +39,14 @@ namespace Virgil\PureKit\Pure;
 
 use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
 use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
+use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
+use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
@@ -64,18 +66,24 @@ use Virgil\Crypto\Core\HashAlgorithms;
 
 class Pure
 {
+    public const RECOVER_PWD_ALIAS = "RESET_PWD";
+
     private $crypto;
     private $pureCrypto;
     private $cipher;
     private $storage;
     private $currentVersion;
-    private $currentClient;
-    private $updateToken;
-    private $previousClient;
+    private $currentPheClient;
+    private $currentKmsClient;
+    private $pheUpdateToken;
+    private $kmsUpdateToken;
+    private $previousPheClient;
+    private $previousKmsClient;
     private $ak;
     private $buppk;
     private $oskp;
     private $httpPheClient;
+    private $httpKmsClient;
     private $externalPublicKeys;
 
     private $currentGrantVersion = 1;
@@ -93,33 +101,60 @@ class Pure
             $this->cipher = new PheCipher();
             $this->cipher->useRandom($this->crypto->getRng());
             $this->storage = $context->getStorage();
-            $this->currentClient = new PheClient();
-            $this->currentClient->useOperationRandom($this->crypto->getRng());
-            $this->currentClient->useRandom($this->crypto->getRng());
-            $this->currentClient->setKeys(
+            $this->currentPheClient = new PheClient();
+            $this->currentPheClient->useOperationRandom($this->crypto->getRng());
+            $this->currentPheClient->useRandom($this->crypto->getRng());
+            $this->currentPheClient->setKeys(
                 $context->getPheSecretKey()->getPayload(),
                 $context->getPhePublicKey()->getPayload());
 
-            if (is_null($context->getUpdateToken())) {
+            $this->currentKmsClient = new UokmsClient();
+            $this->currentKmsClient->setOperationRandom($this->crypto->getRng());
+            $this->currentKmsClient->setRandom($this->crypto->getRng());
+            $this->currentKmsClient->setKeys($context->getKmsSecretKey()->getPayload(),
+                $context->getKmsPublicKey()->getPayload());
+
+
+            if (!is_null($context->getPheUpdateToken())) {
+                if (is_null($context->getKmsUpdateToken()))
+                    throw new PureLogicException(ErrorStatus::UPDATE_TOKENS_MISMATCH());
+
                 $this->currentVersion = $context->getPhePublicKey()->getVersion() + 1;
-                $this->updateToken = $context->getUpdateToken()->getPayload();
-                $this->previousClient = new PheClient();
-                $this->previousClient->useOperationRandom($this->crypto->getRng());
-                $this->previousClient->useRandom($this->crypto->getRng());
-                $this->previousClient->setKeys(
+
+                $this->updateToken = $context->getPheUpdateToken()->getPayload();
+                $this->previousPheClient = new PheClient();
+                $this->previousPheClient->useOperationRandom($this->crypto->getRng());
+                $this->previousPheClient->useRandom($this->crypto->getRng());
+                $this->previousPheClient->setKeys(
                     $context->getPheSecretKey()->getPayload(),
                     $context->getPhePublicKey()->getPayload());
-                $this->currentClient->rotateKeys($context->getUpdateToken()->getPayload());
+
+                $this->currentPheClient->rotateKeys($context->getPheUpdateToken()->getPayload());
+
+                $this->kmsUpdateToken = $context->getKmsUpdateToken()->getPayload();
+                $this->previousKmsClient = new UokmsClient();
+                $this->previousKmsClient->useOperationRandom($this->crypto->getRng());
+                $this->previousKmsClient->useRandom($this->crypto->getRng());
+                $this->previousKmsClient->setKeys($context->getKmsSecretKey()->getPayload(),
+                    $context->getKmsPublicKey()->getPayload());
+                $this->currentKmsClient->rotateKeys($context->getKmsUpdateToken()->getPayload());
+
             } else {
+                if (!is_null($context->getKmsUpdateTokne()))
+                    throw new PureLogicException(ErrorStatus::UPDATE_TOKENS_MISMATCH());
+
                 $this->currentVersion = $context->getPhePublicKey()->getVersion();
-                $this->updateToken = null;
-                $this->previousClient = null;
+                $this->pheUpdateToken = null;
+                $this->kmsUpdateToken = null;
+                $this->previousPheClient = null;
+                $this->previousKmsClient = null;
             }
 
             $this->ak = $context->getNonrotableSecrets()->getAk();
             $this->buppk = $context->getBuppk();
             $this->oskp = $context->getNonrotableSecrets()->getAk();
             $this->httpPheClient = $context->getPheClient();
+            $this->httpKmsClient = $context->getKmsClient();
             $this->externalPublicKeys = $context->getExternalPublicKeys();
         } catch (\Exception $exception) {
             throw new PureCryptoException($exception);
@@ -268,6 +303,41 @@ class Pure
         $this->_changeUserPassword($userRecord, $privateKeyData, $newPassword);
     }
 
+    public function recoverUser(string $userId, string $newPassword): void
+    {
+        // TODO: Refactor
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
+
+        $userRecord = $this->storage->selectUser($userId);
+
+        $kmsClient = $this->getKmsClient($userRecord->getPheRecordVersion());
+
+        $uokmsClientGenerateDecryptRequestResult = $this->kmsClient->generateDecryptRequest
+        ($userRecord->getPasswordResetWrap());
+
+        $decryptRequest = (new ProtoDecryptRequest)
+        ->setVersion($userRecord->getPheRecordVersion())
+        ->setAlias(self::RECOVER_PWD_ALIAS)
+        ->setRequest($uokmsClientGenerateDecryptRequestResult->getDecryptRequest());
+
+        $decryptResponse = $this->httpKmsClient->decrypt($decryptRequest);
+
+        $derivedSecret = $kmsClient->processDecryptResponse($userRecord->getPasswordResetWrap(),
+            $uokmsClientGenerateDecryptRequestResult->getDecryptRequest(),
+            $decryptResponse->getResponse(),
+            $uokmsClientGenerateDecryptRequestResult->getDeblindFactor(),
+            44 /* FIXME */);
+
+        $pwdHash = $this->recoverPwd($derivedSecret, $userRecord->getPasswordResetBlob());
+
+        $oldPhek = $this->computePheKey($userRecord, $pwdHash);
+
+        $privateKeyData = $this->cipher->decrypt($userRecord->getEncryptedUsk(), $oldPhek);
+
+        $this->changeUserPassword($userRecord, $privateKeyData, $newPassword);
+    }
+
     public function resetUserPassword(string $userId, string $newPassword): void
     {
         // TODO: Add possibility to delete cell keys? -> ????
@@ -282,14 +352,19 @@ class Pure
 
     public function performRotation(): int
     {
-        ValidateUtil::checkNull($this->updateToken, "updateToken");
+        ValidateUtil::checkNull($this->pheUpdateToken, "pheUpdateToken");
+        ValidateUtil::checkNull($this->kmsUpdateToken, "kmsUpdateToken");
 
         if ($this->currentVersion <= 1)
             return 0;
 
         $rotations = 0;
 
-        $pheClient = $this->getClient($this->currentVersion - 1);
+        $pheClient = $this->getPheClient($this->currentVersion - 1);
+
+        $kmsRotation = new UokmsWrapRotation();
+        $kmsRotation->useOperationRandom($this->crypto->getRng());
+        $kmsRotation->setUpdateToken($this->kmsUpdateToken);
 
         while (true) {
             $userRecords = $this->storage->selectUsers($this->currentVersion - 1);
@@ -299,7 +374,10 @@ class Pure
                 // TODO!
                 // $userRecord->getPheRecordVersion() == $this->currentVersion - 1;
 
-                $newRecord = $this->pheClient->updateEnrollmentRecord($userRecord->getPheRecord(), $this->updateToken);
+                $newRecord = $this->pheClient->updateEnrollmentRecord($userRecord->getPheRecord(),
+                    $this->pheUpdateToken);
+
+                $newWrap = $kmsRotation->updateWrap($userRecord->getPasswordResetWrap());
 
                 $newUserRecord = new UserRecord(
                     $userRecord->getUserId(),
@@ -308,7 +386,9 @@ class Pure
                     $userRecord->getUpk(),
                     $userRecord->getEncryptedUsk(),
                     $userRecord->getEncryptedUskBackup(),
-                    $userRecord->getEncryptedPwdHash()
+                    $userRecord->getEncryptedPwdHash(),
+                    $newWrap,
+                    $userRecord->getPasswordResetBlob()
                 );
 
                $newUserRecords->add($newUserRecord);
@@ -599,6 +679,36 @@ class Pure
         $this->storage->deleteRoleAssignments($roleName, $userIds);
     }
 
+    private function recoverPwd(string $derivedSecret, string $pwdBlob): string
+    {
+        // TODO: Refactor
+        $aes256Gcm = new Aes256Gcm();
+
+        $aes256Gcm->setKey($derivedSecret);
+        // TODO!
+        $aes256Gcm->setNonce($derivedSecret);
+        return $aes256Gcm->authDecrypt($pwdBlob, "", "");
+    }
+
+    // TODO!
+    private function generatePwdResetData(string $passwordHash): PwdResetData {
+        // TODO: Refactor
+        $aes256Gcm = new Aes256Gcm();
+        $kmsResult = $this->currentKmsClient->generateEncryptWrap($aes256Gcm->getKeyLen() + $aes256Gcm->getNonceLen());
+
+        $derivedSecret = $kmsResult->getEncryptionKey();
+
+        // TODO!
+        $aes256Gcm->setKey($derivedSecret);
+        $aes256Gcm->setNonce($derivedSecret);
+
+        $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($passwordHash, "");
+
+        $resetPwdBlob = "";
+
+        return new PwdResetData($kmsResult->getWrap(), $resetPwdBlob);
+    }
+
     /**
      * @param string $userId
      * @param string $password
@@ -619,13 +729,15 @@ class Pure
 
             $encryptedPwdHash = $this->crypto->encrypt($passwordHash, $this->buppk);
 
-            $result = $this->currentClient->enrollAccount($response->getResponse(), $passwordHash);
+            $pwdResetData = $this->generatePwdResetData($passwordHash);
+
+            $pheResult = $this->currentPheClient->enrollAccount($response->getResponse(), $passwordHash);
 
             $ukp = $this->crypto->generateKeyPair();
 
             $uskData = $this->crypto->exportPrivateKey($ukp->getPrivateKey());
 
-            $encryptedUsk = $this->cipher->encrypt($uskData, $result->getAccountKey());
+            $encryptedUsk = $this->cipher->encrypt($uskData, $pheResult->getAccountKey());
 
             $encryptedUskBackup = $this->crypto->encrypt($uskData, $this->buppk);
 
@@ -633,12 +745,14 @@ class Pure
 
             $userRecord = new UserRecord(
                 $userId,
-                $result->getEnrollmentRecord(),
+                $pheResult->getEnrollmentRecord(),
                 $this->currentVersion,
                 $publicKey,
                 $encryptedUsk,
                 $encryptedUskBackup,
-                $encryptedPwdHash
+                $encryptedPwdHash,
+                $pwdResetData->getWrap(),
+                $pwdResetData->getBlob()
             );
 
             $isUserNew ? $this->storage->insertUser($userRecord) : $this->storage->updateUser($userRecord);
@@ -648,14 +762,25 @@ class Pure
         }
     }
 
-    private function getClient(int $pheVersion): PheClient
+    private function getPheClient(int $pheVersion): PheClient
     {
         if ($this->currentVersion == $pheVersion) {
-            return $this->currentClient;
+            return $this->currentPheClient;
         } elseif ($this->currentVersion == $pheVersion + 1) {
-            return $this->previousClient;
+            return $this->previousPheClient;
         } else {
-            throw new PureLogicException("Null Pointer Exception: client");
+            throw new PureLogicException("Null Pointer Exception: pheClient");
+        }
+    }
+
+    private function getKmsClient(int $kmsVersion): UokmsClient
+    {
+        if ($this->currentVersion == $kmsVersion) {
+            return $this->currentKmsClient;
+        } elseif ($this->currentVersion == $kmsVersion + 1) {
+            return $this->previousKmsClient;
+        } else {
+            throw new PureLogicException("Null Pointer Exception: pheClient");
         }
     }
 
@@ -678,8 +803,10 @@ class Pure
 
             $enrollResponse = $this->httpPheClient->enrollAccount($enrollRequest);
 
-            $enrollResult = $this->currentClient->enrollAccount($enrollResponse->getResponse(),
+            $enrollResult = $this->currentPheClient->enrollAccount($enrollResponse->getResponse(),
                     $newPasswordHash);
+
+            $pwdResetData = $this->generatePwdResetData($newPasswordHash);
 
             $newEncryptedUsk = $this->cipher->encrypt($privateKeyData, $enrollResult->getAccountKey());
 
@@ -692,7 +819,9 @@ class Pure
                 $userRecord->getUpk(),
                 $newEncryptedUsk,
                 $userRecord->getEncryptedUskBackup(),
-                $encryptedPwdHash
+                $encryptedPwdHash,
+                $pwdResetData->getWrap(),
+                $pwdResetData->getBlob()
             );
 
             $this->storage->updateUser($newUserRecord);
@@ -717,18 +846,23 @@ class Pure
         return $keys;
     }
 
+    private function computePheKey_(UserRecord $userRecord, string $password): string
+    {
+        $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
+
+        return $this->computePheKey($userRecord, $passwordHash);
+    }
+
     /**
      * @param UserRecord $userRecord
      * @param string $password
      * @return string
      * @throws PureCryptoException
      */
-    private function computePheKey(UserRecord $userRecord, string $password): string
+    private function computePheKey(UserRecord $userRecord, string $passwordHash): string
     {
         try {
-            $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
-
-            $client = $this->getClient($userRecord->getPheRecordVersion());
+            $client = $this->getPheClient($userRecord->getPheRecordVersion());
 
             $pheVerifyRequest = $client->createVerifyPasswordRequest($passwordHash,
                     $userRecord->getPheRecord());
@@ -765,8 +899,12 @@ class Pure
         return $this->currentVersion;
     }
 
-    public function getUpdateToken(): string {
-        return $this->updateToken;
+    public function getPheUpdateToken(): string {
+        return $this->pheUpdateToken;
+    }
+
+    public function getKmsUpdateToken(): string {
+        return $this->kmsUpdateToken;
     }
 
     public function getAk(): string{

@@ -59,6 +59,7 @@ class ErrorStatus extends Enum
     private const INVALID_PASSWORD = [15, "Invalid password"];
     private const USER_HAS_NO_ACCESS_TO_DATA = [16, "User has no access to data"];
     private const DUPLICATE_ROLE_NAME = [17, "Duplicate role name"];
+    private const UPDATE_TOKENS_MISMATCH = [18, "KMS and PHE rotation should be simultaneous"];
 
     public function getCode(): int
     {

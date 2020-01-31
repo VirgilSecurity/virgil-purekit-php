@@ -61,7 +61,8 @@ class PureContext
     private const PHE_PUBLIC_KEY_PREFIX = "PK";
     private const KMS_SECRET_KEY_PREFIX = "KS";
     private const KMS_PUBLIC_KEY_PREFIX = "KP";
-    private const UPDATE_TOKEN_PREFIX = "UT";
+    private const PHE_UPDATE_TOKEN_PREFIX = "UT";
+    private const KMS_UPDATE_TOKEN_PREFIX = "KT";
 
     private $crypto;
     private $buppk;
@@ -72,14 +73,16 @@ class PureContext
     private $nonrotableSecrets;
     private $storage;
     private $pheClient;
+    private $kmsClient;
     private $externalPublicKeys;
-    private $updateToken;
+    private $pheUpdateToken;
+    private $kmsUpdateToken;
 
     public function __construct(VirgilCrypto $crypto, string $appToken, string $nms, string $buppk,
                                 string $pheSecretKey, string $phePublicKey, string $kmsSecretKey,
                                 string $kmsPublicKey, PureStorage $storage,
                                 VirgilPublicKeyCollection $externalPublicKeys,
-                                string $pheServiceAddress)
+                                string $pheServiceAddress, string $kmsServiceAddress)
     {
         ValidateUtil::checkNull($storage, "storage");
 
@@ -95,6 +98,8 @@ class PureContext
         $this->phePublicKey = self::parseCredentials(self::PHE_PUBLIC_KEY_PREFIX, $phePublicKey, true);
         $this->kmsSecretKey = self::parseCredentials(self::KMS_SECRET_KEY_PREFIX, $kmsSecretKey, true);
         $this->kmsPublicKey = self::parseCredentials(self::KMS_PUBLIC_KEY_PREFIX, $kmsPublicKey, true);
+        $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress);
+        $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress);
 
         if ($storage instanceof PureModelSerializerDependent) {
             $dependent = $storage;
@@ -226,23 +231,31 @@ class PureContext
         return $this->storage;
     }
 
-    public function getUpdateToken(): Credentials
+    public function getPheUpdateToken(): Credentials
     {
-        return $this->updateToken;
+        return $this->pheUpdateToken;
     }
 
     /**
-     * @param string $updateToken
+     * @param string $pheUpdateToken
      * @throws Exception\EmptyArgumentException
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      * @throws PureLogicException
      */
-    public function setUpdateToken(string $updateToken): void
+    public function setPheUpdateToken(string $pheUpdateToken): void
     {
-        $this->updateToken = self::parseCredentials(self::UPDATE_TOKEN_PREFIX, $updateToken, true);
+        $this->pheUpdateToken = self::parseCredentials(self::PHE_UPDATE_TOKEN_PREFIX, $pheUpdateToken, true);
 
-        if ($this->updateToken->getVersion() != $this->pheSecretKey->getVersion() + 1)
+        if ($this->pheUpdateToken->getVersion() != $this->phePublicKey->getVersion() + 1)
+            throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
+    }
+
+    public function setKmsUpdateToken(string $kmsUpdateToken): void
+    {
+        $this->kmsUpdateToken = self::parseCredentials(self::KMS_UPDATE_TOKEN_PREFIX, $kmsUpdateToken, true);
+
+        if ($this->kmsUpdateToken->getVersion() != $this->kmsPublicKey->getVersion() + 1)
             throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
     }
 
@@ -271,9 +284,19 @@ class PureContext
         return $this->kmsPublicKey;
     }
 
+    public function getKmsUpdateToken(): Credentials
+    {
+        return $this->kmsUpdateToken;
+    }
+
     public function getPheClient(): HttpPheClient
     {
         return $this->pheClient;
+    }
+
+    public function getKmsClient(): HttpKmsClient
+    {
+        return $this->kmsClient;
     }
 
     public function getExternalPublicKeys(): VirgilPublicKeyCollection

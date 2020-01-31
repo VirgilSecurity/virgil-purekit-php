@@ -35,45 +35,26 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http;
+namespace Virgil\PureKit\Http\Request\Kms;
 
-use PurekitV3Client\DecryptResponse as ProtoDecryptResponse;
-use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
+use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
-class HttpKmsClient extends HttpBaseClient
+class DecryptRequest extends BaseRequest
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
+    private $request;
 
-    /**
-     * HttpKmsClient constructor.
-     * @param string $appToken
-     * @param string $serviceBaseUrl
-     * @param bool $debug
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
-     */
-    public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
+                                ProtoDecryptRequest $request)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
-
-        parent::__construct($serviceBaseUrl, $appToken, $debug);
+        $this->request = $request;
+        parent::__construct($endpoint, $method);
     }
 
-    /**
-     * @param DecryptRequest $request
-     * @return ProtoDecryptResponse
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
-    public function decrypt(DecryptRequest $request): ProtoDecryptResponse
+    public function getOptionsBody(): string
     {
-        $r = $this->_send($request);
-
-        $res = new ProtoDecryptResponse();
-        $res->mergeFromString($r->getBody()->getContents());
-
-        return $res;
+        return "";
     }
 }

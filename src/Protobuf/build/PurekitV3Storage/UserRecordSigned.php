@@ -45,6 +45,14 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes encrypted_pwd_hash = 8;</code>
      */
     private $encrypted_pwd_hash = '';
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
+     */
+    private $password_reset_wrap = '';
+    /**
+     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     */
+    private $password_reset_blob = '';
 
     /**
      * Constructor.
@@ -60,6 +68,8 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      *     @type string $encrypted_usk
      *     @type string $encrypted_usk_backup
      *     @type string $encrypted_pwd_hash
+     *     @type string $password_reset_wrap
+     *     @type string $password_reset_blob
      * }
      */
     public function __construct($data = NULL) {
@@ -239,6 +249,50 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->encrypted_pwd_hash = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
+     * @return string
+     */
+    public function getPasswordResetWrap()
+    {
+        return $this->password_reset_wrap;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPasswordResetWrap($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->password_reset_wrap = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     * @return string
+     */
+    public function getPasswordResetBlob()
+    {
+        return $this->password_reset_blob;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPasswordResetBlob($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->password_reset_blob = $var;
 
         return $this;
     }

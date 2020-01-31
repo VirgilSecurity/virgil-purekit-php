@@ -114,6 +114,8 @@ class PureModelSerializer
             ->setEncryptedUsk($userRecord->getEncryptedUsk())
             ->setEncryptedUskBackup($userRecord->getEncryptedUskBackup())
             ->setEncryptedPwdHash($userRecord->getEncryptedPwdHash())
+            ->setPasswordResetWrap($userRecord->getPasswordResetWrap())
+            ->setPasswordResetBlob($userRecord->getPasswordResetBlob())
             ->serializeToString();
 
         $signature = $this->crypto->generateSignature($userRecordSigned, $this->signingKey->getPrivateKey());
@@ -159,7 +161,10 @@ class PureModelSerializer
             $recordSigned->getUpk(),
             $recordSigned->getEncryptedUsk(),
             $recordSigned->getEncryptedUskBackup(),
-            $recordSigned->getEncryptedPwdHash());
+            $recordSigned->getEncryptedPwdHash(),
+            $recordSigned->getPasswordResetWrap(),
+            $recordSigned->getPasswordResetBlob()
+        );
     }
 
     /**

@@ -41,6 +41,7 @@ use Virgil\Crypto\Core\KeyPairType;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
 use Virgil\PureKit\Pure\PureSetupResult;
@@ -953,6 +954,52 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $this->assertEquals($text, $plainText2);
             }
         } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
+
+
+    public function testRecoveryNewUserShouldRecover(string $pheServerAddress,
+                                                     string $pureServerAddress,
+                                                     string $kmsServerAddress,
+                                                     string $appToken,
+                                                     string $phePublicKey,
+                                                     string $pheSecretKey,
+                                                     string $kmsPublicKey,
+                                                     string $kmsSecretKey): void
+    {
+
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $kmsServerAddress, $appToken,
+                        $phePublicKey, $pheSecretKey, $kmsPublicKey, $kmsSecretKey,  null,null, null, $storage);
+
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = (string) rand(1000, 9999);
+                $password1 = (string) rand(1000, 9999);
+                $password2 = (string) rand(1000, 9999);
+
+                // TODO: Check encryption
+                $pure->registerUser($userId, $password1);
+
+                $pure->recoverUser($userId, $password2);
+
+                $this->expectException(PureLogicException::class);
+                $pure->authenticateUser($userId, $password1);
+
+
+                $grant = $pure->authenticateUser($userId, $password2);
+                $this->assertNotNull($grant);
+
+            }
+        } catch (\Exception $exception) {
+
+            $this->assertEquals($exception->getErrorStatus(), ErrorStatus::INVALID_PASSWORD());
             $this->fail($exception->getMessage());
         }
     }

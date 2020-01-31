@@ -35,45 +35,27 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http;
+namespace Virgil\PureKit\Pure;
 
-use PurekitV3Client\DecryptResponse as ProtoDecryptResponse;
-use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class HttpKmsClient extends HttpBaseClient
+class PwdResetData
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
+    private $wrap;
+    private $blob;
 
-    /**
-     * HttpKmsClient constructor.
-     * @param string $appToken
-     * @param string $serviceBaseUrl
-     * @param bool $debug
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
-     */
-    public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
+    public function __construct(string $wrap, string $blob)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
-
-        parent::__construct($serviceBaseUrl, $appToken, $debug);
+        $this->wrap = $wrap;
+        $this->blob = $blob;
     }
 
-    /**
-     * @param DecryptRequest $request
-     * @return ProtoDecryptResponse
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
-    public function decrypt(DecryptRequest $request): ProtoDecryptResponse
+    public function getWrap(): string
     {
-        $r = $this->_send($request);
+        return $this->wrap;
+    }
 
-        $res = new ProtoDecryptResponse();
-        $res->mergeFromString($r->getBody()->getContents());
-
-        return $res;
+    public function getBlob(): string
+    {
+        return $this->blob;
     }
 }
