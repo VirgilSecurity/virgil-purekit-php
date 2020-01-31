@@ -40,6 +40,9 @@ namespace Virgil\PureKit\Pure;
 
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
+use Virgil\PureKit\Http\HttpKmsClient;
+use Virgil\PureKit\Http\HttpPheClient;
+use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
@@ -54,41 +57,29 @@ class PureContext
 {
     private const NMS_PREFIX = "NM";
     private const BUPPK_PREFIX = "BU";
-    private const SECRET_KEY_PREFIX = "SK";
-    private const PUBLIC_KEY_PREFIX = "PK";
+    private const PHE_SECRET_KEY_PREFIX = "SK";
+    private const PHE_PUBLIC_KEY_PREFIX = "PK";
+    private const KMS_SECRET_KEY_PREFIX = "KS";
+    private const KMS_PUBLIC_KEY_PREFIX = "KP";
     private const UPDATE_TOKEN_PREFIX = "UT";
 
     private $crypto;
     private $buppk;
-    private $appSecretKey;
-    private $servicePublicKey;
+    private $pheSecretKey;
+    private $phePublicKey;
+    private $kmsSecretKey;
+    private $kmsPublicKey;
     private $nonrotableSecrets;
     private $storage;
     private $pheClient;
     private $externalPublicKeys;
     private $updateToken;
 
-    /**
-     * PureContext constructor.
-     * @param VirgilCrypto $crypto
-     * @param string $appToken
-     * @param string $ak
-     * @param string $buppk
-     * @param string $hpk
-     * @param string $oskp
-     * @param string $appSecretKey
-     * @param string $servicePublicKey
-     * @param PureStorage $storage
-     * @param VirgilPublicKeyCollection $externalPublicKeys
-     * @param string $pheServiceAddress
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     */
-    public function __construct(VirgilCrypto $crypto, string $appToken, string $nms, string $buppk, string $hpk, string
-    $oskp, string $appSecretKey, string $servicePublicKey, PureStorage $storage, VirgilPublicKeyCollection $externalPublicKeys, string $pheServiceAddress)
+    public function __construct(VirgilCrypto $crypto, string $appToken, string $nms, string $buppk,
+                                string $pheSecretKey, string $phePublicKey, string $kmsSecretKey,
+                                string $kmsPublicKey, PureStorage $storage,
+                                VirgilPublicKeyCollection $externalPublicKeys,
+                                string $pheServiceAddress)
     {
         ValidateUtil::checkNull($storage, "storage");
 
@@ -100,8 +91,10 @@ class PureContext
         $buppkData = self::parseCredentials(self::BUPPK_PREFIX, $buppk, false)->getPayload();
         $this->buppk = $crypto->importPublicKey($buppkData);
 
-        $this->appSecretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $appSecretKey, true);
-        $this->servicePublicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $servicePublicKey, true);
+        $this->pheSecretKey = self::parseCredentials(self::PHE_SECRET_KEY_PREFIX, $pheSecretKey, true);
+        $this->phePublicKey = self::parseCredentials(self::PHE_PUBLIC_KEY_PREFIX, $phePublicKey, true);
+        $this->kmsSecretKey = self::parseCredentials(self::KMS_SECRET_KEY_PREFIX, $kmsSecretKey, true);
+        $this->kmsPublicKey = self::parseCredentials(self::KMS_PUBLIC_KEY_PREFIX, $kmsPublicKey, true);
 
         if ($storage instanceof PureModelSerializerDependent) {
             $dependent = $storage;
@@ -131,97 +124,58 @@ class PureContext
 //            this.externalPublicKeys = new HashMap<>();
 //        }
 
-        if ($this->appSecretKey->getVersion() != $this->servicePublicKey->getVersion())
+        if (
+            $this->pheSecretKey->getVersion() != $this->phePublicKey->getVersion()
+            || $this->kmsSecretKey->getVersion() != $this->kmsPublicKey->getVersion()
+            || $this->phePublicKey->getVersion() != $this->kmsPublicKey->getVersion()
+        ) {
             throw new PureLogicException(ErrorStatus::KEYS_VERSION_MISMATCH());
+        }
     }
 
-    /**
-     * @param string $appToken
-     * @param string $nms
-     * @param string $bu
-     * @param PureStorage $storage
-     * @param string $appSecretKey
-     * @param string $servicePublicKey
-     * @param VirgilPublicKeyCollection $externalPublicKeys
-     * @param string $pheServiceAddress
-     * @return PureContext
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     */
     public static function createCustomContext(string $appToken, string $nms, string $bu,
-                                               PureStorage $storage, string $appSecretKey, string $servicePublicKey,
+                                               PureStorage $storage, string $sk, string $pk, string $ks, string $kp,
                                                VirgilPublicKeyCollection $externalPublicKeys,
-                                               string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS): PureContext
+                                               string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
+                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
         return self::_createContext(
             new VirgilCrypto(),
             $appToken,
             $nms, $bu,
-            $appSecretKey,
-            $servicePublicKey,
+            $sk, $pk, $ks, $kp,
             $storage,
             $externalPublicKeys,
-            $pheServiceAddress
+            $pheServiceAddress,
+            $kmsServiceAddress
         );
     }
 
-    /**
-     * @param string $appToken
-     * @param string $nms
-     * @param string $bu
-     * @param string $sk
-     * @param string $pk
-     * @param VirgilPublicKeyCollection $externalPublicKeys
-     * @param string $pheServiceAddress
-     * @param string $pureServiceAddress
-     * @return PureContext
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     */
     public static function createVirgilContext(string $appToken, string $nms, string $bu, string $sk, string $pk,
+                                               string $ks, string $kp,
                                                VirgilPublicKeyCollection $externalPublicKeys,
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
-                                               string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS): PureContext
+                                               string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS,
+                                               string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
         $crypto = new VirgilCrypto();
         $pureClient = new HttpPureClient($appToken, $pureServiceAddress);
 
         $storage = new VirgilCloudPureStorage($crypto, $pureClient);
 
-        return self::_createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys,
-            $pheServiceAddress);
+        return self::_createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $ks, $kp, $storage, $externalPublicKeys,
+            $pheServiceAddress, $kmsServiceAddress);
     }
 
-    /**
-     * @param VirgilCrypto $crypto
-     * @param string $appToken
-     * @param string $nms
-     * @param string $bu
-     * @param string $sk
-     * @param string $pk
-     * @param PureStorage $storage
-     * @param VirgilPublicKeyCollection $externalPublicKeys
-     * @param string $pheServiceAddress
-     * @return PureContext
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     */
     private static function _createContext(VirgilCrypto $crypto, string $appToken, string $nms, string $bu,
-                                         string $sk, string $pk, PureStorage $storage,
-                                         VirgilPublicKeyCollection $externalPublicKeys,
-                                         string $pheServiceAddress): PureContext
+                                           string $sk, string $pk, string $ks, string $kp,
+                                           PureStorage $storage,
+                                           VirgilPublicKeyCollection $externalPublicKeys,
+                                           string $pheServiceAddress, string $kmsServiceAddress): PureContext
     {
         return new self(
-            $crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys, $pheServiceAddress
+            $crypto, $appToken, $nms, $bu, $sk, $pk, $ks, $kp, $storage, $externalPublicKeys, $pheServiceAddress,
+            $kmsServiceAddress
         );
     }
 
@@ -288,7 +242,7 @@ class PureContext
     {
         $this->updateToken = self::parseCredentials(self::UPDATE_TOKEN_PREFIX, $updateToken, true);
 
-        if ($this->updateToken->getVersion() != $this->appSecretKey->getVersion() + 1)
+        if ($this->updateToken->getVersion() != $this->pheSecretKey->getVersion() + 1)
             throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
     }
 
@@ -297,14 +251,24 @@ class PureContext
         return $this->buppk;
     }
 
-    public function getAppSecretKey(): Credentials
+    public function getPheSecretKey(): Credentials
     {
-        return $this->appSecretKey;
+        return $this->pheSecretKey;
     }
 
-    public function getServicePublicKey(): Credentials
+    public function getPhePublicKey(): Credentials
     {
-        return $this->servicePublicKey;
+        return $this->phePublicKey;
+    }
+
+    public function getKmsSecretKey(): Credentials
+    {
+    return $this->kmsSecretKey;
+    }
+
+    public function getKmsPublicKey(): Credentials
+    {
+        return $this->kmsPublicKey;
     }
 
     public function getPheClient(): HttpPheClient

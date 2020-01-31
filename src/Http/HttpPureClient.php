@@ -60,16 +60,7 @@ use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class HttpPureClient extends HttpBaseClient
 {
-    /**
-     * @var string
-     */
-    protected $appToken;
-    /**
-     * @var string
-     */
-    protected $serviceAddress;
-
-    private const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
+    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
 
     /**
      * HttpPureClient constructor.
@@ -90,6 +81,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertUserRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function insertUser(InsertUserRequest $request): void
     {
@@ -98,6 +90,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param UpdateUserRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function updateUser(UpdateUserRequest $request): void
     {
@@ -136,6 +129,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteUserRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function deleteUser(DeleteUserRequest $request): void
     {
@@ -144,6 +138,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertCellKeyRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function insertCellKey(InsertCellKeyRequest $request): void
     {
@@ -152,6 +147,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param UpdateUserRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function updateCellKey(UpdateUserRequest $request): void
     {
@@ -175,6 +171,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteCellKeyRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function deleteCellKey(DeleteCellKeyRequest $request): void
     {
@@ -183,6 +180,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertRoleRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function insertRole(InsertRoleRequest $request): void
     {
@@ -206,6 +204,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertRoleAssignmentsRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
     {
@@ -244,6 +243,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteRoleAssignmentRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function deleteRoleAssignment(DeleteRoleAssignmentRequest $request): void
     {

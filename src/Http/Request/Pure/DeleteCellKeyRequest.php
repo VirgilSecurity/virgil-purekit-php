@@ -43,7 +43,17 @@ use Virgil\PureKit\Http\_\AvailableRequest;
 
 class DeleteCellKeyRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    /**
+     * @var string
+     */
+    private $userId;
+    /**
+     * @var string
+     */
+    private $dataId;
+
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
+                                string $userId, string $dataId)
     {
         parent::__construct($endpoint, $method);
     }

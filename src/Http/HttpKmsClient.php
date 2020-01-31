@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -43,12 +43,12 @@ use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class HttpPheClient extends HttpBaseClient
+class HttpKmsClient extends HttpBaseClient
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1/";
+    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
 
     /**
-     * HttpPheClient constructor.
+     * HttpKmsClient constructor.
      * @param string $appToken
      * @param string $serviceBaseUrl
      * @param bool $debug
@@ -71,12 +71,12 @@ class HttpPheClient extends HttpBaseClient
      */
     public function enrollAccount(EnrollRequest $request): ProtoEnrollmentResponse
     {
-         $r = $this->_send($request);
+        $r = $this->_send($request);
 
-         $res = new ProtoEnrollmentResponse();
-         $res->mergeFromString($r->getBody()->getContents());
+        $res = new ProtoEnrollmentResponse();
+        $res->mergeFromString($r->getBody()->getContents());
 
-         return $res;
+        return $res;
     }
 
     /**

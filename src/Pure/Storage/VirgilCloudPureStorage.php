@@ -38,7 +38,8 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\CryptoImpl\VirgilCrypto;
+use Virgil\Crypto\VirgilCrypto;
+use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
