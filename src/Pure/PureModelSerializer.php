@@ -99,7 +99,7 @@ class PureModelSerializer
     /**
      * @param UserRecord $userRecord
      * @return ProtoUserRecord
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
@@ -114,7 +114,6 @@ class PureModelSerializer
             ->setEncryptedUsk($userRecord->getEncryptedUsk())
             ->setEncryptedUskBackup($userRecord->getEncryptedUskBackup())
             ->setEncryptedPwdHash($userRecord->getEncryptedPwdHash())
-            ->setPasswordResetWrap($userRecord->getPasswordResetWrap())
             ->setPasswordResetBlob($userRecord->getPasswordResetBlob())
             ->serializeToString();
 
@@ -126,14 +125,15 @@ class PureModelSerializer
             ->setSignature($signature)
             ->setPheRecordT0($enrollmentRecord->getT0())
             ->setPheRecordT1($enrollmentRecord->getT1())
-            ->setPheRecordVersion($userRecord->getPheRecordVersion());
+            ->setPheRecordVersion($userRecord->getPheRecordVersion())
+            ->setPasswordResetWrap($userRecord->getPasswordResetWrap());
     }
 
     /**
      * @param ProtoUserRecord $protobufRecord
      * @return UserRecord
      * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
@@ -162,7 +162,7 @@ class PureModelSerializer
             $recordSigned->getEncryptedUsk(),
             $recordSigned->getEncryptedUskBackup(),
             $recordSigned->getEncryptedPwdHash(),
-            $recordSigned->getPasswordResetWrap(),
+            $protobufRecord->getPasswordResetWrap(),
             $recordSigned->getPasswordResetBlob()
         );
     }
@@ -170,7 +170,7 @@ class PureModelSerializer
     /**
      * @param CellKey $cellKey
      * @return ProtoCellKey
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeCellKey(CellKey $cellKey): ProtoCellKey
     {

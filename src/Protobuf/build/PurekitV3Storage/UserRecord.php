@@ -37,6 +37,10 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>uint32 phe_record_version = 6;</code>
      */
     private $phe_record_version = 0;
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     */
+    private $password_reset_wrap = '';
 
     /**
      * Constructor.
@@ -50,6 +54,7 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      *     @type string $phe_record_t0
      *     @type string $phe_record_t1
      *     @type int $phe_record_version
+     *     @type string $password_reset_wrap
      * }
      */
     public function __construct($data = NULL) {
@@ -185,6 +190,28 @@ class UserRecord extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint32($var);
         $this->phe_record_version = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     * @return string
+     */
+    public function getPasswordResetWrap()
+    {
+        return $this->password_reset_wrap;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setPasswordResetWrap($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->password_reset_wrap = $var;
 
         return $this;
     }

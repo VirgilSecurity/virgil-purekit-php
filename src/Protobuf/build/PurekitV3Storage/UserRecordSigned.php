@@ -46,11 +46,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     private $encrypted_pwd_hash = '';
     /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
-     */
-    private $password_reset_wrap = '';
-    /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
      */
     private $password_reset_blob = '';
 
@@ -68,7 +64,6 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      *     @type string $encrypted_usk
      *     @type string $encrypted_usk_backup
      *     @type string $encrypted_pwd_hash
-     *     @type string $password_reset_wrap
      *     @type string $password_reset_blob
      * }
      */
@@ -254,29 +249,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
-     * @return string
-     */
-    public function getPasswordResetWrap()
-    {
-        return $this->password_reset_wrap;
-    }
-
-    /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 9;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setPasswordResetWrap($var)
-    {
-        GPBUtil::checkString($var, False);
-        $this->password_reset_wrap = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
      * @return string
      */
     public function getPasswordResetBlob()
@@ -285,7 +258,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 10;</code>
+     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
      * @param string $var
      * @return $this
      */

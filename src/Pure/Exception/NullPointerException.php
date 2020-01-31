@@ -35,27 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Pure\Exception;
 
 
-class PwdResetData
+class NullPointerException extends \Exception
 {
-    private $wrap;
-    private $blob;
 
-    public function __construct(string $wrap, string $blob)
-    {
-        $this->wrap = $wrap;
-        $this->blob = $blob;
-    }
-
-    public function getWrap(): string
-    {
-        return $this->wrap;
-    }
-
-    public function getBlob(): string
-    {
-        return $this->blob;
-    }
 }
