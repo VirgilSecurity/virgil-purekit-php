@@ -252,7 +252,7 @@ class PureCrypto
 
             $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($blob, "");
 
-            return $this->concat($authEncryptAuthEncryptResult->getTag(), $authEncryptAuthEncryptResult->getOut());
+            return $this->concat($authEncryptAuthEncryptResult->getOut(), $authEncryptAuthEncryptResult->getTag());
         }
         catch (\Exception $exception) {
             throw new PureCryptoException($exception);

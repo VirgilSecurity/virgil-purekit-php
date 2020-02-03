@@ -60,10 +60,8 @@ class PheManager
         $this->crypto = $context->getCrypto();
 
         $this->currentClient = new PheClient();
-        $this->currentClient->setOperationRandom($this->crypto->getRng());
-        $this->currentClient->setRandom($this->crypto->getRng());
-        $this->currentClient->setKeys($context->getSecretKey()->getPayload1(),
-            $context->getPublicKey()->getPayload1());
+        $this->currentClient->useOperationRandom($this->crypto->getRng());
+        $this->currentClient->useRandom($this->crypto->getRng());
 
         if (!is_null($context->getUpdateToken())) {
             $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
@@ -73,10 +71,16 @@ class PheManager
             $this->previousClient->useRandom($this->crypto->getRng());
             $this->previousClient->setKeys($context->getSecretKey()->getPayload1(),
                 $context->getPublicKey()->getPayload1());
-            $this->currentClient->rotateKeys($context->getUpdateToken()->getPayload1());
+
+            $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload1());
+            $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
+                $rotateKeysResult->getNewServerPublicKey());
+
         } else {
             $this->currentVersion = $context->getPublicKey()->getVersion();
             $this->updateToken = null;
+            $this->currentClient->setKeys($context->getSecretKey()->getPayload1(), $context->getPublicKey()
+                ->getPayload1());
             $this->previousClient = null;
         }
 

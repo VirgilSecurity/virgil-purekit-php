@@ -61,8 +61,6 @@ class KmsManager
         $this->currentClient = new UokmsClient();
         $this->currentClient->useOperationRandom($context->getCrypto()->getRng());
         $this->currentClient->useRandom($context->getCrypto()->getRng());
-        $this->currentClient->setKeys($context->getSecretKey()->getPayload2(),
-            $context->getPublicKey()->getPayload2());
 
         if (!is_null($context->getUpdateToken())) {
             $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
@@ -75,11 +73,17 @@ class KmsManager
             $this->previousClient->useRandom($context->getCrypto()->getRng());
             $this->previousClient->setKeys($context->getSecretKey()->getPayload2(),
                 $context->getPublicKey()->getPayload2());
-            $this->currentClient->rotateKeys($context->getUpdateToken()->getPayload2());
+
+            $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload2());
+            $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
+                $rotateKeysResult->getNewServerPublicKey());
+
         } else {
             $this->currentVersion = $context->getPublicKey()->getVersion();
             $this->kmsRotation = null;
             $this->previousClient = null;
+            $this->currentClient->setKeys($context->getSecretKey()->getPayload2(), $context->getPublicKey()
+                ->getPayload2());
         }
 
         $this->httpClient = $context->getKmsClient();
