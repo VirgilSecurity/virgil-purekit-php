@@ -38,18 +38,24 @@
 namespace Virgil\PureKit\Http\Request;
 
 
+use PurekitV3Storage\UserRecord;
 use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
 
 class UpdateUserRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    private $userRecord;
+
+    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
+                                UserRecord $userRecord, string $userId)
     {
+        $this->userRecord = $userRecord;
+        $endpoint = sprintf($endpoint->getValue(), $userId);
         parent::__construct($endpoint, $method);
     }
 
     public function getOptionsBody(): string
     {
-        return "";
+        return $this->userRecord->serializeToString();
     }
 }

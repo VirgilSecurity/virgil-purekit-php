@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
+namespace Virgil\PureKit\Pure\Exception\Enum;
 
 use MyCLabs\Enum\Enum;
 

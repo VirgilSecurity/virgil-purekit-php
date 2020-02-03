@@ -37,6 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
 
 class PureLogicException extends PureException
 {
@@ -49,6 +50,6 @@ class PureLogicException extends PureException
 
     public function getErrorStatus(): ErrorStatus
     {
-        return $this->errorStatus;
+        return $this->errorStatus->getValue();
     }
 }

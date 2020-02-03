@@ -44,9 +44,10 @@ use Virgil\PureKit\Http\HttpKmsClient;
 use Virgil\PureKit\Http\HttpPheClient;
 use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Storage\_\PureStorage;
+use Virgil\PureKit\Pure\Storage\VirgilCloudPureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 /**

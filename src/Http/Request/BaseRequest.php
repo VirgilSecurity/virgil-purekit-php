@@ -58,10 +58,10 @@ abstract class BaseRequest
 
     /**
      * BaseRequest constructor.
-     * @param AvailableRequest $endpoint
+     * @param string $endpoint
      * @param AvailableHttpMethod $method
      */
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    public function __construct(string $endpoint, AvailableHttpMethod $method)
     {
         $this->endpoint = $endpoint;
         $this->method = $method;
@@ -89,7 +89,7 @@ abstract class BaseRequest
      */
     public function getEndpoint(): string
     {
-        return $this->endpoint->getValue();
+        return $this->endpoint;
     }
 
     /**

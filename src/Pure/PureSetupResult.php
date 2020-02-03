@@ -55,14 +55,20 @@ class PureSetupResult
     private $bupkp;
 
     /**
+     * @var
+     */
+    private $nmsData;
+
+    /**
      * PureSetupResult constructor.
      * @param PureContext $context
      * @param VirgilKeyPair $bupkp
      */
-    public function __construct(PureContext $context, VirgilKeyPair $bupkp)
+    public function __construct(PureContext $context, VirgilKeyPair $bupkp, string $nmsData)
     {
         $this->context = $context;
         $this->bupkp = $bupkp;
+        $this->nmsData = $nmsData;
     }
 
     /**
@@ -76,7 +82,16 @@ class PureSetupResult
     /**
      * @return VirgilKeyPair
      */
-    public function getBupkp(): VirgilKeyPair {
+    public function getBupkp(): VirgilKeyPair
+    {
         return $this->bupkp;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNmsData(): string
+    {
+        return $this->nmsData;
     }
 }

@@ -37,10 +37,12 @@
 
 namespace Virgil\PureKit\Tests;
 
+use Dotenv\Dotenv;
 use Virgil\Crypto\Core\KeyPairType;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
@@ -53,71 +55,115 @@ class PureTest extends \PHPUnit\Framework\TestCase
 {
     private $crypto;
 
+    private $appToken;
+    private $publicKey;
+    private $secretKey;
+    private $updateToken;
+    private $kmsPublicKey;
+    private $kmsSecretKey;
+    private $phePublicKey;
+    private $pheSecretKey;
+    private $pheServerAddress;
+    private $pureServerAddress;
+    private $kmsServerAddress;
+
+    /**
+     *
+     */
     protected function setUp(): void
     {
+        $this->crypto = new VirgilCrypto();
 
+        (new Dotenv(__DIR__ . "/../"))->load();
+
+        $this->appToken = $_ENV["TEST_APP_TOKEN"];
+        $this->publicKey = $_ENV["TEST_PUBLIC_KEY"];
+        $this->secretKey = $_ENV["TEST_SECRET_KEY"];
+        $this->updateToken = $_ENV["TEST_UPDATE_TOKEN"];
+        $this->kmsPublicKey = $_ENV["TEST_KMS_PUBLIC_KEY"];
+        $this->kmsSecretKey = $_ENV["TEST_KMS_SECRET_KEY"];
+        $this->phePublicKey = $_ENV["TEST_PHE_PUBLIC_KEY"];
+        $this->pheSecretKey = $_ENV["TEST_PHE_SECRET_KEY"];
+        $this->pheServerAddress = $_ENV["TEST_PHE_SERVER_ADDRESS"];
+        $this->pureServerAddress = $_ENV["TEST_PURE_SERVER_ADDRESS"];
+        $this->kmsServerAddress = $_ENV["TEST_KMS_SERVER_ADDRESS"];
     }
 
+    /**
+     * @param int $length
+     * @return string
+     */
+    private static function generateRandomString(int $length = 16) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = "";
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    /**
+     * @param int $seconds
+     */
     private function sleep(int $seconds = 2)
     {
         sleep($seconds);
     }
 
+
     /**
-     * @param string $pheServerAddress
-     * @param string $pureServerAddress
-     * @param string $appToken
-     * @param string $publicKey
-     * @param string $secretKey
-     * @param string $updateToken
+     * @param string $nms
+     * @param bool $updateToken
      * @param VirgilPublicKeyCollection $externalPublicKeys
      * @param StorageType $storageType
      * @return PureSetupResult
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws NullPointerException
+     * @throws PureLogicException
      */
-    private function setupPure(
-        string $pheServerAddress,
-        string $pureServerAddress,
-        string $appToken,
-        string $publicKey,
-        string $secretKey,
-        string $updateToken,
-        VirgilPublicKeyCollection $externalPublicKeys,
-        StorageType $storageType): PureSetupResult
+    private function setupPure(string $nms = null, bool $updateToken = false,
+                               VirgilPublicKeyCollection $externalPublicKeys = null,
+                               StorageType $storageType): PureSetupResult
     {
-        $this->crypto = new VirgilCrypto();
-
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
 
-        $nmsData = $this->crypto->generateRandomData(32);
-        $nmsString = "NM." . base64_encode($nmsData);
+        $nmsData = $nms;
+
+        if (empty($nms))
+            $nmsData = $this->crypto->generateRandomData(32);
+
+        $nmsString = "NM." . base64_encode($nms);
 
         $bupkpString = "BU." . base64_encode($this->crypto->exportPublicKey($bupkp->getPublicKey()));
 
         switch ($storageType) {
             case StorageType::RAM():
-                $context = PureContext::createContext($appToken, $nmsString, $bupkpString,
-                    new RamPureStorage(), $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress);
+                $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
+                    new RamPureStorage(), $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
             case StorageType::VIRGIL_CLOUD():
-                $context = PureContext::createContext($appToken, $nmsString, $bupkpString, $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress, $pureServerAddress);
+                $context = PureContext::createVirgilContext($this->appToken, $nmsString, $bupkpString,
+                    $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    $this->pheServerAddress, $this->pureServerAddress, $this->kmsServerAddress);
                 break;
 
             case StorageType::MARIADB():
                 $mariaDbPureStorage = new MariaDbPureStorage("jdbc:mariadb://localhost/puretest?user=root&password=qwerty");
-                $context = PureContext::createContext($appToken, $nmsString, $bupkpString,
-                    $mariaDbPureStorage, $secretKey, $publicKey, $externalPublicKeys, $pheServerAddress);
+                $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
+                    $mariaDbPureStorage, $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
             default:
-                throw new \Exception("Null Pointer Exception");
+                throw new NullPointerException();
         }
 
-        if (!is_null($updateToken))
-            $context->setUpdateToken($updateToken);
+        if ($updateToken)
+            $context->setUpdateToken($this->updateToken);
 
-        return new PureSetupResult($context, $bupkp);
+        return new PureSetupResult($context, $bupkp, $nmsData);
     }
 
     /**
@@ -130,19 +176,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         return $storages;
     }
 
-    /**
-     * @param string $pheServerAddress
-     * @param string $pureServerAddress
-     * @param string $appToken
-     * @param string $publicKey
-     * @param string $secretKey
-     */
-    public function testRegistrationNewUserShouldSucceed(
-        string $pheServerAddress,
-        string $pureServerAddress,
-        string $appToken,
-        string $publicKey,
-        string $secretKey): void
+    public function testRegistrationNewUserShouldSucceed(): void
     {
         $this->sleep();
 
@@ -150,47 +184,38 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, false, new VirgilPublicKeyCollection(), $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+
+                var_dump($pure, $userId, $password);
+                die;
 
                 $pure->registerUser($userId, $password);
             }
 
         } catch (\Exception $exception) {
-            $this->fail($exception->getMessage());
+            $this->fail($exception);
         }
     }
 
-    /**
-     * @param string $pheServerAddress
-     * @param string $pureServerAddress
-     * @param string $appToken
-     * @param string $publicKey
-     * @param string $secretKey
-     */
-    public function testAuthenticationNewUserShouldSucceed(string $pheServerAddress,
-                                                           string $pureServerAddress,
-                                                           string $appToken,
-                                                           string $publicKey,
-                                                           string $secretKey): void
+    public function testAuthenticationNewUserShouldSucceed(): void
     {
+        $this->markTestSkipped("sk");
         $this->sleep();
 
         try {
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
 
                 $pure->registerUser($userId, $password);
 
@@ -212,23 +237,20 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testEncryptionRandomDataShouldMatch(string $pheServerAddress,
-                                                        string $pureServerAddress,
-                                                        string $appToken,
-                                                        string $publicKey,
-                                                        string $secretKey): void
+    public function testEncryptionRandomDataShouldMatch(): void
     {
+        $this->markTestSkipped("sk");
+
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password);
 
@@ -245,20 +267,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @param string $pheServerAddress
-     * @param string $pureServerAddress
-     * @param string $appToken
-     * @param string $publicKey
-     * @param string $secretKey
-     */
-    public function testSharing2UsersShouldDecrypt(
-        string $pheServerAddress,
-        string $pureServerAddress,
-        string $appToken,
-        string $publicKey,
-        string $secretKey): void
+    public function testSharing2UsersShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -266,16 +277,15 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId1 = (string)rand(1000, 9999);
-                $userId2 = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId1 = self::generateRandomString();
+                $userId2 = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId1, $password1);
                 $pure->registerUser($userId2, $password2);
@@ -299,12 +309,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testSharingRevokeAccessShouldNotDecrypt(string $pheServerAddress,
-                                                            string $pureServerAddress,
-                                                            string $appToken,
-                                                            string $publicKey,
-                                                            string $secretKey): void
+    public function testSharingRevokeAccessShouldNotDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -312,16 +319,15 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId1 = (string)rand(1000, 9999);
-                $userId2 = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId1 = self::generateRandomString();
+                $userId2 = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId1, $password1);
                 $pure->registerUser($userId2, $password2);
@@ -344,13 +350,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testGrantChangePasswordShouldNotDecrypt(
-        string $pheServerAddress,
-        string $pureServerAddress,
-        string $appToken,
-        string $publicKey,
-        string $secretKey): void
+    public function testGrantChangePasswordShouldNotDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -358,13 +360,12 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey, null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
 
                 $pure->registerUser($userId, $password1);
 
@@ -389,27 +390,23 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testGrantAdminAccessShouldDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testGrantAdminAccessShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey, $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password);
 
@@ -429,12 +426,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testResetPwdNewUserShouldNotDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testResetPwdNewUserShouldNotDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -442,17 +436,15 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password1);
 
@@ -473,12 +465,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testRestorePwdNewUserShouldDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testRestorePwdNewUserShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -486,16 +475,14 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password1);
 
@@ -520,12 +507,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testRotationLocalStorageShouldRotate(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey, string $updateToken): void
+    public function testRotationLocalStorageShouldRotate(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -540,9 +524,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
                 $total = 30;
 
-                    $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                        $secretKey,
-                            null, null, $storage);
+                    $pureResult = $this->setupPure(null, null, $storage);
                     $pure = new Pure($pureResult->getContext());
                     $pureStorage = $pure->getStorage();
 
@@ -559,9 +541,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                         $pure->registerUser($userId, $password);
                     }
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        $updateToken, null, $storage);
+                $pureResult = $this->setupPure($this->updateToken, null, $storage);
                 $pureResult->getContext()->setStorage($pureStorage);
                 $pure = new Pure($pureResult->getContext());
 
@@ -578,13 +558,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testPerformance(string $pheServerAddress,
-                                    string $pureServerAddress,
-                                    string $appToken,
-                                    string $publicKey,
-                                    string $secretKey,
-                                    string $updateToken): void
+    public function testPerformance(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -596,9 +572,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                     continue;
                 }
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $total = 10;
@@ -626,12 +600,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testEncryptionAdditionalKeysShouldDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testEncryptionAdditionalKeysShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -639,17 +610,15 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId1 = (string)rand(1000, 9999);
-                $userId2 = (string)rand(1000, 9999);
-                $password1 = (string)rand(1000, 9999);
-                $password2 = (string)rand(1000, 9999);
-                $dataId = (string)rand(1000, 9999);
-                $text = (string)rand(1000, 9999);
+                $userId1 = self::generateRandomString();
+                $userId2 = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId1, $password1);
                 $pure->registerUser($userId2, $password2);
@@ -681,12 +650,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testEncryptionExternalKeysShouldDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testEncryptionExternalKeysShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -701,9 +667,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
                 $externalPublicKeys = [$dataId => $publicKeyBase64];
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, $externalPublicKeys, $storage);
+                $pureResult = $this->setupPure(null, $externalPublicKeys, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -726,12 +690,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testDeleteUserCascadeShouldDeleteUserAndKeys(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -739,9 +700,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = (string) rand(1000, 9999);
@@ -773,12 +732,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testDeleteUserNoCascadeShouldDeleteUser(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testDeleteUserNoCascadeShouldDeleteUser(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -790,8 +746,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 if (StorageType::MARIADB() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey, $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = (string) rand(1000, 9999);
@@ -818,17 +773,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
         } catch (\Exception $exception) {
             $this->assertEquals(ErrorStatus::USER_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
 
-
             $this->fail($exception->getMessage());
         }
     }
 
-    public function testDeleteKeyNewKeyShouldDelete(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testDeleteKeyNewKeyShouldDelete(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -836,9 +787,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = (string) rand(1000, 9999);
@@ -866,12 +815,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testRegistrationNewUserBackupsPwdHash(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testRegistrationNewUserBackupsPwdHash(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -879,8 +825,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, publicKey, $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = (string) rand(1000, 9999);
@@ -903,12 +848,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testEncryptionRolesShouldDecrypt(string $pheServerAddress,
-                                            string $pureServerAddress,
-                                            string $appToken,
-                                            string $publicKey,
-                                            string $secretKey): void
+    public function testEncryptionRolesShouldDecrypt(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -919,9 +861,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 if (StorageType::VirgilCloudstorage() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $appToken, $publicKey,
-                    $secretKey,
-                        null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = (string) rand(1000, 9999);
@@ -959,15 +899,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-    public function testRecoveryNewUserShouldRecover(string $pheServerAddress,
-                                                     string $pureServerAddress,
-                                                     string $kmsServerAddress,
-                                                     string $appToken,
-                                                     string $phePublicKey,
-                                                     string $pheSecretKey,
-                                                     string $kmsPublicKey,
-                                                     string $kmsSecretKey): void
+    public function testRecoveryNewUserShouldRecover(): void
     {
+        $this->markTestSkipped("sk");
 
         $this->sleep();
 
@@ -975,8 +909,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure($pheServerAddress, $pureServerAddress, $kmsServerAddress, $appToken,
-                        $phePublicKey, $pheSecretKey, $kmsPublicKey, $kmsSecretKey,  null,null, null, $storage);
+                $pureResult = $this->setupPure(null, null, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 

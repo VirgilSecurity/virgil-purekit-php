@@ -48,13 +48,13 @@ use Virgil\PureKit\Pure\Exception\NullArgumentException;
 class ValidateUtil
 {
     /**
-     * @param string $argument
+     * @param mixed $argument
      * @param string $name
      * @throws EmptyArgumentException
      * @throws IllegalStateException
      * @throws NullArgumentException
      */
-    public static function checkNullOrEmpty(string $argument, string $name)
+    public static function checkNullOrEmpty($argument, string $name)
     {
         if (is_null($name))
             throw new IllegalStateException("\'name\' cannot be null");
@@ -67,12 +67,12 @@ class ValidateUtil
     }
 
     /**
-     * @param string $argument
+     * @param mixed $argument
      * @param string $name
      * @throws IllegalStateException
      * @throws NullArgumentException
      */
-    public static function checkNull(string $argument, string $name)
+    public static function checkNull($argument, string $name)
     {
         if (is_null($name))
             throw new IllegalStateException("\'name\' cannot be null");
