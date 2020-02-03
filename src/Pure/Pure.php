@@ -180,7 +180,7 @@ class Pure
 
         $userRecord = $this->storage->selectUser($userId);
 
-        $usk = $this->crypto->decrypt($userRecord->getEncryptedUskBackup(), $bupsk);
+        $usk = $this->crypto->authDecrypt($userRecord->getEncryptedUskBackup(), $bupsk, $this->oskp->getPublicKey());
 
         $upk = $this->crypto->importPrivateKey($usk);
 
@@ -294,10 +294,10 @@ class Pure
 
             foreach ($userRecords as $userRecord) {
                 // TODO!
-                // $userRecord->getPheRecordVersion() == $this->currentVersion - 1;
+                // $userRecord->getRecordVersion() == $this->currentVersion - 1;
 
                 $newRecord = $this->pheManager-$this->performRotation($userRecord->getPheRecord());
-                $newWrap = $this->kmsManager->performRotation($userRecord->getPasswordResetWrap());
+                $newWrap = $this->kmsManager->performRotation($userRecord->getPasswordRecoveryWrap());
 
                 $newUserRecord = new UserRecord(
                     $userRecord->getUserId(),
@@ -306,7 +306,7 @@ class Pure
                     $userRecord->getUpk(),
                     $userRecord->getEncryptedUsk(),
                     $userRecord->getEncryptedUskBackup(),
-                    $userRecord->getEncryptedPwdHash(),
+                    $userRecord->getBackupPwdHash(),
                     $newWrap,
                     $userRecord->getPasswordResetBlob()
                 );
@@ -393,8 +393,7 @@ class Pure
             $cpk = $this->crypto->importPublicKey($cellKey1->getCpk());
         }
 
-        // TODO: Replace crypto.encrypt everywhere
-        return $this->crypto->encrypt($plainText, $cpk);
+        return $this->crypto->authEncrypt($plainText, $this->oskp->getPrivateKey(), $cpk);
     }
 
     public function decrypt(PureGrant $grant, string $ownerUserId, string $dataId, string $cipherText): string
@@ -440,8 +439,8 @@ class Pure
 
                 if ($publicKeysIds.contains($publicKeyId)) {
                     // FIXME: Refactor
-                    $rskData = $this->crypto->decrypt($roleAssignment->getEncryptedRsk(),
-                        $grant->getUkp()->getPrivateKey());
+                    $rskData = $this->crypto->authDecrypt($roleAssignment->getEncryptedRsk(),
+                        $grant->getUkp()->getPrivateKey(), $this->oskp->getPublicKey());
 
                     $rkp = $this->crypto->importPrivateKey($rskData);
 
@@ -457,7 +456,7 @@ class Pure
 
         $ckp = $this->crypto->importPrivateKey($csk);
 
-        return $this->crypto->decrypt($cipherText, $ckp->getPrivateKey());
+        return $this->crypto->authDecrypt($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
     public function decrypt_(VirgilPrivateKey $privateKey, string $ownerUserId, string $dataId,
@@ -481,7 +480,7 @@ class Pure
 
         $ckp = $this->crypto->importPrivateKey($csk);
 
-        return $this->crypto->decrypt($cipherText, $ckp->getPrivateKey());
+        return $this->crypto->authDecrypt($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
     public function share(PureGrant $grant, string $dataId, string $otherUserId): void
@@ -550,11 +549,6 @@ class Pure
         $this->storage->deleteCellKey($userId, $dataId);
     }
 
-    /**
-     * @param string $roleName
-     * @param string ...$userIds
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
-     */
     public function createRole(string $roleName, string ...$userIds):void
     {
         $rkp = $this->crypto->generateKeyPair();
@@ -572,7 +566,8 @@ class Pure
     {
         $roleAssignment = $this->storage->selectRoleAssignment($roleToAssign, $grant->getUserId());
 
-        $rskData = $this->crypto->decrypt($roleAssignment->getEncryptedRsk(), $grant->getUkp()->getPrivateKey());
+        $rskData = $this->crypto->authDecrypt($roleAssignment->getEncryptedRsk(), $grant->getUkp()->getPrivateKey(),
+            $this->oskp->getPublicKey());
 
         $this->assignRole_($roleToAssign, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
     }
@@ -586,7 +581,7 @@ class Pure
         foreach ($userRecords as $userRecord) {
             $upk = $this->crypto->importPublicKey($userRecord->getUpk());
 
-            $encryptedRsk = $this->crypto->encrypt($rskData, $upk);
+            $encryptedRsk = $this->crypto->authEncrypt($rskData, $this->oskp->getPrivateKey(), $upk);
 
             $roleAssignments[] = new RoleAssignment($roleName, $userRecord->getUserId(), $publicKeyId, $encryptedRsk);
         }
@@ -594,7 +589,7 @@ class Pure
         $this->storage->insertRoleAssignments($roleAssignments);
     }
 
-    public function deassignRole(string $roleName, string ...$userIds): void
+    public function unassignRole(string $roleName, string ...$userIds): void
     {
         $this->storage->deleteRoleAssignments($roleName, $userIds);
     }
@@ -613,9 +608,9 @@ class Pure
 
             $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
 
-            $encryptedPwdHash = $this->crypto->encrypt($passwordHash, $this->buppk);
+            $encryptedPwdHash = $this->crypto->authEncrypt($passwordHash, $this->oskp->getPrivateKey(), $this->buppk);
 
-            $pwdResetData = $this->kmsManager->generatePwdResetData($passwordHash);
+            $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($passwordHash);
 
             $pheResult = $this->pheManager->getEnrollment($passwordHash);
 
@@ -625,7 +620,7 @@ class Pure
 
             $encryptedUsk = $this->cipher->encrypt($uskData, $pheResult->getAccountKey());
 
-            $encryptedUskBackup = $this->crypto->encrypt($uskData, $this->buppk);
+            $encryptedUskBackup = $this->crypto->authEncrypt($uskData, $this->oskp->getPrivateKey(), $this->buppk);
 
             $publicKey = $this->crypto->exportPublicKey($ukp->getPublicKey());
 
@@ -637,8 +632,8 @@ class Pure
                 $encryptedUsk,
                 $encryptedUskBackup,
                 $encryptedPwdHash,
-                $pwdResetData->getWrap(),
-                $pwdResetData->getBlob()
+                $pwdRecoveryData->getWrap(),
+                $pwdRecoveryData->getBlob()
             );
 
             $isUserNew ? $this->storage->insertUser($userRecord) : $this->storage->updateUser($userRecord);
@@ -664,11 +659,12 @@ class Pure
 
             $enrollResult = $this->pheManager->getEnrollment($newPasswordHash);
 
-            $pwdResetData = $this->kmsManager->generatePwdResetData($newPasswordHash);
+            $pwdRecoveryData = $this->kmsManager->generatePwdResetData($newPasswordHash);
 
             $newEncryptedUsk = $this->cipher->encrypt($privateKeyData, $enrollResult->getAccountKey());
 
-            $encryptedPwdHash = $this->crypto->encrypt($newPasswordHash, $this->buppk);
+            $encryptedPwdHash = $this->crypto->authEncrypt($newPasswordHash, $this->oskp->getPrivateKey(),
+                $this->buppk);
 
             $newUserRecord = new UserRecord(
                 $userRecord->getUserId(),
@@ -678,8 +674,8 @@ class Pure
                 $newEncryptedUsk,
                 $userRecord->getEncryptedUskBackup(),
                 $encryptedPwdHash,
-                $pwdResetData->getWrap(),
-                $pwdResetData->getBlob()
+                $pwdRecoveryData->getWrap(),
+                $pwdRecoveryData->getBlob()
             );
 
             $this->storage->updateUser($newUserRecord);
@@ -702,6 +698,11 @@ class Pure
         }
 
         return $keys;
+    }
+
+    public function getCurrentVersion(): int
+    {
+        return $this->currentVersion;
     }
 
     public function getCrypto(): VirgilCrypto {

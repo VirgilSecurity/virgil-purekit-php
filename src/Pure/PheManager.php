@@ -110,7 +110,7 @@ class PheManager
                     $userRecord->getPheRecord());
 
                 $request = (new ProtoVerifyPasswordRequest)
-                ->setVersion($userRecord->getPheRecordVersion())
+                ->setVersion($userRecord->getRecordVersion())
                 ->setRequest($pheVerifyRequest);
 
                 $response = $this->httpClient->verifyPassword($request);

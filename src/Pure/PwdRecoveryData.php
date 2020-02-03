@@ -1,5 +1,6 @@
+<?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -34,81 +35,27 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-syntax = "proto3";
+namespace Virgil\PureKit\Pure;
 
-package purekitV3Storage;
 
-message UserRecordSigned {
-    uint32 version = 1;
-    string user_id = 2;
-    bytes phe_record_ns = 3;
-    bytes phe_record_nc = 4;
-    bytes upk = 5;
-    bytes encrypted_usk = 6;
-    bytes encrypted_usk_backup = 7;
-    bytes backup_pwd_hash = 8;
-    bytes password_recovery_blob = 9;
-}
+class PwdRecoveryData
+{
+    private $blob;
+    private $wrap;
 
-message UserRecord {
-    uint32 version = 1;
-    bytes user_record_signed = 2;
-    bytes signature = 3;
-    bytes phe_record_t0 = 4;
-    bytes phe_record_t1 = 5;
-    uint32 record_version = 6;
-    bytes password_recovery_wrap = 7;
-}
+    public function __construct(string $blob, string $wrap)
+    {
+        $this->blob = $blob;
+        $this->wrap = $wrap;
+    }
 
-message UserRecords {
-    repeated UserRecord user_records = 1;
-}
+    public function getBlob(): string
+    {
+        return $this->blob;
+    }
 
-message CellKeySigned {
-    uint32 version = 1;
-    string userId = 2;
-    string dataId = 3;
-    bytes cpk = 4;
-    bytes encrypted_csk_cms = 5;
-    bytes encrypted_csk_body = 6;
-}
-
-message CellKey {
-    uint32 version = 1;
-    bytes cell_key_signed = 2;
-    bytes signature = 3;
-}
-
-message RoleSigned {
-    uint32 version = 1;
-    string name = 2;
-    bytes rpk = 3;
-}
-
-message Role {
-    uint32 version = 1;
-    bytes role_signed = 2;
-    bytes signature = 3;
-}
-
-message Roles {
-    repeated Role roles = 1;
-}
-
-message RoleAssignmentSigned {
-    uint32 version = 1;
-    string role_name = 2;
-    string user_id = 3;
-    bytes public_key_id = 4;
-    bytes encrypted_rsk = 5;
-}
-
-message RoleAssignment {
-    uint32 version = 1;
-    bytes role_assignment_signed = 2;
-    bytes signature = 3;
-}
-
-message RoleAssignments {
-    repeated RoleAssignment role_assignments = 1;
+    public function getWrap(): string
+    {
+        return $this->wrap;
+    }
 }

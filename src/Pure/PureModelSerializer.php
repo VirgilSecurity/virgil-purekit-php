@@ -113,8 +113,8 @@ class PureModelSerializer
             ->setUpk($userRecord->getUpk())
             ->setEncryptedUsk($userRecord->getEncryptedUsk())
             ->setEncryptedUskBackup($userRecord->getEncryptedUskBackup())
-            ->setEncryptedPwdHash($userRecord->getEncryptedPwdHash())
-            ->setPasswordResetBlob($userRecord->getPasswordResetBlob())
+            ->setBackupPwdHash($userRecord->getBackupPwdHash())
+            ->setPasswordRecoveryBlob($userRecord->getPasswordRecoveryBlob())
             ->serializeToString();
 
         $signature = $this->crypto->generateSignature($userRecordSigned, $this->signingKey->getPrivateKey());
@@ -125,8 +125,8 @@ class PureModelSerializer
             ->setSignature($signature)
             ->setPheRecordT0($enrollmentRecord->getT0())
             ->setPheRecordT1($enrollmentRecord->getT1())
-            ->setPheRecordVersion($userRecord->getPheRecordVersion())
-            ->setPasswordResetWrap($userRecord->getPasswordResetWrap());
+            ->setRecordVersion($userRecord->getRecordVersion())
+            ->setPasswordRecoveryWrap($userRecord->getPasswordRecoveryWrap());
     }
 
     /**
@@ -157,13 +157,13 @@ class PureModelSerializer
         return new UserRecord(
             $recordSigned->getUserId(),
             $pheRecord,
-            $protobufRecord->getPheRecordVersion(),
+            $protobufRecord->getRecordVersion(),
             $recordSigned->getUpk(),
             $recordSigned->getEncryptedUsk(),
             $recordSigned->getEncryptedUskBackup(),
-            $recordSigned->getEncryptedPwdHash(),
-            $protobufRecord->getPasswordResetWrap(),
-            $recordSigned->getPasswordResetBlob()
+            $recordSigned->getBackupPwdHash(),
+            $protobufRecord->getPasswordRecoveryWrap(),
+            $recordSigned->getPasswordRecoveryBlob()
         );
     }
 

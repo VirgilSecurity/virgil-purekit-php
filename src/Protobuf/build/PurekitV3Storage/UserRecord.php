@@ -34,13 +34,13 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     private $phe_record_t1 = '';
     /**
-     * Generated from protobuf field <code>uint32 phe_record_version = 6;</code>
+     * Generated from protobuf field <code>uint32 record_version = 6;</code>
      */
-    private $phe_record_version = 0;
+    private $record_version = 0;
     /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     * Generated from protobuf field <code>bytes password_recovery_wrap = 7;</code>
      */
-    private $password_reset_wrap = '';
+    private $password_recovery_wrap = '';
 
     /**
      * Constructor.
@@ -53,8 +53,8 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      *     @type string $signature
      *     @type string $phe_record_t0
      *     @type string $phe_record_t1
-     *     @type int $phe_record_version
-     *     @type string $password_reset_wrap
+     *     @type int $record_version
+     *     @type string $password_recovery_wrap
      * }
      */
     public function __construct($data = NULL) {
@@ -173,45 +173,45 @@ class UserRecord extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 phe_record_version = 6;</code>
+     * Generated from protobuf field <code>uint32 record_version = 6;</code>
      * @return int
      */
-    public function getPheRecordVersion()
+    public function getRecordVersion()
     {
-        return $this->phe_record_version;
+        return $this->record_version;
     }
 
     /**
-     * Generated from protobuf field <code>uint32 phe_record_version = 6;</code>
+     * Generated from protobuf field <code>uint32 record_version = 6;</code>
      * @param int $var
      * @return $this
      */
-    public function setPheRecordVersion($var)
+    public function setRecordVersion($var)
     {
         GPBUtil::checkUint32($var);
-        $this->phe_record_version = $var;
+        $this->record_version = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     * Generated from protobuf field <code>bytes password_recovery_wrap = 7;</code>
      * @return string
      */
-    public function getPasswordResetWrap()
+    public function getPasswordRecoveryWrap()
     {
-        return $this->password_reset_wrap;
+        return $this->password_recovery_wrap;
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_wrap = 7;</code>
+     * Generated from protobuf field <code>bytes password_recovery_wrap = 7;</code>
      * @param string $var
      * @return $this
      */
-    public function setPasswordResetWrap($var)
+    public function setPasswordRecoveryWrap($var)
     {
         GPBUtil::checkString($var, False);
-        $this->password_reset_wrap = $var;
+        $this->password_recovery_wrap = $var;
 
         return $this;
     }

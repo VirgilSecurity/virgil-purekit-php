@@ -60,6 +60,8 @@ class PureCrypto
      */
     private $crypto;
 
+    public const DERIVED_SECRET_LENGTH = 44;
+
     /**
      * PureCrypto constructor.
      * @param VirgilCrypto $crypto
@@ -236,6 +238,39 @@ class PureCrypto
 
         } catch (\Exception $exception) {
             throw new PureCryptoException($exception);
+        }
+    }
+
+    public function encryptSymmetric(string $blob, string $secret): string
+    {
+        try {
+            $aes256Gcm = new Aes256Gcm();
+
+            // TODO!
+            $aes256Gcm->setKey($secret);
+            $aes256Gcm->setNonce($secret);
+
+            $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($blob, "");
+
+            return $this->concat($authEncryptAuthEncryptResult->getTag(), $authEncryptAuthEncryptResult->getOut());
+        }
+        catch (\Exception $exception) {
+            throw new PureCryptoException($exception);
+        }
+    }
+
+    public function decryptSymmetric(string $encryptedBlob, string $secret): string
+    {
+        try {
+            $aes256Gcm = new Aes256Gcm();
+            // TODO!
+            $aes256Gcm->setKey($secret);
+            $aes256Gcm->setNonce($secret);
+
+            return $aes256Gcm->authDecrypt($encryptedBlob, "", "");
+        }
+            catch (\Exception $exception) {
+                throw new PureCryptoException($exception);
         }
     }
 

@@ -49,7 +49,7 @@ class KmsManager
     public const RECOVER_PWD_ALIAS = "RECOVERY_PASSWORD";
 
     private $currentVersion;
-    private $crypto;
+    private $pureCrypto;
     private $currentClient;
     private $previousClient;
     private $httpClient;
@@ -57,10 +57,10 @@ class KmsManager
 
     public function __construct(PureContext $context)
     {
-        $this->crypto = $context->getCrypto();
+        $this->pureCrypto = new PureCrypto($context->getCrypto());
         $this->currentClient = new UokmsClient();
-        $this->currentClient->useOperationRandom($this->crypto->getRng());
-        $this->currentClient->useRandom($this->crypto->getRng());
+        $this->currentClient->useOperationRandom($context->getCrypto()->getRng());
+        $this->currentClient->useRandom($context->getCrypto()->getRng());
         $this->currentClient->setKeys($context->getSecretKey()->getPayload2(),
             $context->getPublicKey()->getPayload2());
 
@@ -68,11 +68,11 @@ class KmsManager
             $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
             $updateToken = $context->getUpdateToken()->getPayload2();
             $this->kmsRotation = new UokmsWrapRotation();
-            $this->kmsRotation->useOperationRandom($this->crypto->getRng());
+            $this->kmsRotation->useOperationRandom($context->getCrypto()->getRng());
             $this->kmsRotation->setUpdateToken($updateToken);
             $this->previousClient = new UokmsClient();
-            $this->previousClient->useOperationRandom($this->crypto->getRng());
-            $this->previousClient->useRandom($this->crypto->getRng());
+            $this->previousClient->useOperationRandom($context->getCrypto()->getRng());
+            $this->previousClient->useRandom($context->getCrypto()->getRng());
             $this->previousClient->setKeys($context->getSecretKey()->getPayload2(),
                 $context->getPublicKey()->getPayload2());
             $this->currentClient->rotateKeys($context->getUpdateToken()->getPayload2());
@@ -97,25 +97,25 @@ class KmsManager
     }
 
 
-    private function deriveSecret(UserRecord $userRecord): string
+    private function recoverSecret(UserRecord $userRecord): string
     {
-        $kmsClient = $this->getKmsClient($userRecord->getPheRecordVersion());
+        $kmsClient = $this->getKmsClient($userRecord->getRecordVersion());
 
         $uokmsClientGenerateDecryptRequestResult = $kmsClient->generateDecryptRequest(
-            $userRecord->getPasswordResetWrap());
+            $userRecord->getPasswordRecoveryWrap());
 
         $decryptRequest = (new ProtoDecryptRequest)
-            ->setVersion($userRecord->getPheRecordVersion())
+            ->setVersion($userRecord->getRecordVersion())
             ->setAlias(self::RECOVER_PWD_ALIAS)
             ->setRequest($uokmsClientGenerateDecryptRequestResult->getDecryptRequest());
 
         $decryptResponse = $this->httpClient->decrypt($decryptRequest);
 
-        return $kmsClient->processDecryptResponse($userRecord->getPasswordResetWrap(),
+        return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoverytWrap(),
             $uokmsClientGenerateDecryptRequestResult->getDecryptRequest(),
             $decryptResponse->getResponse(),
             $uokmsClientGenerateDecryptRequestResult->getDeblindFactor(),
-            44 /* FIXME */);
+            PureCrypto::DERIVED_SECRET_LENGTH);
     }
 
     public function performRotation(string $wrap): string
@@ -127,31 +127,19 @@ class KmsManager
 
     public function recoverPwd(UserRecord $userRecord): string
     {
-        $derivedSecret = $this->deriveSecret($userRecord);
-
-        $aes256Gcm = new Aes256Gcm();
-
-        $aes256Gcm->setKey($derivedSecret);
-        $aes256Gcm->setNonce($derivedSecret);
-
-        return $aes256Gcm->authDecrypt($userRecord->getPasswordResetBlob(), "", "");
+        $derivedSecret = $this->recoverSecret($userRecord);
+        return $this->pureCrypto->decryptSymmetric($userRecord->getPasswordRecoveryBlob(), $derivedSecret);
     }
 
     // TODO!
-    public function generatePwdResetData(string $passwordHash): PwdResetData
+    public function generatePwdRecoveryData(string $passwordHash): PwdRecoveryData
     {
-        $aes256Gcm = new Aes256Gcm();
-        $kmsResult = $this->currentClient->generateEncryptWrap($aes256Gcm);
+        $kmsResult = $this->currentClient->generateEncryptWrap(PureCrypto::DERIVED_SECRET_LENGTH);
 
         $derivedSecret = $kmsResult->getEncryptionKey();
 
-        $aes256Gcm->setKey($derivedSecret);
-        $aes256Gcm->setNonce($derivedSecret);
+        $resetPwdBlob = $this->pureCrypto->encryptSymmetric($passwordHash, $derivedSecret);
 
-        $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($passwordHash, "");
-
-        $resetPwdBlob = "";
-
-        return new PwdResetData($kmsResult->getWrap(), $resetPwdBlob);
+        return new PwdRecoveryData($kmsResult->getWrap(), $resetPwdBlob);
     }
 }

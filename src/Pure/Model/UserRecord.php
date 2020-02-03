@@ -54,7 +54,7 @@ class UserRecord
     /**
      * @var int
      */
-    private $pheRecordVersion;
+    private $recordVersion;
     /**
      * @var string
      */
@@ -70,41 +70,41 @@ class UserRecord
     /**
      * @var string
      */
-    private $encryptedPwdHash;
+    private $backupPwdHash;
     /**
      * @var string
      */
-    private $passwordResetWrap;
+    private $passwordRecoveryWrap;
     /**
      * @var string
      */
-    private $passwordResetBlob;
+    private $passwordRecoveryBlob;
 
     /**
      * UserRecord constructor.
      * @param string $userId
      * @param string $pheRecord
-     * @param int $pheRecordVersion
+     * @param int $recordVersion
      * @param string $upk
      * @param string $encryptedUsk
      * @param string $encryptedUskBackup
-     * @param string $encryptedPwdHash
-     * @param string $passwordResetWrap
-     * @param string $passwordResetBlob
+     * @param string $backupPwdHash
+     * @param string $passwordRecoveryWrap
+     * @param string $passwordRecoveryBlob
      */
-    public function __construct(string $userId, string $pheRecord, int $pheRecordVersion, string $upk,
-                                string $encryptedUsk, string $encryptedUskBackup, string $encryptedPwdHash,
-                                string $passwordResetWrap, string $passwordResetBlob)
+    public function __construct(string $userId, string $pheRecord, int $recordVersion, string $upk,
+                                string $encryptedUsk, string $encryptedUskBackup, string $backupPwdHash,
+                                string $passwordRecoveryWrap, string $passwordRecoveryBlob)
     {
         $this->userId = $userId;
         $this->pheRecord = $pheRecord;
-        $this->pheRecordVersion = $pheRecordVersion;
+        $this->recordVersion = $recordVersion;
         $this->upk = $upk;
         $this->encryptedUsk = $encryptedUsk;
         $this->encryptedUskBackup = $encryptedUskBackup;
-        $this->encryptedPwdHash = $encryptedPwdHash;
-        $this->passwordResetWrap = $passwordResetWrap;
-        $this->passwordResetBlob = $passwordResetBlob;
+        $this->backupPwdHash = $backupPwdHash;
+        $this->passwordRecoveryWrap = $passwordRecoveryWrap;
+        $this->passwordRecoveryBlob = $passwordRecoveryBlob;
     }
 
     /**
@@ -132,9 +132,9 @@ class UserRecord
      *
      * @return int
      */
-    public function getPheRecordVersion(): int
+    public function getRecordVersion(): int
     {
-        return $this->pheRecordVersion;
+        return $this->recordVersion;
     }
 
     /**
@@ -172,24 +172,24 @@ class UserRecord
      *
      * @return string
      */
-    public function getEncryptedPwdHash(): string
+    public function getBackupPwdHash(): string
     {
-        return $this->encryptedPwdHash;
+        return $this->backupPwdHash;
     }
 
     /**
      * @return string
      */
-    public function getPasswordResetWrap(): string
+    public function getPasswordRecoveryWrap(): string
     {
-        return $this->passwordResetWrap;
+        return $this->passwordRecoveryWrap;
     }
 
     /**
      * @return string
      */
-    public function getPasswordResetBlob(): string
+    public function getPasswordRecoveryBlob(): string
     {
-        return $this->passwordResetBlob;
+        return $this->passwordRecoveryBlob;
     }
 }

@@ -42,13 +42,13 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     private $encrypted_usk_backup = '';
     /**
-     * Generated from protobuf field <code>bytes encrypted_pwd_hash = 8;</code>
+     * Generated from protobuf field <code>bytes backup_pwd_hash = 8;</code>
      */
-    private $encrypted_pwd_hash = '';
+    private $backup_pwd_hash = '';
     /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
+     * Generated from protobuf field <code>bytes password_recovery_blob = 9;</code>
      */
-    private $password_reset_blob = '';
+    private $password_recovery_blob = '';
 
     /**
      * Constructor.
@@ -63,8 +63,8 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      *     @type string $upk
      *     @type string $encrypted_usk
      *     @type string $encrypted_usk_backup
-     *     @type string $encrypted_pwd_hash
-     *     @type string $password_reset_blob
+     *     @type string $backup_pwd_hash
+     *     @type string $password_recovery_blob
      * }
      */
     public function __construct($data = NULL) {
@@ -227,45 +227,45 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes encrypted_pwd_hash = 8;</code>
+     * Generated from protobuf field <code>bytes backup_pwd_hash = 8;</code>
      * @return string
      */
-    public function getEncryptedPwdHash()
+    public function getBackupPwdHash()
     {
-        return $this->encrypted_pwd_hash;
+        return $this->backup_pwd_hash;
     }
 
     /**
-     * Generated from protobuf field <code>bytes encrypted_pwd_hash = 8;</code>
+     * Generated from protobuf field <code>bytes backup_pwd_hash = 8;</code>
      * @param string $var
      * @return $this
      */
-    public function setEncryptedPwdHash($var)
+    public function setBackupPwdHash($var)
     {
         GPBUtil::checkString($var, False);
-        $this->encrypted_pwd_hash = $var;
+        $this->backup_pwd_hash = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
+     * Generated from protobuf field <code>bytes password_recovery_blob = 9;</code>
      * @return string
      */
-    public function getPasswordResetBlob()
+    public function getPasswordRecoveryBlob()
     {
-        return $this->password_reset_blob;
+        return $this->password_recovery_blob;
     }
 
     /**
-     * Generated from protobuf field <code>bytes password_reset_blob = 9;</code>
+     * Generated from protobuf field <code>bytes password_recovery_blob = 9;</code>
      * @param string $var
      * @return $this
      */
-    public function setPasswordResetBlob($var)
+    public function setPasswordRecoveryBlob($var)
     {
         GPBUtil::checkString($var, False);
-        $this->password_reset_blob = $var;
+        $this->password_recovery_blob = $var;
 
         return $this;
     }
