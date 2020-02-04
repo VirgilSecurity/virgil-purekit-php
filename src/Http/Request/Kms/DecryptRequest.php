@@ -44,13 +44,14 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 
 class DecryptRequest extends BaseRequest
 {
+    protected $r;
     private $request;
 
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
+    public function __construct(AvailableRequest $r,
                                 ProtoDecryptRequest $request)
     {
+        $this->r = $r;
         $this->request = $request;
-        parent::__construct($endpoint, $method);
     }
 
     public function getOptionsBody(): string

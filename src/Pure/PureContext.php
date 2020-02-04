@@ -76,7 +76,7 @@ class PureContext
 
     public function __construct(VirgilCrypto $crypto, string $appToken, string $nms, string $buppk,
                                 string $secretKey, string $publicKey, PureStorage $storage,
-                                VirgilPublicKeyCollection $externalPublicKeys,
+                                array $externalPublicKeys,
                                 string $pheServiceAddress, string $kmsServiceAddress)
     {
         ValidateUtil::checkNull($storage, "storage");
@@ -89,10 +89,10 @@ class PureContext
         $buppkData = self::parseCredentials(self::BUPPK_PREFIX, $buppk, false, false)->getPayload1();
         $this->buppk = $crypto->importPublicKey($buppkData);
 
-        $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true);
-        $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true);
-        $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress);
-        $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress);
+        $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true, true);
+        $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true, true);
+        $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress, true);
+        $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress, true);
 
         if ($storage instanceof PureModelSerializerDependent) {
             $dependent = $storage;
@@ -103,24 +103,16 @@ class PureContext
 
         $this->storage = $storage;
 
-//        TODO! Check Java src
-//        if (!is_null($externalPublicKeys)) {
-//            this.externalPublicKeys = new HashMap<>(externalPublicKeys.size());
-//            for (String key : externalPublicKeys.keySet()) {
-//                List<String> publicKeysBase64 = externalPublicKeys.get(key);
-//                ArrayList<VirgilPublicKey> publicKeys = new ArrayList<>(publicKeysBase64.size());
-//
-//                for (String publicKeyBase64 : publicKeysBase64) {
-//                    VirgilPublicKey publicKey =
-//                        crypto.importPublicKey(Base64.decode(publicKeyBase64.getBytes()));
-//                    publicKeys.add(publicKey);
-//                }
-//
-//                this.externalPublicKeys.put(key, publicKeys);
-//            }
-//        } else {
-//            this.externalPublicKeys = new HashMap<>();
-//        }
+        $this->externalPublicKeys = new VirgilPublicKeyCollection();
+
+        if (!empty($externalPublicKeys)) {
+            foreach ($externalPublicKeys as $key) {
+                if (is_string($key)) {
+                    $publicKey = $crypto->importPublicKey(base64_decode($key));
+                    $this->externalPublicKeys->add($publicKey);
+                }
+            }
+        }
 
         if ($this->secretKey->getVersion() != $this->publicKey->getVersion())
             throw new PureLogicException(ErrorStatus::KEYS_VERSION_MISMATCH());
@@ -128,7 +120,7 @@ class PureContext
 
     public static function createCustomContext(string $appToken, string $nms, string $bu,
                                                PureStorage $storage, string $sk, string $pk,
-                                               VirgilPublicKeyCollection $externalPublicKeys,
+                                               array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
                                                 string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
@@ -145,7 +137,7 @@ class PureContext
     }
 
     public static function createVirgilContext(string $appToken, string $nms, string $bu, string $sk, string $pk,
-                                               VirgilPublicKeyCollection $externalPublicKeys,
+                                               array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
                                                string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS,
                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
@@ -162,7 +154,7 @@ class PureContext
     private static function _createContext(VirgilCrypto $crypto, string $appToken, string $nms, string $bu,
                                            string $sk, string $pk,
                                            PureStorage $storage,
-                                           VirgilPublicKeyCollection $externalPublicKeys,
+                                           array $externalPublicKeys = [],
                                            string $pheServiceAddress, string $kmsServiceAddress): PureContext
     {
         return new self(
@@ -178,7 +170,7 @@ class PureContext
         ValidateUtil::checkNullOrEmpty($credentials, "credentials");
 
         $parts = [];
-        $parts = explode("\\.", $credentials);
+        $parts = explode(".", $credentials);
 
         $numberOfParts = 2 + ($isTwofold ? 1 : 0) + ($isVersioned ? 1 : 0);
 
@@ -187,20 +179,18 @@ class PureContext
 
         $index = 0;
 
-        if (!$parts[$index] !== $prefix)
+        if ($parts[$index] != $prefix)
             throw new PureLogicException(ErrorStatus::CREDENTIALS_PARSING_ERROR());
 
         $index++;
 
         if ($isVersioned) {
-            // TODO!
-            $version = $parts[$index];
+            $version = (int)$parts[$index];
             $index++;
         } else {
             $version = 0;
         }
 
-        // TODO!
         $payload1 = base64_decode($parts[$index]);
 
         if ($isTwofold) {
@@ -218,7 +208,7 @@ class PureContext
         return $this->storage;
     }
 
-    public function getUpdateToken(): Credentials
+    public function getUpdateToken(): ?Credentials
     {
         return $this->updateToken;
     }

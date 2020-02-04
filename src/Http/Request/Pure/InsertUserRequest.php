@@ -39,17 +39,17 @@ namespace Virgil\PureKit\Http\Request;
 
 
 use PurekitV3Storage\UserRecord;
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
 
 class InsertUserRequest extends BaseRequest
 {
+    protected $request;
     private $userRecord;
 
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method, UserRecord $userRecord)
+    public function __construct(AvailableRequest $r, UserRecord $userRecord)
     {
+        $this->request = $r;
         $this->userRecord = $userRecord;
-        parent::__construct($endpoint, $method);
     }
 
     public function getOptionsBody(): string

@@ -42,6 +42,8 @@ use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
+use Virgil\Crypto\Core\Data;
+use Virgil\Crypto\Core\PublicKeyList;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
@@ -608,7 +610,11 @@ class Pure
 
             $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
 
-            $encryptedPwdHash = $this->crypto->authEncrypt($passwordHash, $this->oskp->getPrivateKey(), $this->buppk);
+            $io1 = new Data($passwordHash);
+            $pkl1 = new PublicKeyList();
+            $pkl1->addPublicKey($this->buppk);
+
+            $encryptedPwdHash = $this->crypto->authEncrypt($io1, $this->oskp->getPrivateKey(), $pkl1);
 
             $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($passwordHash);
 
@@ -620,7 +626,9 @@ class Pure
 
             $encryptedUsk = $this->cipher->encrypt($uskData, $pheResult->getAccountKey());
 
-            $encryptedUskBackup = $this->crypto->authEncrypt($uskData, $this->oskp->getPrivateKey(), $this->buppk);
+            $io2 = new Data($uskData);
+
+            $encryptedUskBackup = $this->crypto->authEncrypt($io2, $this->oskp->getPrivateKey(), $pkl1);
 
             $publicKey = $this->crypto->exportPublicKey($ukp->getPublicKey());
 

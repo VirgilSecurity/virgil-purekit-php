@@ -41,27 +41,48 @@ use MyCLabs\Enum\Enum;
 
 class AvailableRequest extends Enum
 {
+    private const GET = "GET";
+    private const POST = "POST";
+    private const PUT = "PUT";
+    private const DELETE = "DELETE";
+
     // PHE
-    private const ENROLL = "/enroll";
-    private const VERIFY_PASSWORD = "/verify-password";
+    private const ENROLL = ["/enroll", self::POST];
+    private const VERIFY_PASSWORD = ["/verify-password", self::POST];
 
     // PURE
-    private const INSERT_USER = "/user";
-    private const UPDATE_USER = "/user/%s";
-    private const GET_USER = "/user/%s";
-    private const GET_USERS = "/get-users";
-    private const DELETE_USER = "/user/%s";
-    private const INSERT_CELL_KEY = "/cell-key";
-    private const UPDATE_CELL_KEY = "/cell-key/%s/%s";
-    private const GET_CELL_KEY = "/cell-key/%s/%s";
-    private const DELETE_CELL_KEY = "/cell-key/%s/%s";
-    private const INSERT_ROLE = "/roles";
-    private const GET_ROLES = "/get-roles";
-    private const INSERT_ROLE_ASSIGNMENTS = "/role-assignments";
-    private const GET_ROLE_ASSIGNMENTS = "/get-role-assignments";
-    private const GET_ROLE_ASSIGNMENT = "/get-role-assignment";
-    private const DELETE_ROLE_ASSIGNMENTS = "/delete-role-assignments";
+    private const INSERT_USER = ["/user", self::POST];
+    private const UPDATE_USER = ["/user/%s", self::PUT];
+    private const GET_USER = ["/user/%s", self::GET];
+    private const GET_USERS = ["/get-users", self::POST];
+    private const DELETE_USER = ["/user/%s", self::DELETE];
+    private const INSERT_CELL_KEY = ["/cell-key", self::POST];
+    private const UPDATE_CELL_KEY = ["/cell-key/%s/%s", self::PUT];
+    private const GET_CELL_KEY = ["/cell-key/%s/%s", self::GET];
+    private const DELETE_CELL_KEY = ["/cell-key/%s/%s", self::DELETE];
+    private const INSERT_ROLE = ["/roles", self::POST];
+    private const GET_ROLES = ["/get-roles", self::POST];
+    private const INSERT_ROLE_ASSIGNMENTS = ["/role-assignments", self::POST];
+    private const GET_ROLE_ASSIGNMENTS = ["/get-role-assignments", self::POST];
+    private const GET_ROLE_ASSIGNMENT = ["/get-role-assignment", self::POST];
+    private const DELETE_ROLE_ASSIGNMENTS = ["/delete-role-assignments", self::POST];
 
     // KMS
-    private const DECRYPT_REQUEST = "/decrypt";
+    private const DECRYPT_REQUEST = ["/decrypt", self::POST];
+
+    /**
+     * @return string
+     */
+    public function getEndpoint(): string
+    {
+        return $this->getValue()[0];
+    }
+
+    /**
+     * @return string
+     */
+    public function getMethod(): string
+    {
+        return $this->getValue()[1];
+    }
 }

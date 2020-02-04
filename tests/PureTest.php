@@ -53,18 +53,49 @@ use Virgil\PureKit\Pure\Storage\RamPureStorage;
 
 class PureTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @var VirgilCrypto
+     */
     private $crypto;
-
+    /**
+     * @var string
+     */
     private $appToken;
-    private $publicKey;
-    private $secretKey;
+    /**
+     * @var string
+     */
+    private $publicKeyOld;
+    /**
+     * @var string
+     */
+    private $secretKeyOld;
+    /**
+     * @var string
+     */
+    private $publicKeyNew;
+    /**
+     * @var string
+     */
+    private $secretKeyNew;
+    /**
+     * @var string
+     */
+    private $publicKeyWrong;
+    /**
+     * @var string
+     */
     private $updateToken;
-    private $kmsPublicKey;
-    private $kmsSecretKey;
-    private $phePublicKey;
-    private $pheSecretKey;
+    /**
+     * @var string
+     */
     private $pheServerAddress;
+    /**
+     * @var string
+     */
     private $pureServerAddress;
+    /**
+     * @var string
+     */
     private $kmsServerAddress;
 
     /**
@@ -77,13 +108,12 @@ class PureTest extends \PHPUnit\Framework\TestCase
         (new Dotenv(__DIR__ . "/../"))->load();
 
         $this->appToken = $_ENV["TEST_APP_TOKEN"];
-        $this->publicKey = $_ENV["TEST_PUBLIC_KEY"];
-        $this->secretKey = $_ENV["TEST_SECRET_KEY"];
-        $this->updateToken = $_ENV["TEST_UPDATE_TOKEN"];
-        $this->kmsPublicKey = $_ENV["TEST_KMS_PUBLIC_KEY"];
-        $this->kmsSecretKey = $_ENV["TEST_KMS_SECRET_KEY"];
-        $this->phePublicKey = $_ENV["TEST_PHE_PUBLIC_KEY"];
-        $this->pheSecretKey = $_ENV["TEST_PHE_SECRET_KEY"];
+        $this->publicKeyOld = $_ENV["TEST_PUBLIC_KEY_OLD"];
+        $this->secretKeyOld = $_ENV["TEST_SECRET_KEY_OLD"];
+        $this->publicKeyNew = $_ENV["TEST_PUBLIC_KEY_NEW"];
+        $this->secretKeyNew = $_ENV["TEST_SECRET_KEY_NEW"];
+        $this->publicKeyWrong = $_ENV["TEST_PUBLIC_KEY_WRONG"];
+        $this->updateToken = $_ENV["UPDATE_TOKEN"];
         $this->pheServerAddress = $_ENV["TEST_PHE_SERVER_ADDRESS"];
         $this->pureServerAddress = $_ENV["TEST_PURE_SERVER_ADDRESS"];
         $this->kmsServerAddress = $_ENV["TEST_KMS_SERVER_ADDRESS"];
@@ -111,18 +141,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
         sleep($seconds);
     }
 
-
-    /**
-     * @param string $nms
-     * @param bool $updateToken
-     * @param VirgilPublicKeyCollection $externalPublicKeys
-     * @param StorageType $storageType
-     * @return PureSetupResult
-     * @throws NullPointerException
-     * @throws PureLogicException
-     */
     private function setupPure(string $nms = null, bool $updateToken = false,
-                               VirgilPublicKeyCollection $externalPublicKeys = null,
+                               array $externalPublicKeys = [],
                                StorageType $storageType): PureSetupResult
     {
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
@@ -132,27 +152,27 @@ class PureTest extends \PHPUnit\Framework\TestCase
         if (empty($nms))
             $nmsData = $this->crypto->generateRandomData(32);
 
-        $nmsString = "NM." . base64_encode($nms);
+        $nmsString = "NM." . base64_encode($nmsData);
 
         $bupkpString = "BU." . base64_encode($this->crypto->exportPublicKey($bupkp->getPublicKey()));
 
         switch ($storageType) {
             case StorageType::RAM():
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
-                    new RamPureStorage(), $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    new RamPureStorage(), $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
             case StorageType::VIRGIL_CLOUD():
                 $context = PureContext::createVirgilContext($this->appToken, $nmsString, $bupkpString,
-                    $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
                     $this->pheServerAddress, $this->pureServerAddress, $this->kmsServerAddress);
                 break;
 
             case StorageType::MARIADB():
                 $mariaDbPureStorage = new MariaDbPureStorage("jdbc:mariadb://localhost/puretest?user=root&password=qwerty");
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
-                    $mariaDbPureStorage, $this->secretKey, $this->publicKey, $externalPublicKeys,
+                    $mariaDbPureStorage, $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
@@ -178,21 +198,18 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRegistrationNewUserShouldSucceed(): void
     {
-        $this->sleep();
+//        $this->sleep();
 
         try {
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, new VirgilPublicKeyCollection(), $storage);
+                $pureResult = $this->setupPure(null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
                 $password = self::generateRandomString();
-
-                var_dump($pure, $userId, $password);
-                die;
 
                 $pure->registerUser($userId, $password);
             }

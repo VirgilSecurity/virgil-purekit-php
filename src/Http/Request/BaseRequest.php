@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Http\Request;
 
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\_\HttpVirgilAgent;
 
@@ -50,22 +49,7 @@ abstract class BaseRequest
     /**
      * @var AvailableRequest
      */
-    protected $endpoint;
-    /**
-     * @var AvailableHttpMethod
-     */
-    protected $method;
-
-    /**
-     * BaseRequest constructor.
-     * @param string $endpoint
-     * @param AvailableHttpMethod $method
-     */
-    public function __construct(string $endpoint, AvailableHttpMethod $method)
-    {
-        $this->endpoint = $endpoint;
-        $this->method = $method;
-    }
+    protected $request;
 
     /**
      * @param string $appToken
@@ -81,7 +65,7 @@ abstract class BaseRequest
      */
     public function getMethod(): string
     {
-        return $this->method->getValue();
+        return $this->request->getMetod();
     }
 
     /**
@@ -89,7 +73,7 @@ abstract class BaseRequest
      */
     public function getEndpoint(): string
     {
-        return $this->endpoint;
+        return $this->request->getEndpoint();
     }
 
     /**

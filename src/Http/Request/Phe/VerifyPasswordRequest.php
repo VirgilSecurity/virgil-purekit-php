@@ -49,6 +49,10 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class VerifyPasswordRequest extends BaseRequest
 {
     /**
+     * @var AvailableRequest
+     */
+    protected $request;
+    /**
      * @var int
      */
     private $version;
@@ -59,17 +63,15 @@ class VerifyPasswordRequest extends BaseRequest
 
     /**
      * VerifyPasswordRequest constructor.
-     * @param AvailableRequest $endpoint
-     * @param AvailableHttpMethod $method
+     * @param AvailableRequest $r
      * @param string $verifyPasswordRequest
      * @param int $version
      */
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
-                                string $verifyPasswordRequest, int $version)
+    public function __construct(AvailableRequest $r, string $verifyPasswordRequest, int $version)
     {
+        $this->request = $r;
         $this->version = $version;
         $this->verifyPasswordRequest = $verifyPasswordRequest;
-        parent::__construct($endpoint, $method);
     }
 
     /**

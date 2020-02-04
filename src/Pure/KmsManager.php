@@ -40,6 +40,8 @@ namespace Virgil\PureKit\Pure;
 
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
+use Virgil\CryptoWrapper\Phe\UokmsClient;
+use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
