@@ -60,8 +60,6 @@ class PureContext
     private const BUPPK_PREFIX = "BU";
     private const SECRET_KEY_PREFIX = "SK";
     private const PUBLIC_KEY_PREFIX = "PK";
-    private const PHE_UPDATE_TOKEN_PREFIX = "UT";
-    private const KMS_UPDATE_TOKEN_PREFIX = "KT";
 
     private $crypto;
     private $buppk;
@@ -145,7 +143,7 @@ class PureContext
         $crypto = new VirgilCrypto();
         $pureClient = new HttpPureClient($appToken, $pureServiceAddress);
 
-        $storage = new VirgilCloudPureStorage($crypto, $pureClient);
+        $storage = new VirgilCloudPureStorage($pureClient);
 
         return self::_createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys,
             $pheServiceAddress, $kmsServiceAddress);
@@ -221,6 +219,11 @@ class PureContext
             throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
     }
 
+    public function setStorage(PureStorage $storage)
+    {
+        $this->storage = $storage;
+    }
+
     public function getBuppk(): VirgilPublicKey
     {
         return $this->buppk;
@@ -234,16 +237,6 @@ class PureContext
     public function getPublicKey(): Credentials
     {
         return $this->publicKey;
-    }
-
-    public function getKmsSecretKey(): Credentials
-    {
-    return $this->kmsSecretKey;
-    }
-
-    public function getKmsPublicKey(): Credentials
-    {
-        return $this->kmsPublicKey;
     }
 
     public function getPheClient(): HttpPheClient

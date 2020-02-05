@@ -39,6 +39,7 @@ namespace Virgil\PureKit\Pure;
 
 use PurekitV3Crypto\EnrollmentRecord as ProtoEnrollmentRecord;
 use PurekitV3Storage\GrantKey as ProtoGrantKey;
+use PurekitV3Storage\GrantKeySigned as ProtoGrantKeySigned;
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\CellKey as ProtoCellKey;
 use PurekitV3Storage\CellKeySigned as ProtoCellKeySigned;
@@ -139,7 +140,11 @@ class PureModelSerializer
      */
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
-        $enrollmentRecord = (new ProtoEnrollmentRecord)->mergeFromString($userRecord->getPheRecord());
+        try {
+            $enrollmentRecord = (new ProtoEnrollmentRecord)->mergeFromString($userRecord->getPheRecord());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageGenericException(ErrorStatus::INVALID_PROTOBUF());
+        }
 
         $userRecordSigned = (new ProtoUserRecordSigned)
             ->setVersion(self::CURRENT_USER_SIGNED_VERSION)
@@ -165,23 +170,15 @@ class PureModelSerializer
             ->setPasswordRecoveryWrap($userRecord->getPasswordRecoveryWrap());
     }
 
-    /**
-     * @param ProtoUserRecord $protobufRecord
-     * @return UserRecord
-     * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
-        $verified = $this->crypto->verifySignature(
-            $protobufRecord->getSignature(),
-            $protobufRecord->getUserRecordSigned(),
-            $this->signingKey->getPublicKey());
+        $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getUserRecordSigned());
 
-        if (!$verified)
-            throw new PureLogicException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
-
-        $recordSigned = (new ProtoUserRecordSigned)->mergeFromString($protobufRecord->getUserRecordSigned());
+        try {
+            $recordSigned = (new ProtoUserRecordSigned)->mergeFromString($protobufRecord->getUserRecordSigned());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageInvalidProtobufException($exception);
+        }
 
         $pheRecord = (new ProtoEnrollmentRecord)
             ->setNc($recordSigned->getPheRecordNc())
@@ -219,7 +216,7 @@ class PureModelSerializer
             ->setEncryptedCskBody($cellKey->getEncryptedCskBody())
             ->serializeToString();
 
-        $signature = $this->crypto->generateSignature($cellKeySigned, $this->signingKey->getPrivateKey());
+        $signature = $this->generateSignature($cellKeySigned);
 
         return (new ProtoCellKey)
             ->setVersion(self::CURRENT_CELL_KEY_VERSION)
@@ -230,21 +227,17 @@ class PureModelSerializer
     /**
      * @param ProtoCellKey $protobufRecord
      * @return CellKey
-     * @throws PureLogicException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
-        $verified = $this->crypto->verifySignature(
-            $protobufRecord->getSignature(),
-            $protobufRecord->getCellKeySigned(),
-            $this->signingKey->getPublicKey()
-        );
+        $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getCellKeySigned());
 
-        if (!$verified)
-            throw new PureLogicException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
-
-        $keySigned = (new ProtoCellKeySigned)->mergeFromString($protobufRecord->getCellKeySigned());
+        try {
+            $keySigned = (new ProtoCellKeySigned)->mergeFromString($protobufRecord->getCellKeySigned());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageInvalidProtobufException($exception);
+        }
 
         return new CellKey($keySigned->getUserId(), $keySigned->getDataId(),
             $keySigned->getCpk(),
@@ -266,8 +259,7 @@ class PureModelSerializer
             ->setRpk($role->getRpk())
             ->serializeToString();
 
-
-        $signature = $this->crypto->generateSignature($roleSigned, $this->signingKey->getPrivateKey());
+        $signature = $this->generateSignature($roleSigned);
 
         return (new ProtoRole)
             ->setVersion(self::CURRENT_ROLE_VERSION)
@@ -283,16 +275,13 @@ class PureModelSerializer
      */
     public function parseRole(ProtoRole $protobufRecord): Role
     {
-        $verified = $this->crypto->verifySignature(
-            $protobufRecord->getSignature(),
-            $protobufRecord->getRoleSigned(),
-            $this->signingKey->getPublicKey()
-        );
+        $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleSigned());
 
-        if (!$verified)
-            throw new PureLogicException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
-
-        $roleSigned = (new ProtoRoleSigned)->mergeFromString($protobufRecord->getRoleSigned());
+        try {
+            $roleSigned = (new ProtoRoleSigned)->mergeFromString($protobufRecord->getRoleSigned());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageInvalidProtobufException($exception);
+        }
 
         return new Role($roleSigned->getName(), $roleSigned->getRpk());
     }
@@ -312,7 +301,7 @@ class PureModelSerializer
             ->setPublicKeyId($roleAssignment->getPublicKeyId())
             ->serializeToString();
 
-        $signature = $this->crypto->generateSignature($roleAssignmentSigned, $this->signingKey->getPrivateKey());
+        $signature = $this->generateSignature($roleAssignmentSigned);
 
         return (new ProtoRoleAssignment)
             ->setVersion(self::CURRENT_ROLE_ASSIGNMENT_VERSION)
@@ -323,22 +312,18 @@ class PureModelSerializer
     /**
      * @param ProtoRoleAssignment $protobufRecord
      * @return RoleAssignment
-     * @throws PureLogicException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
-        $verified = $this->crypto->verifySignature(
-            $protobufRecord->getSignature(),
-            $protobufRecord->getRoleAssignmentSigned(),
-            $this->signingKey->getPublicKey()
-        );
+        $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleAssignmentSigned());
 
-        if (!$verified)
-            throw new PureLogicException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
-
-        $roleAssignmentSigned = (new ProtoRoleAssignmentSigned)
-            ->mergeFromString($protobufRecord->getRoleAssignmentSigned());
+        try {
+            $roleAssignmentSigned = (new ProtoRoleAssignmentSigned)
+                ->mergeFromString($protobufRecord->getRoleAssignmentSigned());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageInvalidProtobufException($exception);
+        }
 
         return new RoleAssignment(
             $roleAssignmentSigned->getRoleName(),
@@ -346,8 +331,43 @@ class PureModelSerializer
             $roleAssignmentSigned->getPublicKeyId(), $roleAssignmentSigned->getEncryptedRsk());
     }
 
+    /**
+     * @param GrantKey $grantKey
+     * @return ProtoGrantKey
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
+    public function serializeGrantKey(GrantKey $grantKey): ProtoGrantKey
+    {
+        $grantKeySigned = (new ProtoGrantKeySigned)
+            ->setVersion(self::CURRENT_GRANT_KEY_SIGNED_VERSION)
+            ->setUserId($grantKey->getUserId())
+            ->setKeyId($grantKey->getKeyId())
+            ->setEncryptedGrantKey($grantKey->getEncryptedGrantKey())
+            ->setCreationDate($grantKey->getCreationDate()/1000)
+            ->setExpirationDate($grantKey->getExpirationDate()/1000)
+            ->serializeToString();
+
+        $signature = $this->generateSignature($grantKeySigned);
+
+        return (new ProtoGrantKey)
+            ->setVersion(self::CURRENT_GRANT_KEY_VERSION)
+            ->setGrantKeySigned($grantKeySigned)
+            ->setSignature($signature);
+    }
+
     public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
     {
+        $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getGrantKeySigned());
 
+        try {
+            $grantKeySigned = (new ProtoGrantKeySigned)->mergeFromString($protobufRecord->getGrantKeySigned());
+        } catch (InvalidProtocolBufferException $exception) {
+            throw new PureStorageInvalidProtobufException($exception->getMessage(), $exception->getCode());
+        }
+
+        return new GrantKey($grantKeySigned->getUserId(), $grantKeySigned->getKeyId(),
+            $grantKeySigned->getEncryptedGrantKey(),
+            new \DateTime($grantKeySigned->getCreationDate() * 1000),
+            new \DateTime($grantKeySigned->getExpirationDate() * 1000));
     }
 }
