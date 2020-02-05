@@ -35,34 +35,83 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
-
-use MyCLabs\Enum\Enum;
+namespace Virgil\PureKit\Pure\Model;
 
 /**
- * Class ServiceErrorCode
- * @package Virgil\PureKit\Pure\Exception
+ * Class GrantKey
+ * @package Virgil\PureKit\Pure\Model
  */
-class ServiceErrorCode extends Enum
+class GrantKey
 {
-    private $code;
+    /**
+     * @var string
+     */
+    private $userId;
+    /**
+     * @var string
+     */
+    private $keyId;
+    /**
+     * @var string
+     */
+    private $encryptedGrantKey;
+    /**
+     * @var \DateTime
+     */
+    private $creationDate;
+    /**
+     * @var \DateTime
+     */
+    private $expirationDate;
 
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const UNDEFINED = 0;
-
-    public function __construct(int $code)
+    public function __construct(string $userId, string $keyId, string $encryptedGrantKey, \DateTime $creationDate,
+\DateTime $expirationDate)
     {
-        $this->code = $code;
-        parent::__construct($code);
+        $this->userId = $userId;
+        $this->keyId = $keyId;
+        $this->encryptedGrantKey = $encryptedGrantKey;
+        $this->creationDate = $creationDate;
+        $this->expirationDate = $expirationDate;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getCode(): int
+    public function getUserId(): string
     {
-        return $this->getValue();
+        return $this->userId;
     }
+
+    /**
+     * @return string
+     */
+    public function getKeyId(): string
+    {
+        return $this->keyId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEncryptedGrantKey(): string
+    {
+        return $this->encryptedGrantKey;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreationDate(): \DateTime
+    {
+        return $this->creationDate;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getExpirationDate(): \DateTime
+    {
+        return $this->expirationDate;
+    }
+
 }

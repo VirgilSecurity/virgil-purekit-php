@@ -14,17 +14,25 @@ use Google\Protobuf\Internal\GPBUtil;
 class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
 {
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 1;</code>
-     */
-    private $creation_date = 0;
-    /**
-     * Generated from protobuf field <code>string user_id = 2;</code>
+     * Generated from protobuf field <code>string user_id = 1;</code>
      */
     private $user_id = '';
     /**
-     * Generated from protobuf field <code>string session_id = 3;</code>
+     * Generated from protobuf field <code>string session_id = 2;</code>
      */
     private $session_id = '';
+    /**
+     * Generated from protobuf field <code>bytes key_id = 3;</code>
+     */
+    private $key_id = '';
+    /**
+     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
+     */
+    private $creation_date = 0;
+    /**
+     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
+     */
+    private $expiration_date = 0;
 
     /**
      * Constructor.
@@ -32,9 +40,11 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      * @param array $data {
      *     Optional. Data for populating the Message object.
      *
-     *     @type int $creation_date
      *     @type string $user_id
      *     @type string $session_id
+     *     @type string $key_id
+     *     @type int $creation_date
+     *     @type int $expiration_date
      * }
      */
     public function __construct($data = NULL) {
@@ -43,29 +53,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 1;</code>
-     * @return int
-     */
-    public function getCreationDate()
-    {
-        return $this->creation_date;
-    }
-
-    /**
-     * Generated from protobuf field <code>uint32 creation_date = 1;</code>
-     * @param int $var
-     * @return $this
-     */
-    public function setCreationDate($var)
-    {
-        GPBUtil::checkUint32($var);
-        $this->creation_date = $var;
-
-        return $this;
-    }
-
-    /**
-     * Generated from protobuf field <code>string user_id = 2;</code>
+     * Generated from protobuf field <code>string user_id = 1;</code>
      * @return string
      */
     public function getUserId()
@@ -74,7 +62,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string user_id = 2;</code>
+     * Generated from protobuf field <code>string user_id = 1;</code>
      * @param string $var
      * @return $this
      */
@@ -87,7 +75,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string session_id = 3;</code>
+     * Generated from protobuf field <code>string session_id = 2;</code>
      * @return string
      */
     public function getSessionId()
@@ -96,7 +84,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string session_id = 3;</code>
+     * Generated from protobuf field <code>string session_id = 2;</code>
      * @param string $var
      * @return $this
      */
@@ -104,6 +92,72 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->session_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes key_id = 3;</code>
+     * @return string
+     */
+    public function getKeyId()
+    {
+        return $this->key_id;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes key_id = 3;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setKeyId($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->key_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
+     * @return int
+     */
+    public function getCreationDate()
+    {
+        return $this->creation_date;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setCreationDate($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->creation_date = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
+     * @return int
+     */
+    public function getExpirationDate()
+    {
+        return $this->expiration_date;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setExpirationDate($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->expiration_date = $var;
 
         return $this;
     }

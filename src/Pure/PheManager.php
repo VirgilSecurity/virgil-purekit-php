@@ -41,6 +41,7 @@ use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
 use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use Virgil\Crypto\Core\HashAlgorithms;
 use Virgil\CryptoWrapper\Phe\PheClient;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Model\UserRecord;
@@ -57,34 +58,38 @@ class PheManager
 
     public function __construct(PureContext $context)
     {
-        $this->crypto = $context->getCrypto();
+        try {
+            $this->crypto = $context->getCrypto();
 
-        $this->currentClient = new PheClient();
-        $this->currentClient->useOperationRandom($this->crypto->getRng());
-        $this->currentClient->useRandom($this->crypto->getRng());
+            $this->currentClient = new PheClient();
+            $this->currentClient->useOperationRandom($this->crypto->getRng());
+            $this->currentClient->useRandom($this->crypto->getRng());
 
-        if (!is_null($context->getUpdateToken())) {
-            $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
-            $this->updateToken = $context->getUpdateToken()->getPayload1();
-            $this->previousClient = new PheClient();
-            $this->previousClient->useOperationRandom($this->crypto->getRng());
-            $this->previousClient->useRandom($this->crypto->getRng());
-            $this->previousClient->setKeys($context->getSecretKey()->getPayload1(),
-                $context->getPublicKey()->getPayload1());
+            if (!is_null($context->getUpdateToken())) {
+                $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
+                $this->updateToken = $context->getUpdateToken()->getPayload1();
+                $this->previousClient = new PheClient();
+                $this->previousClient->useOperationRandom($this->crypto->getRng());
+                $this->previousClient->useRandom($this->crypto->getRng());
+                $this->previousClient->setKeys($context->getSecretKey()->getPayload1(),
+                    $context->getPublicKey()->getPayload1());
 
-            $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload1());
-            $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
-                $rotateKeysResult->getNewServerPublicKey());
+                $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload1());
+                $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
+                    $rotateKeysResult->getNewServerPublicKey());
 
-        } else {
-            $this->currentVersion = $context->getPublicKey()->getVersion();
-            $this->updateToken = null;
-            $this->currentClient->setKeys($context->getSecretKey()->getPayload1(), $context->getPublicKey()
-                ->getPayload1());
-            $this->previousClient = null;
+            } else {
+                $this->currentVersion = $context->getPublicKey()->getVersion();
+                $this->updateToken = null;
+                $this->currentClient->setKeys($context->getSecretKey()->getPayload1(), $context->getPublicKey()
+                    ->getPayload1());
+                $this->previousClient = null;
+            }
+
+            $this->httpClient = $context->getPheClient();
+        } catch (\Exception $exception) {
+            throw new PureCryptoException($exception);
         }
-
-        $this->httpClient = $context->getPheClient();
     }
 
     private function getPheClient(int $pheVersion): PheClient
@@ -128,15 +133,27 @@ class PheManager
 
                 return $phek;
             }
+        catch (ProtocolException $exception) {
+            throw new PheClientException($exception);
+        }
+        catch (ProtocolHttpException $exception) {
+            throw new PheClientException($exception);
+        }
         catch (\Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
 
     public function performRotation(string $enrollmentRecord): string {
+
         ValidateUtil::checkNull($this->updateToken, "pheUpdateToken");
 
-        return $this->previousClient->updateEnrollmentRecord($enrollmentRecord, $this->updateToken);
+        try {
+            return $this->previousClient->updateEnrollmentRecord($enrollmentRecord, $this->updateToken);
+        } catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
+
     }
 
     public function getEnrollment(string $passwordHash): PheClientEnrollAccountResult
@@ -144,11 +161,19 @@ class PheManager
         $request = (new ProtoEnrollmentRequest)
             ->setVersion($this->currentVersion);
 
-        $response = $this->httpClient->enrollAccount($request);
+        try {
+            $response = $this->httpClient->enrollAccount($request);
+        } catch (ProtocolException | ProtocolHttpException $exception) {
+            throw new PheClientException($exception);
+        }
 
-        return $this->currentClient->enrollAccount(
+        try {
+            return $this->currentClient->enrollAccount(
                 $response->getResponse(),
                 $passwordHash
             );
+        } catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
     }
 }

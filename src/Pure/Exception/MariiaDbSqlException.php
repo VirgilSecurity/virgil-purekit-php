@@ -37,32 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use MyCLabs\Enum\Enum;
 
-/**
- * Class ServiceErrorCode
- * @package Virgil\PureKit\Pure\Exception
- */
-class ServiceErrorCode extends Enum
+class MariiaDbSqlException
 {
-    private $code;
 
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const UNDEFINED = 0;
-
-    public function __construct(int $code)
-    {
-        $this->code = $code;
-        parent::__construct($code);
-    }
-
-    /**
-     * @return int
-     */
-    public function getCode(): int
-    {
-        return $this->getValue();
-    }
 }

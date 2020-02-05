@@ -38,13 +38,18 @@
 namespace Virgil\PureKit\Pure;
 
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
 class PwdRecoveryData
 {
     private $blob;
     private $wrap;
 
-    public function __construct(string $blob, string $wrap)
+    public function __construct(string $wrap, string $blob)
     {
+        ValidateUtil::checkNull($wrap, "wrap");
+        ValidateUtil::checkNull($blob, "blob");
+
         $this->blob = $blob;
         $this->wrap = $wrap;
     }

@@ -39,9 +39,11 @@ syntax = "proto3";
 package purekitV3Grant;
 
 message EncryptedGrantHeader {
-    uint32 creation_date = 1;
-    string user_id = 2;
-    string session_id = 3;
+    string user_id = 1;
+    string session_id = 2;
+    bytes key_id = 3;
+    uint32 creation_date = 4;
+    uint32 expiration_date = 5;
 }
 
 message EncryptedGrant {

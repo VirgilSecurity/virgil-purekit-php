@@ -38,6 +38,7 @@
 namespace Virgil\PureKit\Http;
 
 use PurekitV3Storage\CellKey as ProtoCellKey;
+use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
 use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\Roles as ProtoRoles;
@@ -54,6 +55,9 @@ use Virgil\PureKit\Http\Request\GetUsersRequest;
 use Virgil\PureKit\Http\Request\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\InsertUserRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
@@ -246,6 +250,39 @@ class HttpPureClient extends HttpBaseClient
      * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
      */
     public function deleteRoleAssignment(DeleteRoleAssignmentRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param InsertGrantKeyRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
+     */
+    public function insertGrantKey(InsertGrantKeyRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param GetGrantKeyRequest $request
+     * @return ProtoGrantKey
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
+     */
+    public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey
+    {
+        $r = $this->_send($request);
+
+        $res = new ProtoGrantKey();
+        $res->mergeFromString($r->getBody()->getContents());
+
+        return $res;
+    }
+
+    /**
+     * @param DeleteGrantKeyRequest $request
+     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
+     */
+    public function deleteGrantKey(DeleteGrantKeyRequest $request): void
     {
         $this->_send($request);
     }

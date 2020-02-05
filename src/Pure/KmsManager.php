@@ -39,10 +39,10 @@ namespace Virgil\PureKit\Pure;
 
 
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
-use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
 use Virgil\CryptoWrapper\Phe\UokmsClient;
 use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
+use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
@@ -59,36 +59,41 @@ class KmsManager
 
     public function __construct(PureContext $context)
     {
-        $this->pureCrypto = new PureCrypto($context->getCrypto());
-        $this->currentClient = new UokmsClient();
-        $this->currentClient->useOperationRandom($context->getCrypto()->getRng());
-        $this->currentClient->useRandom($context->getCrypto()->getRng());
+        try {
+            $this->pureCrypto = new PureCrypto($context->getCrypto());
+            $this->currentClient = new UokmsClient();
+            $this->currentClient->useOperationRandom($context->getCrypto()->getRng());
+            $this->currentClient->useRandom($context->getCrypto()->getRng());
 
-        if (!is_null($context->getUpdateToken())) {
-            $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
-            $updateToken = $context->getUpdateToken()->getPayload2();
-            $this->kmsRotation = new UokmsWrapRotation();
-            $this->kmsRotation->useOperationRandom($context->getCrypto()->getRng());
-            $this->kmsRotation->setUpdateToken($updateToken);
-            $this->previousClient = new UokmsClient();
-            $this->previousClient->useOperationRandom($context->getCrypto()->getRng());
-            $this->previousClient->useRandom($context->getCrypto()->getRng());
-            $this->previousClient->setKeys($context->getSecretKey()->getPayload2(),
-                $context->getPublicKey()->getPayload2());
+            if (!is_null($context->getUpdateToken())) {
+                $this->currentVersion = $context->getPublicKey()->getVersion() + 1;
+                $updateToken = $context->getUpdateToken()->getPayload2();
+                $this->kmsRotation = new UokmsWrapRotation();
+                $this->kmsRotation->useOperationRandom($context->getCrypto()->getRng());
+                $this->kmsRotation->setUpdateToken($updateToken);
+                $this->previousClient = new UokmsClient();
+                $this->previousClient->useOperationRandom($context->getCrypto()->getRng());
+                $this->previousClient->useRandom($context->getCrypto()->getRng());
+                $this->previousClient->setKeys($context->getSecretKey()->getPayload2(),
+                    $context->getPublicKey()->getPayload2());
 
-            $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload2());
-            $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
-                $rotateKeysResult->getNewServerPublicKey());
+                $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload2());
+                $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
+                    $rotateKeysResult->getNewServerPublicKey());
 
-        } else {
-            $this->currentVersion = $context->getPublicKey()->getVersion();
-            $this->kmsRotation = null;
-            $this->previousClient = null;
-            $this->currentClient->setKeys($context->getSecretKey()->getPayload2(), $context->getPublicKey()
-                ->getPayload2());
+            } else {
+                $this->currentVersion = $context->getPublicKey()->getVersion();
+                $this->kmsRotation = null;
+                $this->previousClient = null;
+                $this->currentClient->setKeys($context->getSecretKey()->getPayload2(), $context->getPublicKey()
+                    ->getPayload2());
+            }
+
+            $this->httpClient = $context->getKmsClient();
         }
-
-        $this->httpClient = $context->getKmsClient();
+        catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
     }
 
     private function getKmsClient(int $kmsVersion): UokmsClient
@@ -105,47 +110,65 @@ class KmsManager
 
     private function recoverSecret(UserRecord $userRecord): string
     {
-        $kmsClient = $this->getKmsClient($userRecord->getRecordVersion());
+        try {
+            $kmsClient = $this->getKmsClient($userRecord->getRecordVersion());
 
-        $uokmsClientGenerateDecryptRequestResult = $kmsClient->generateDecryptRequest(
-            $userRecord->getPasswordRecoveryWrap());
+            $uokmsClientGenerateDecryptRequestResult = $kmsClient->generateDecryptRequest(
+                $userRecord->getPasswordRecoveryWrap());
 
-        $decryptRequest = (new ProtoDecryptRequest)
-            ->setVersion($userRecord->getRecordVersion())
-            ->setAlias(self::RECOVER_PWD_ALIAS)
-            ->setRequest($uokmsClientGenerateDecryptRequestResult->getDecryptRequest());
+            $decryptRequest = (new ProtoDecryptRequest)
+                ->setVersion($userRecord->getRecordVersion())
+                ->setAlias(self::RECOVER_PWD_ALIAS)
+                ->setRequest($uokmsClientGenerateDecryptRequestResult->getDecryptRequest());
 
-        $decryptResponse = $this->httpClient->decrypt($decryptRequest);
+            $decryptResponse = $this->httpClient->decrypt($decryptRequest);
 
-        return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoverytWrap(),
-            $uokmsClientGenerateDecryptRequestResult->getDecryptRequest(),
-            $decryptResponse->getResponse(),
-            $uokmsClientGenerateDecryptRequestResult->getDeblindFactor(),
-            PureCrypto::DERIVED_SECRET_LENGTH);
+            return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoverytWrap(),
+                $uokmsClientGenerateDecryptRequestResult->getDecryptRequest(),
+                $decryptResponse->getResponse(),
+                $uokmsClientGenerateDecryptRequestResult->getDeblindFactor(),
+                PureCrypto::DERIVED_SECRET_LENGTH);
+        } catch (PheException $exceptione) {
+            throw new PureCryptoException($exceptione);
+        } catch (ProtocolException $exceptione) {
+            throw new KmsClientException($exceptione);
+        } catch (ProtocolHttpException $exceptione) {
+            throw new KmsClientException($exceptione);
+        }
+
     }
 
     public function performRotation(string $wrap): string
     {
-        ValidateUtil::checkNull($this->kmsRotation, "kmsUpdateToken");
+        try {
+            ValidateUtil::checkNull($this->kmsRotation, "kmsUpdateToken");
+            ValidateUtil::checkNull($wrap, "wrap");
 
-        return $this->kmsRotation->updateWrap($wrap);
+            return $this->kmsRotation->updateWrap($wrap);
+        } catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
     }
 
     public function recoverPwd(UserRecord $userRecord): string
     {
         $derivedSecret = $this->recoverSecret($userRecord);
-        return $this->pureCrypto->decryptSymmetric($userRecord->getPasswordRecoveryBlob(), $derivedSecret);
+        return $this->pureCrypto->decryptSymmetricOneTimeKey($userRecord->getPasswordRecoveryBlob(), "",
+            $derivedSecret);
     }
 
-    // TODO!
     public function generatePwdRecoveryData(string $passwordHash): PwdRecoveryData
     {
-        $kmsResult = $this->currentClient->generateEncryptWrap(PureCrypto::DERIVED_SECRET_LENGTH);
+        try {
+            $kmsResult = $this->currentClient->generateEncryptWrap(PureCrypto::DERIVED_SECRET_LENGTH);
 
-        $derivedSecret = $kmsResult->getEncryptionKey();
+            $derivedSecret = $kmsResult->getEncryptionKey();
 
-        $resetPwdBlob = $this->pureCrypto->encryptSymmetric($passwordHash, $derivedSecret);
+            $resetPwdBlob = $this->pureCrypto->encryptSymmetricOneTimeKey($passwordHash, "", $derivedSecret);
 
-        return new PwdRecoveryData($kmsResult->getWrap(), $resetPwdBlob);
+            return new PwdRecoveryData($kmsResult->getWrap(), $resetPwdBlob);
+        } catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
     }
 }

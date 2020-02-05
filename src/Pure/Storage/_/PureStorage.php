@@ -37,10 +37,12 @@
 
 namespace Virgil\PureKit\Pure\Storage\_;
 
+use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Model\CellKey;
+use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
@@ -73,14 +75,18 @@ interface PureStorage
      */
     public function selectUser(string $userId): UserRecord;
 
+
     /**
      * @param string ...$userIds
      * @return UserRecordCollection
      */
     public function selectUsers(string ...$userIds): UserRecordCollection;
 
-    // TODO!
-    // public function selectUsers(int $pheRecordVersion): UserRecords;
+    /**
+     * @param int $pheRecordVersion
+     * @return UserRecords
+     */
+    public function selectUsers_(int $pheRecordVersion): UserRecords;
 
     /**
      * @param string $userId
@@ -145,4 +151,22 @@ interface PureStorage
      * @param string ...$userIds
      */
     public function deleteRoleAssignments(string $roleName, string ...$userIds): void;
+
+    /**
+     * @param GrantKey $grantKey
+     */
+    public function insertGrantKey(GrantKey $grantKey): void;
+
+    /**
+     * @param string $userId
+     * @param string $keyId
+     * @return GrantKey
+     */
+    public function selectGrantKey(string $userId, string $keyId): GrantKey;
+
+    /**
+     * @param string $userId
+     * @param string $keyId
+     */
+    public function deleteGrantKey(string $userId, string $keyId): void;
 }

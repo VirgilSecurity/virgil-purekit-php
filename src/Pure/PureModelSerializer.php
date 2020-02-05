@@ -38,6 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 use PurekitV3Crypto\EnrollmentRecord as ProtoEnrollmentRecord;
+use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\CellKey as ProtoCellKey;
 use PurekitV3Storage\CellKeySigned as ProtoCellKeySigned;
@@ -48,9 +49,10 @@ use PurekitV3Storage\RoleSigned as ProtoRoleSigned;
 use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\VirgilCrypto;
-use Virgil\PureKit\Pure\Exception\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\CellKey;
+use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
@@ -70,6 +72,8 @@ class PureModelSerializer
     private const CURRENT_ROLE_SIGNED_VERSION = 1;
     private const CURRENT_ROLE_ASSIGNMENT_VERSION = 1;
     private const CURRENT_ROLE_ASSIGNMENT_SIGNED_VERSION = 1;
+    private const CURRENT_GRANT_KEY_VERSION = 1;
+    private const CURRENT_GRANT_KEY_SIGNED_VERSION = 1;
 
     /**
      * @var VirgilCrypto
@@ -94,6 +98,38 @@ class PureModelSerializer
 
         $this->crypto = $crypto;
         $this->signingKey = $signingKey;
+    }
+
+    /**
+     * @param string $model
+     * @return string
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
+    private function generateSignature(string $model): string
+    {
+        try {
+            return $this->crypto->generateSignature($model, $this->signingKey->getPrivateKey());
+        } catch (SigningException $exception) {
+            throw new PureStorageGenericException(ErrorStatus::SIGNING_EXCEPTION());
+        }
+    }
+
+    /**
+     * @param string $signature
+     * @param string $model
+     * @return void
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
+    private function verifySignature(string $signature, string $model): void
+    {
+        try {
+            $verified = $this->crypto->verifySignature($signature, $model, $this->signingKey->getPublicKey());
+        } catch (VerificationException $exception) {
+            throw new PureStorageGenericException(ErrorStatus::VERIFICATION_EXCEPTION());
+        }
+
+        if (!$verified)
+            throw new PureStorageGenericException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
     }
 
     /**
@@ -195,7 +231,7 @@ class PureModelSerializer
      * @param ProtoCellKey $protobufRecord
      * @return CellKey
      * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
@@ -220,7 +256,7 @@ class PureModelSerializer
     /**
      * @param Role $role
      * @return ProtoRole
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRole(Role $role): ProtoRole
     {
@@ -243,7 +279,7 @@ class PureModelSerializer
      * @param ProtoRole $protobufRecord
      * @return Role
      * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseRole(ProtoRole $protobufRecord): Role
     {
@@ -264,7 +300,7 @@ class PureModelSerializer
     /**
      * @param RoleAssignment $roleAssignment
      * @return ProtoRoleAssignment
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRoleAssignment(RoleAssignment $roleAssignment): ProtoRoleAssignment
     {
@@ -288,7 +324,7 @@ class PureModelSerializer
      * @param ProtoRoleAssignment $protobufRecord
      * @return RoleAssignment
      * @throws PureLogicException
-     * @throws \Virgil\CryptoImpl\Exceptions\VirgilCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
@@ -308,5 +344,10 @@ class PureModelSerializer
             $roleAssignmentSigned->getRoleName(),
             $roleAssignmentSigned->getUserId(),
             $roleAssignmentSigned->getPublicKeyId(), $roleAssignmentSigned->getEncryptedRsk());
+    }
+
+    public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
+    {
+
     }
 }

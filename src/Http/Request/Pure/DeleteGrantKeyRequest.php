@@ -35,34 +35,14 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
+namespace Virgil\PureKit\Http\Request\Pure;
 
-use MyCLabs\Enum\Enum;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
-/**
- * Class ServiceErrorCode
- * @package Virgil\PureKit\Pure\Exception
- */
-class ServiceErrorCode extends Enum
+class DeleteGrantKeyRequest extends BaseRequest
 {
-    private $code;
-
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const UNDEFINED = 0;
-
-    public function __construct(int $code)
+    public function getOptionsBody(): string
     {
-        $this->code = $code;
-        parent::__construct($code);
-    }
-
-    /**
-     * @return int
-     */
-    public function getCode(): int
-    {
-        return $this->getValue();
+        return "";
     }
 }
