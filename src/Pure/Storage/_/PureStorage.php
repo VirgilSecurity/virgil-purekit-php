@@ -75,7 +75,6 @@ interface PureStorage
      */
     public function selectUser(string $userId): UserRecord;
 
-
     /**
      * @param string ...$userIds
      * @return UserRecordCollection
