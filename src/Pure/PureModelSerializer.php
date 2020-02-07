@@ -355,14 +355,18 @@ class PureModelSerializer
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getGrantKeySigned());
 
         try {
-            $grantKeySigned = (new ProtoGrantKeySigned)->mergeFromString($protobufRecord->getGrantKeySigned());
-        } catch (InvalidProtocolBufferException $exception) {
-            throw new PureStorageInvalidProtobufException($exception->getMessage(), $exception->getCode());
+            $grantKeySigned = new ProtoGrantKeySigned();
+            $grantKeySigned->mergeFromString($protobufRecord->getGrantKeySigned());
+        } catch (\Exception $exception) {
+            throw new PureStorageInvalidProtobufException(new InvalidProtocolBufferException());
         }
+
+        $cd = $grantKeySigned->getCreationDate() * 1000;
+        $ed = $grantKeySigned->getExpirationDate() * 1000;
 
         return new GrantKey($grantKeySigned->getUserId(), $grantKeySigned->getKeyId(),
             $grantKeySigned->getEncryptedGrantKey(),
-            new \DateTime($grantKeySigned->getCreationDate() * 1000),
-            new \DateTime($grantKeySigned->getExpirationDate() * 1000));
+            new \DateTime("@$cd"),
+            new \DateTime("@$ed"));
     }
 }

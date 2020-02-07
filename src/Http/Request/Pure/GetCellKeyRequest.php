@@ -35,19 +35,33 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Pure;
 
-
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 class GetCellKeyRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
+
+    /**
+     * GetCellKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $userId
+     * @param string $dataId
+     */
+    public function __construct(AvailableRequest $request, string $userId, string $dataId)
     {
-        parent::__construct($endpoint, $method);
+        $this->request = $request;
+        $this->setFormattedEndpoint($request, $userId, $dataId);
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return "";

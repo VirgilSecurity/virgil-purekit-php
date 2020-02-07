@@ -50,7 +50,7 @@ class PheClientException extends ClientException
         if (($e instanceof ProtocolException) | ($e instanceof ProtocolHttpException)) {
             parent::__construct($e);
         } else {
-            var_dump("Invalid type of exception", $e);
+            var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
             die;
         }
     }

@@ -43,7 +43,7 @@ class PureStorageException extends PureException
      * PureStorageException constructor.
      * @param string $errorMessage
      */
-    public function __construct(string $errorMessage)
+    public function __construct(string $errorMessage = null)
     {
         parent::__construct($errorMessage);
     }

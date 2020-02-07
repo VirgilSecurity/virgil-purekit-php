@@ -79,12 +79,16 @@ abstract class BaseRequest
     }
 
     /**
+     * @param AvailableRequest $request
+     * @param string ...$args
+     */
+    public function setFormattedEndpoint(AvailableRequest $request, string ...$args)
+    {
+        $this->endpoint = sprintf($request->getEndpoint(), ...$args);
+    }
+
+    /**
      * @return string
      */
     abstract function getOptionsBody(): string;
-
-    public function setFormattedEndpoint(AvailableRequest $request, string $id)
-    {
-        $this->endpoint = sprintf($request->getEndpoint(), $id);
-    }
 }

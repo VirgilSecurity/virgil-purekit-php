@@ -41,6 +41,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Psr\Http\Message\ResponseInterface;
 use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Http\Request\BaseRequest;
+use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 
 /**
  * Class HttpClient
@@ -82,10 +83,11 @@ class HttpBaseClient
 
     /**
      * @param BaseRequest $request
+     * @param int|null $acceptedResponseCode
      * @return ResponseInterface
-     * @throws ProtocolException
+     * @throws ProtocolHttpException
      */
-    protected function _send(BaseRequest $request, bool $parse201Response = false): ResponseInterface
+    protected function _send(BaseRequest $request, int $acceptedResponseCode = null): ResponseInterface
     {
         $r = $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
             [
@@ -94,7 +96,7 @@ class HttpBaseClient
                 'debug' => $this->debug
             ]);
 
-        $this->_checkStatus($r, $parse201Response);
+        $this->_checkStatus($r, $acceptedResponseCode);
         return $r;
     }
 
@@ -106,13 +108,9 @@ class HttpBaseClient
         return $this->serviceBaseUrl;
     }
 
-    /**
-     * @param ResponseInterface $r
-     * @throws ProtocolException
-     */
-    private function _checkStatus(ResponseInterface $r, bool $parse201Response): void
+    private function _checkStatus(ResponseInterface $r, int $acceptedResponseCode = null): void
     {
-        if (200 != $r->getStatusCode() || $parse201Response ? 201 != $r->getStatusCode() : null)
-            throw new ProtocolException("Api error. Status code: {$r->getStatusCode()}", $r->getStatusCode());
+        if (200 != $r->getStatusCode() || $acceptedResponseCode ? $acceptedResponseCode != $r->getStatusCode() : null)
+            throw new ProtocolHttpException("Api error. Status code: {$r->getStatusCode()}", $r->getStatusCode());
     }
 }

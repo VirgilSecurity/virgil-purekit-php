@@ -61,7 +61,7 @@ class MariaDbSqlException extends PureStorageException
                 $this->exception = $e;
                 break;
             default:
-                var_dump("Invalid type of exception", $e);
+                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
                 die;
         }
     }

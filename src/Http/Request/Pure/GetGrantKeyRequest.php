@@ -37,14 +37,46 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-
+use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
+use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class GetGrantKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class GetGrantKeyRequest extends BaseRequest
 {
 
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
+    private $userId;
+    private $keyId;
+
+    /**
+     * GetGrantKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $userId
+     * @param string $keyId
+     */
+    public function __construct(AvailableRequest $request, string $userId, string $keyId)
+    {
+        $this->request = $request;
+        $this->userId = $userId;
+        $this->keyId = $keyId;
+    }
+
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
-        return "";
+        $r = (new ProtoGrantKeyDescriptor)
+            ->setUserId($this->userId)
+            ->setKeyId($this->keyId);
+
+        return $r->serializeToString();
     }
 }

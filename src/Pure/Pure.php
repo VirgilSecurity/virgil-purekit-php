@@ -43,7 +43,10 @@ use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\PureGrant;
@@ -182,24 +185,25 @@ class Pure
             $encryptedGrantData = base64_decode($encryptedGrantString);
 
             try {
-                $encryptedGrant = (new ProtoEncryptedGrant)
-                    ->mergeFromString($encryptedGrantData);
-            } catch (InvalidProtocolBufferException $exception) {
-                throw new PureLogicException(ErrorStatus::GRANT_INVALID_PROTOBUF());
+                $encryptedGrant = new ProtoEncryptedGrant();
+                $encryptedGrant->mergeFromString($encryptedGrantData);
+            } catch (\Exception $exception) {
+                throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
             }
 
             $encryptedData = $encryptedGrant->getEncryptedPhek();
 
             try {
-                $header = (new ProtoEncryptedGrantHeader)->mergeFromString($encryptedGrant->getHeader());
-            } catch (InvalidProtocolBufferException $exception) {
-                throw new PureLogicException(ErrorStatus::GRANT_INVALID_PROTOBUF());
+                $header = new ProtoEncryptedGrantHeader();
+                $header->mergeFromString($encryptedGrant->getHeader());
+            } catch (\Exception $exception) {
+                throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
             }
 
             $grantKey = $this->storage->selectGrantKey($header->getUserId(), $header->getKeyId());
 
-            if ($grantKey->getExpirationDate() < new \DateTime())
-                throw new PureLogicException(ErrorStatus::GRANT_IS_EXPIRED());
+            if ($grantKey->getExpirationDate() < new \DateTime("now"))
+                throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
             $grantKeyRaw = $this->pureCrypto->decryptSymmetricNewNonce($grantKey->getEncryptedGrantKey(), "", $this->ak);
 
@@ -217,9 +221,12 @@ class Pure
             if (empty($sessionId))
                 $sessionId = null;
 
+            $cd = $header->getCreationDate() * 1000;
+            $ed = $header->getExpirationDate() * 1000;
+
             return new PureGrant($ukp, $header->getUserId(), $sessionId,
-                new \DateTime($header->getCreationDate() * 1000),
-                new \DateTime($header->getExpirationDate() * 1000));
+                new \DateTime("@$cd"),
+                new \DateTime("@$ed"));
     }
 
     public function changeUserPassword(string $userId, string $oldPassword, string $newPassword): void
@@ -324,8 +331,8 @@ class Pure
         return $rotations;
     }
 
-    public function encrypt(string $userId, string $dataId, array $otherUserIds = [], array $roleNames = [],
-                            VirgilPublicKeyCollection $publicKeys = null, string $plainText): string
+    public function encrypt(string $userId, string $dataId, array $otherUserIds, array $roleNames,
+                            VirgilPublicKeyCollection $publicKeys, string $plainText): string
     {
         ValidateUtil::checkNull($otherUserIds, "otherUserIds");
         ValidateUtil::checkNull($publicKeys, "publicKeys");
@@ -630,19 +637,20 @@ class Pure
 
             $newPasswordHash = $this->pureCrypto->computePasswordHash($newPassword);
 
+            // [enrollment_record, account_key]
             $enrollResult = $this->pheManager->getEnrollment($newPasswordHash);
 
-            $pwdRecoveryData = $this->kmsManager->generatePwdResetData($newPasswordHash);
+            $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($newPasswordHash);
 
             $newEncryptedUsk = $this->pureCrypto->encryptSymmetricNewNonce($privateKeyData, "",
-                $enrollResult->getAccountKey());
+                $enrollResult[1]);
 
             $encryptedPwdHash = $this->pureCrypto->encryptForBackup($newPasswordHash, $this->buppk,
                 $this->oskp->getPrivateKey());
 
             $newUserRecord = new UserRecord(
                 $userRecord->getUserId(),
-                $enrollResult->getEnrollmentRecord(),
+                $enrollResult[0],
                 $this->currentVersion,
                 $userRecord->getUpk(),
                 $newEncryptedUsk,

@@ -76,7 +76,6 @@ class EnrollRequest extends BaseRequest
     {
         $r = new ProtoEnrollmentRequest();
         $r = $r->setVersion($this->version);
-        $body = $r->serializeToString();
-        return $body;
+        return $r->serializeToString();
     }
 }

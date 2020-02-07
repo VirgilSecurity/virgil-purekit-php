@@ -82,7 +82,6 @@ class VerifyPasswordRequest extends BaseRequest
         $r = new ProtobufVerifyPasswordRequest();
         $r->setVersion($this->version);
         $r->setRequest($this->verifyPasswordRequest);
-        $body = $r->serializeToString();
-        return $body;
+        return $r->serializeToString();
     }
 }

@@ -47,7 +47,7 @@ use PurekitV3Storage\UserRecords as ProtoUserRecords;
 use Virgil\PureKit\Http\Request\DeleteCellKeyRequest;
 use Virgil\PureKit\Http\Request\DeleteRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\DeleteUserRequest;
-use Virgil\PureKit\Http\Request\GetCellKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\GetRolesRequest;
@@ -60,7 +60,7 @@ use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
-use Virgil\PureKit\Http\Request\UpdateUserRequest;
+use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class HttpPureClient extends HttpBaseClient
@@ -86,23 +86,14 @@ class HttpPureClient extends HttpBaseClient
 
     public function insertUser(InsertUserRequest $request): void
     {
-        $this->_send($request, true);
+        $this->_send($request, 201);
     }
 
-    /**
-     * @param UpdateUserRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function updateUser(UpdateUserRequest $request): void
     {
         $this->_send($request);
     }
 
-    /**
-     * @param \Virgil\PureKit\Http\Pure\GetUserRequest $request
-     * @return ProtoUserRecord
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function getUser(GetUserRequest $request): ProtoUserRecord
     {
         $r = $this->_send($request);
@@ -128,28 +119,16 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param DeleteUserRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function deleteUser(DeleteUserRequest $request): void
     {
         $this->_send($request);
     }
 
-    /**
-     * @param InsertCellKeyRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function insertCellKey(InsertCellKeyRequest $request): void
     {
         $this->_send($request);
     }
 
-    /**
-     * @param UpdateUserRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function updateCellKey(UpdateUserRequest $request): void
     {
         $this->_send($request);
@@ -170,19 +149,11 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param DeleteCellKeyRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function deleteCellKey(DeleteCellKeyRequest $request): void
     {
         $this->_send($request);
     }
 
-    /**
-     * @param InsertRoleRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function insertRole(InsertRoleRequest $request): void
     {
         $this->_send($request);
@@ -203,10 +174,6 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param InsertRoleAssignmentsRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
     {
         $this->_send($request);
@@ -242,32 +209,19 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param DeleteRoleAssignmentRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function deleteRoleAssignment(DeleteRoleAssignmentRequest $request): void
     {
         $this->_send($request);
     }
 
-    /**
-     * @param InsertGrantKeyRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function insertGrantKey(InsertGrantKeyRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, 201);
     }
 
-    /**
-     * @param GetGrantKeyRequest $request
-     * @return ProtoGrantKey
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, 204);
 
         $res = new ProtoGrantKey();
         $res->mergeFromString($r->getBody()->getContents());
@@ -275,10 +229,6 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param DeleteGrantKeyRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function deleteGrantKey(DeleteGrantKeyRequest $request): void
     {
         $this->_send($request);

@@ -35,25 +35,30 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Pure;
 
-
-use PurekitV3Storage\UserRecord;
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 class UpdateUserRequest extends BaseRequest
 {
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
     private $userRecord;
 
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method,
-                                UserRecord $userRecord, string $userId)
+    public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord, string $userId)
     {
+        $this->request = $request;
         $this->userRecord = $userRecord;
-        $endpoint = sprintf($endpoint->getValue(), $userId);
-        parent::__construct($endpoint, $method);
+        $this->setFormattedEndpoint($request, $userId);
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return $this->userRecord->serializeToString();
