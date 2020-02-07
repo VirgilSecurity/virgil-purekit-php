@@ -37,15 +37,16 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Virgil\Crypto\Core\Data;
 use Virgil\Crypto\Core\HashAlgorithms;
 use Virgil\Crypto\Core\KeyPairType;
+use Virgil\Crypto\Core\PublicKeyList;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
 use Virgil\CryptoWrapper\Foundation\MessageInfoDerSerializer;
@@ -279,16 +280,19 @@ class PureCrypto
     {
         try {
             $aes256Gcm = new Aes256Gcm();
+            $aes256Gcm->setKey(substr($key, 0, $aes256Gcm::KEY_LEN));
+            $aes256Gcm->setNonce(substr($key, $aes256Gcm::KEY_LEN, $aes256Gcm::KEY_LEN + $aes256Gcm::NONCE_LEN));
 
-            $aes256Gcm->setKey($key);
-            $aes256Gcm->setNonce($key);
-
+            // [out, tag]
             $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($plainText, $ad);
 
-            return $this->concat($authEncryptAuthEncryptResult->getOut(), $authEncryptAuthEncryptResult->getTag());
+            return $this->concat($authEncryptAuthEncryptResult[0], $authEncryptAuthEncryptResult[1]);
         }
         catch (FoundationException $exception) {
             throw new PureCryptoException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception);
+            die;
         }
     }
 
@@ -303,8 +307,8 @@ class PureCrypto
     {
         try {
             $aes256Gcm = new Aes256Gcm();
-            $aes256Gcm->setKey($key);
-            $aes256Gcm->setNonce($key);
+            $aes256Gcm->setKey(substr($key, 0, $aes256Gcm::KEY_LEN));
+            $aes256Gcm->setNonce(substr($key, $aes256Gcm::KEY_LEN, $aes256Gcm::KEY_LEN + $aes256Gcm::NONCE_LEN));
 
             return $aes256Gcm->authDecrypt($cipherText, $ad, "");
         }
@@ -424,9 +428,17 @@ class PureCrypto
     string
     {
         try {
-            return $this->crypto->authEncrypt($plainText, $privateKey, $publicKey);
+
+            $data = new Data($plainText);
+            $pkl = new PublicKeyList();
+            $pkl->addPublicKey($publicKey);
+
+            return $this->crypto->authEncrypt($data, $privateKey, $pkl);
         } catch (SigningException | EncryptionException $exception) {
             throw new PureCryptoException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception);
+            die;
         }
     }
 

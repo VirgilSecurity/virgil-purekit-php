@@ -41,8 +41,12 @@ use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
 use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use Virgil\Crypto\Core\HashAlgorithms;
 use Virgil\CryptoWrapper\Phe\PheClient;
+use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
+use Virgil\PureKit\Pure\Exception\PheClientException;
+use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
@@ -156,24 +160,30 @@ class PheManager
 
     }
 
-    public function getEnrollment(string $passwordHash): PheClientEnrollAccountResult
+    public function getEnrollment(string $passwordHash): array
     {
-        $request = (new ProtoEnrollmentRequest)
-            ->setVersion($this->currentVersion);
+        $request = new EnrollRequest(AvailableRequest::ENROLL(), $this->currentVersion);
 
         try {
             $response = $this->httpClient->enrollAccount($request);
         } catch (ProtocolException | ProtocolHttpException $exception) {
             throw new PheClientException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception);
+            die;
         }
 
         try {
+            // [enrollment_record, account_key]
             return $this->currentClient->enrollAccount(
                 $response->getResponse(),
                 $passwordHash
             );
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception);
+            die;
         }
     }
 }

@@ -46,7 +46,7 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
-use Virgil\PureKit\Http\Request\InsertUserRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
@@ -60,7 +60,6 @@ use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\PureModelSerializer;
 use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependent
@@ -421,7 +420,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         if ($isInsert) {
 
-            $request = new InsertUserRequest(AvailableRequest::INSERT_USER(), AvailableHttpMethod::POST(), $protobufRecord);
+            $request = new InsertUserRequest(AvailableRequest::INSERT_USER(), $protobufRecord);
 
             $this->client->insertUser($request);
         } else {

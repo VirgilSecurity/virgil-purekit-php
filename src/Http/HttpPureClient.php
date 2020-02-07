@@ -54,11 +54,11 @@ use Virgil\PureKit\Http\Request\GetRolesRequest;
 use Virgil\PureKit\Http\Request\GetUsersRequest;
 use Virgil\PureKit\Http\Request\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
-use Virgil\PureKit\Http\Request\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
@@ -83,13 +83,9 @@ class HttpPureClient extends HttpBaseClient
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }
 
-    /**
-     * @param InsertUserRequest $request
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function insertUser(InsertUserRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, true);
     }
 
     /**

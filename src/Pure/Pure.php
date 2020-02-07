@@ -39,14 +39,10 @@ namespace Virgil\PureKit\Pure;
 
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
-use Virgil\Crypto\Core\Data;
-use Virgil\Crypto\Core\PublicKeyList;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
-use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -54,10 +50,8 @@ use Virgil\PureKit\Pure\Model\PureGrant;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
-use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
-use Virgil\Crypto\Core\HashAlgorithms;
 
 class Pure
 {
@@ -589,31 +583,27 @@ class Pure
 
             $passwordHash = $this->pureCrypto->computePasswordHash($password);
 
-            $io1 = new Data($passwordHash);
-            $pkl1 = new PublicKeyList();
-            $pkl1->addPublicKey($this->buppk);
-
-            $encryptedPwdHash = $this->pureCrypto->encryptForBackup($io1, $pkl1, $this->oskp->getPrivateKey());
+            $encryptedPwdHash = $this->pureCrypto->encryptForBackup($passwordHash, $this->buppk, $this->oskp->getPrivateKey
+            ());
 
             $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($passwordHash);
 
+            // [enrollment_record, account_key]
             $pheResult = $this->pheManager->getEnrollment($passwordHash);
 
             $ukp = $this->pureCrypto->generateUserKey();
 
             $uskData = $this->pureCrypto->exportPrivateKey($ukp->getPrivateKey());
 
-            $encryptedUsk = $this->pureCrypto->encryptSymmetricNewNonce($uskData, "", $pheResult->getAccountKey());
+            $encryptedUsk = $this->pureCrypto->encryptSymmetricNewNonce($uskData, "", $pheResult[1]);
 
-            $io2 = new Data($uskData);
-
-            $encryptedUskBackup = $this->pureCrypto->encryptForBackup($io2, $pkl1, $this->oskp->getPrivateKey());
+            $encryptedUskBackup = $this->pureCrypto->encryptForBackup($uskData, $this->buppk, $this->oskp->getPrivateKey());
 
             $publicKey = $this->pureCrypto->exportPublicKey($ukp->getPublicKey());
 
             $userRecord = new UserRecord(
                 $userId,
-                $pheResult->getEnrollmentRecord(),
+                $pheResult[0],
                 $this->currentVersion,
                 $publicKey,
                 $encryptedUsk,

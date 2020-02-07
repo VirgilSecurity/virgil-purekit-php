@@ -65,7 +65,7 @@ abstract class BaseRequest
      */
     public function getMethod(): string
     {
-        return $this->request->getMetod();
+        return $this->request->getMethod();
     }
 
     /**

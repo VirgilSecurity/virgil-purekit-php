@@ -56,16 +56,16 @@ class EnrollRequest extends BaseRequest
     /**
      * @var AvailableRequest
      */
-    protected $r;
+    protected $request;
 
     /**
      * EnrollRequest constructor.
-     * @param AvailableRequest $r
+     * @param AvailableRequest $request
      * @param int $version
      */
-    public function __construct(AvailableRequest $r, int $version)
+    public function __construct(AvailableRequest $request, int $version)
     {
-        $this->request = $r;
+        $this->request = $request;
         $this->version = $version;
     }
 

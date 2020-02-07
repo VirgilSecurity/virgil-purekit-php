@@ -35,20 +35,20 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Pure;
 
-
-use PurekitV3Storage\UserRecord;
+use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 class InsertUserRequest extends BaseRequest
 {
     protected $request;
     private $userRecord;
 
-    public function __construct(AvailableRequest $r, UserRecord $userRecord)
+    public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord)
     {
-        $this->request = $r;
+        $this->request = $request;
         $this->userRecord = $userRecord;
     }
 

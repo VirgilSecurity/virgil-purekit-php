@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Storage\_;
+namespace Virgil\PureKit\Pure\Storage;
 
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Pure\Collection\RoleCollection;

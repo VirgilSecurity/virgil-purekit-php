@@ -85,7 +85,7 @@ class HttpBaseClient
      * @return ResponseInterface
      * @throws ProtocolException
      */
-    protected function _send(BaseRequest $request): ResponseInterface
+    protected function _send(BaseRequest $request, bool $parse201Response = false): ResponseInterface
     {
         $r = $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
             [
@@ -94,7 +94,7 @@ class HttpBaseClient
                 'debug' => $this->debug
             ]);
 
-        $this->_checkStatus($r);
+        $this->_checkStatus($r, $parse201Response);
         return $r;
     }
 
@@ -110,9 +110,9 @@ class HttpBaseClient
      * @param ResponseInterface $r
      * @throws ProtocolException
      */
-    private function _checkStatus(ResponseInterface $r): void
+    private function _checkStatus(ResponseInterface $r, bool $parse201Response): void
     {
-        if (200 != $r->getStatusCode())
+        if (200 != $r->getStatusCode() || $parse201Response ? 201 != $r->getStatusCode() : null)
             throw new ProtocolException("Api error. Status code: {$r->getStatusCode()}", $r->getStatusCode());
     }
 }

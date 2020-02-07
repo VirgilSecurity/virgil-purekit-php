@@ -51,7 +51,10 @@ use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
+use Virgil\PureKit\Pure\Exception\InvalidProtocolBufferException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
+use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
@@ -115,12 +118,6 @@ class PureModelSerializer
         }
     }
 
-    /**
-     * @param string $signature
-     * @param string $model
-     * @return void
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
     private function verifySignature(string $signature, string $model): void
     {
         try {
@@ -133,17 +130,13 @@ class PureModelSerializer
             throw new PureStorageGenericException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
     }
 
-    /**
-     * @param UserRecord $userRecord
-     * @return ProtoUserRecord
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
         try {
-            $enrollmentRecord = (new ProtoEnrollmentRecord)->mergeFromString($userRecord->getPheRecord());
-        } catch (InvalidProtocolBufferException $exception) {
-            throw new PureStorageGenericException(ErrorStatus::INVALID_PROTOBUF());
+            $enrollmentRecord = new ProtoEnrollmentRecord();
+            $enrollmentRecord->mergeFromString($userRecord->getPheRecord());
+        } catch (\Exception $exception) {
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::INVALID_PROTOBUF());
         }
 
         $userRecordSigned = (new ProtoUserRecordSigned)

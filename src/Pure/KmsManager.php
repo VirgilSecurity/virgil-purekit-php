@@ -160,15 +160,19 @@ class KmsManager
     public function generatePwdRecoveryData(string $passwordHash): PwdRecoveryData
     {
         try {
+            // @return [wrap, encryptionKey]
             $kmsResult = $this->currentClient->generateEncryptWrap(PureCrypto::DERIVED_SECRET_LENGTH);
 
-            $derivedSecret = $kmsResult->getEncryptionKey();
+            $derivedSecret = $kmsResult[1];
 
             $resetPwdBlob = $this->pureCrypto->encryptSymmetricOneTimeKey($passwordHash, "", $derivedSecret);
 
-            return new PwdRecoveryData($kmsResult->getWrap(), $resetPwdBlob);
+            return new PwdRecoveryData($kmsResult[0], $resetPwdBlob);
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception);
+            die;
         }
     }
 }

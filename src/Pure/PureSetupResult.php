@@ -63,6 +63,7 @@ class PureSetupResult
      * PureSetupResult constructor.
      * @param PureContext $context
      * @param VirgilKeyPair $bupkp
+     * @param string $nmsData
      */
     public function __construct(PureContext $context, VirgilKeyPair $bupkp, string $nmsData)
     {
