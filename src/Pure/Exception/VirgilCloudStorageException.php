@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,53 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 
-class PureLogicException extends PureException
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
+
+/**
+ * Class VirgilCloudStorageException
+ * @package Virgil\PureKit\Pure\Exception
+ */
+class VirgilCloudStorageException extends PureStorageException
 {
-    private $errorStatus;
+    private $protocolException;
+    private $protocolHttpException;
 
-    public function __construct(PureLogicErrorStatus $errorStatus)
+    /**
+     * VirgilCloudStorageException constructor.
+     * @param $e
+     */
+    public function __construct($e)
     {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
+        $this->protocolException = null;
+        $this->protocolHttpException = null;
+
+        switch ($e) {
+            case ($e instanceof ProtocolException):
+                $this->protocolException = $e;
+                break;
+            case ($e instanceof ProtocolHttpException):
+                $this->protocolHttpException = $e;
+                break;
+            default:
+                var_dump("Invalid type of exception", $e);
+                die;
+        }
     }
 
-    public function getErrorStatus(): PureLogicErrorStatus
+    /**
+     * @return null|ProtocolException
+     */
+    public function getProtocolException(): ?ProtocolException
     {
-        return $this->errorStatus;
+        return $this->protocolException;
+    }
+
+    /**
+     * @return null|ProtocolHttpException
+     */
+    public function getProtocolHttpException(): ?ProtocolHttpException
+    {
+        return $this->protocolHttpException;
     }
 }

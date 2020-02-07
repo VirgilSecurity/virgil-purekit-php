@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 
-class PureLogicException extends PureException
+class ProtocolHttpException extends \Exception
 {
-    private $errorStatus;
 
-    public function __construct(PureLogicErrorStatus $errorStatus)
-    {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
-    }
-
-    public function getErrorStatus(): PureLogicErrorStatus
-    {
-        return $this->errorStatus;
-    }
 }

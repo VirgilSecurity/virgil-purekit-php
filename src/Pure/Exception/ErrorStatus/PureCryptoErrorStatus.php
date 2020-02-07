@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,22 +35,14 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
+namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
-
-class PureLogicException extends PureException
+class PureCryptoErrorStatus extends BaseErrorStatus
 {
-    private $errorStatus;
-
-    public function __construct(PureLogicErrorStatus $errorStatus)
-    {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
-    }
-
-    public function getErrorStatus(): PureLogicErrorStatus
-    {
-        return $this->errorStatus;
-    }
+    private const UNDERLYING_FOUNDATION_EXCEPTION = [1, "Underlying foundation exception"];
+    private const UNDERLYING_PHE_EXCEPTION = [2, "Underlying phe exception"];
+    private const UNDERLYING_CRYPTO_EXCEPTION= [3, "Underlying crypto exception"];
+    private const SIGNER_IS_ABSENT= [3, "Signer is absent"];
+    private const SIGNATURE_IS_ABSENT= [4, "Signature is absent"];
+    private const SIGNATURE_VERIFICATION_FAILED= [5, "Signature verification failed"];
 }

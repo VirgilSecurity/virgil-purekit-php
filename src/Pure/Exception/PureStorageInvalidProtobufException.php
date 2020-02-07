@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,33 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
-
-class PureLogicException extends PureException
+/**
+ * Class PureStorageInvalidProtobufException
+ * @package Virgil\PureKit\Pure\Exception
+ */
+class PureStorageInvalidProtobufException extends PureStorageException
 {
-    private $errorStatus;
+    /**
+     * @var InvalidProtocolBufferException
+     */
+    private $invalidProtocolBufferException;
 
-    public function __construct(PureLogicErrorStatus $errorStatus)
+    /**
+     * PureStorageInvalidProtobufException constructor.
+     * @param InvalidProtocolBufferException $invalidProtocolBufferException
+     */
+    public function __construct(InvalidProtocolBufferException $invalidProtocolBufferException)
     {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
+        parent::__construct($invalidProtocolBufferException->getMessage());
+
+        $this->invalidProtocolBufferException = $invalidProtocolBufferException;
     }
 
-    public function getErrorStatus(): PureLogicErrorStatus
+    /**
+     * @return InvalidProtocolBufferException
+     */
+    public function getInvalidProtocolBufferException(): InvalidProtocolBufferException
     {
-        return $this->errorStatus;
+        return $this->invalidProtocolBufferException;
     }
 }

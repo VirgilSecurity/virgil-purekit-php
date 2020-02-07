@@ -35,22 +35,27 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
+namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
-
-class PureLogicException extends PureException
+class ErrorStatus extends BaseErrorStatus
 {
-    private $errorStatus;
-
-    public function __construct(PureLogicErrorStatus $errorStatus)
-    {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
-    }
-
-    public function getErrorStatus(): PureLogicErrorStatus
-    {
-        return $this->errorStatus;
-    }
+    private const USER_NOT_FOUND_IN_STORAGE = [0, "User has not been found in the storage"];
+    private const CELL_KEY_NOT_FOUND_IN_STORAGE = [1, "Cell key has not been found in the storage"];
+    private const CELL_KEY_ALREADY_EXISTS_IN_STORAGE = [2, "Cell key already exists in the storage"];
+    private const STORAGE_SIGNATURE_VERIFICATION_FAILED = [3, "Storage signature verification has been failed"];
+    private const KEYS_VERSION_MISMATCH = [4, "Keys version mismatch"];
+    private const UPDATE_TOKEN_VERSION_MISMATCH = [5, "Update token version mismatch"];
+    private const NONROTABLE_MASTER_SECRET_INVALID_LENGTH = [6, "Nonrotatable master secret invalid length"];
+    private const CREDENTIALS_PARSING_ERROR = [7, "Credentials parsing error"];
+    private const USER_ID_MISMATCH = [8, "User Id mismatch"];
+    private const KEY_ID_MISMATCH = [9, "Key id mismatch"];
+    private const PHE_VERSION_MISMATCH = [10, "PHE version mismatch"];
+    private const ROLE_NAME_MISMATCH = [11, "Role name mismatch"];
+    private const ROLE_USER_ID_MISMATCH = [12, "Role user id mismatch"];
+    private const ROLE_NAME_USER_ID_MISMATCH = [13, "Role name and user id mismatch"];
+    private const DUPLICATE_USER_ID = [14, "Duplicate user Id"];
+    private const INVALID_PASSWORD = [15, "Invalid password"];
+    private const USER_HAS_NO_ACCESS_TO_DATA = [16, "User has no access to data"];
+    private const DUPLICATE_ROLE_NAME = [17, "Duplicate role name"];
+    private const UPDATE_TOKENS_MISMATCH = [18, "KMS and PHE rotation should be simultaneous"];
 }

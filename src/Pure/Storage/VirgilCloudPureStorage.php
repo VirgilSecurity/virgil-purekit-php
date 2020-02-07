@@ -40,6 +40,8 @@ namespace Virgil\PureKit\Pure\Storage;
 use PurekitV3Client\DeleteRoleAssignments as ProtoDeleteRoleAssignments;
 use PurekitV3Client\GetRoleAssignment as ProtoGetRoleAssignment;
 use PurekitV3Client\GetRoleAssignments as ProtoGetRoleAssignments;
+use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
+use PurekitV3Client\GrantKeyDescriptor;
 use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
@@ -49,6 +51,8 @@ use Virgil\PureKit\Http\Request\UpdateUserRequest;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
@@ -108,7 +112,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $protobufRecord = $this->client->getUser($userId);
         } catch (ProtocolException $exception) {
             if ($exception->getErrorCode() == ServiceErrorCode::USER_NOT_FOUND()->getCode()) {
-                throw new PureStorageGenericException(ErrorStatus::USER_NOT_FOUND_IN_STORAGE());
+                throw new PureStorageGenericException(ErrorStatus::USER_NOT_FOUND());
             }
 
             throw new VirgilCloudStorageException($exception);
@@ -183,7 +187,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $protobufRecord = $this->client->getCellKey($userId, $dataId);
         } catch (ProtocolException $exception) {
             if ($exception->getErrorCode() == ServiceErrorCode::CELL_KEY_NOT_FOUND()->getCode()) {
-                return null;
+                throw new PureStorageCellKeyNotFoundException();
             }
 
             throw new VirgilCloudStorageException($exception);
@@ -368,9 +372,17 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectGrantKey(string $userId, string $keyId): GrantKey
     {
+        $request = (new ProtoGrantKeyDescriptor)
+            ->setUserId($userId)
+            ->setKeyId($keyId);
+
         try {
-            $protobufRecord = $this->client->getGrantKey($userId, $keyId);
+            $protobufRecord = $this->client->getGrantKey($request);
         } catch (ProtocolException $e) {
+
+            if ($e->getErrorCode() == ServiceErrorCode::GRANT_KEY_NOT_FOUND()->getCode())
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND());
+
             throw new VirgilCloudStorageException($e);
         } catch (ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
@@ -390,8 +402,12 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function deleteGrantKey(string $userId, string $keyId): void
     {
+        $request = (new GrantKeyDescriptor)
+            ->setUserId($userId)
+            ->setKeyId($keyId);
+
         try {
-            $this->client->deleteGrantKey($userId, $keyId);
+            $this->client->deleteGrantKey($request);
         } catch (ProtocolException $e) {
             throw new VirgilCloudStorageException($e);
         } catch (ProtocolHttpException $e) {
@@ -425,8 +441,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
                 try {
                     $this->client->insertCellKey($protobufRecord);
                 } catch (ProtocolException $e) {
-                    if ($e->getErrorCode() == ServiceErrorCode::CELL_KEY_ALREADY_EXISTS() . getCode()) {
-                        throw new PureStorageGenericException(ErrorStatus::CELL_KEY_ALREADY_EXISTS_IN_STORAGE());
+                    if ($e->getErrorCode() == ServiceErrorCode::CELL_KEY_ALREADY_EXISTS()->getCode()) {
+                        throw new PureStorageCellKeyAlreadyExistsException();
                     }
                     throw $e;
                 }

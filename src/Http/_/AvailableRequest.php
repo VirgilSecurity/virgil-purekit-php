@@ -67,8 +67,8 @@ class AvailableRequest extends Enum
     private const GET_ROLE_ASSIGNMENT = ["/get-role-assignment", self::POST];
     private const DELETE_ROLE_ASSIGNMENTS = ["/delete-role-assignments", self::POST];
     private const INSERT_GRANT_KEY = ["/grant-key", self::POST];
-    private const GET_GRANT_KEY = ["/grant-key/%s/%s", self::GET];
-    private const DELETE_GRANT_KEY = ["/grant-key/%s/%s", self::DELETE];
+    private const GET_GRANT_KEY = ["/get-grant-key", self::POST];
+    private const DELETE_GRANT_KEY = ["/delete-grant-key", self::POST];
 
     // KMS
     private const DECRYPT_REQUEST = ["/decrypt", self::POST];

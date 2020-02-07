@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,48 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
-
-class PureLogicException extends PureException
+class MariaDbSqlException extends PureStorageException
 {
-    private $errorStatus;
+    /**
+     * @var \mysqli_sql_exception
+     */
+    private $sqlException;
+    /**
+     * @var \Exception
+     */
+    private $exception;
 
-    public function __construct(PureLogicErrorStatus $errorStatus)
+    public function __construct($e)
     {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
+        $this->sqlException = null;
+        $this->exception = null;
+
+        switch ($e) {
+            case ($e instanceof \mysqli_sql_exception):
+                $this->sqlException = $e;
+                break;
+            case ($e instanceof \Exception):
+                $this->exception = $e;
+                break;
+            default:
+                var_dump("Invalid type of exception", $e);
+                die;
+        }
     }
 
-    public function getErrorStatus(): PureLogicErrorStatus
+    /**
+     * @return null|\Exception
+     */
+    public function getException(): ?\Exception
     {
-        return $this->errorStatus;
+        return $this->exception;
+    }
+
+    /**
+     * @return null|\mysqli_sql_exception
+     */
+    public function getSqlException(): ?\mysqli_sql_exception
+    {
+        return $this->sqlException;
     }
 }

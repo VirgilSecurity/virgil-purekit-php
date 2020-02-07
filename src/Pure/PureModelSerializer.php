@@ -50,7 +50,7 @@ use PurekitV3Storage\RoleSigned as ProtoRoleSigned;
 use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\VirgilCrypto;
-use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;

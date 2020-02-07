@@ -37,8 +37,44 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 
-class MariiaDbSqlException
+class ClientException extends PureException
 {
+    private $protocolException;
+    private $protocolHttpException;
 
+    public function __construct($e)
+    {
+        $this->protocolException = null;
+        $this->protocolHttpException = null;
+
+        switch ($e) {
+            case ($e instanceof ProtocolException):
+                $this->protocolException = $e;
+                break;
+            case ($e instanceof ProtocolHttpException):
+                $this->protocolHttpException = $e;
+                break;
+            default:
+                var_dump("Invalid type of exception", $e);
+                die;
+        }
+    }
+
+    /**
+     * @return null|ProtocolException
+     */
+    public function getProtocolException(): ?ProtocolException
+    {
+        return $this->protocolException;
+    }
+
+    /**
+     * @return null|ProtocolHttpException
+     */
+    public function getProtocolHttpException(): ?ProtocolHttpException
+    {
+        return $this->protocolHttpException;
+    }
 }

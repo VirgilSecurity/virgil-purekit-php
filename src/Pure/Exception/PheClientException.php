@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,21 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 
-class PureLogicException extends PureException
+class PheClientException extends ClientException
 {
-    private $errorStatus;
-
-    public function __construct(PureLogicErrorStatus $errorStatus)
+    /**
+     * PheClientException constructor.
+     * @param $e
+     */
+    public function __construct($e)
     {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
-    }
-
-    public function getErrorStatus(): PureLogicErrorStatus
-    {
-        return $this->errorStatus;
+        if (($e instanceof ProtocolException) | ($e instanceof ProtocolHttpException)) {
+            parent::__construct($e);
+        } else {
+            var_dump("Invalid type of exception", $e);
+            die;
+        }
     }
 }

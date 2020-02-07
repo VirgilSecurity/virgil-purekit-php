@@ -37,8 +37,74 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 
 class PureCryptoException extends PureException
 {
+    private $cryptoException;
+    private $foundationException;
+    private $pheException;
+    private $errorStatus;
 
+    public function __construct($e)
+    {
+        $this->errorStatus = null;
+        $this->cryptoException = null;
+        $this->foundationException = null;
+        $this->pheException = null;
+
+        switch ($e) {
+            case ($e instanceof PureCryptoErrorStatus):
+                parent::__construct($e->getMessage());
+                $this->errorStatus = $e;
+                break;
+            case ($e instanceof CryptoException):
+                parent::__construct($e);
+                $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_CRYPTO_EXCEPTION();
+                $this->cryptoException = $e;
+                break;
+            case ($e instanceof FoundationException):
+                parent::__construct($e);
+                $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION();
+                $this->foundationException = $e;
+                break;
+            case ($e instanceof PheException):
+                parent::__construct($e);
+                $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION();
+                $this->pheException = $e;
+                break;
+            default:
+                var_dump("Invalid type of exception", $e);
+                die;
+        }
+    }
+
+    public function getErrorStatus(): PureCryptoErrorStatus
+    {
+        return $this->errorStatus;
+    }
+
+    /**
+     * @return CryptoException
+     */
+    public function getCryptoException(): ?CryptoException
+    {
+        return $this->cryptoException;
+    }
+
+    /**
+     * @return FoundationException
+     */
+    public function getFoundationException(): ?FoundationException
+    {
+        return $this->foundationException;
+    }
+
+    /**
+     * @return PheException
+     */
+    public function getPheException(): ?PheException
+    {
+        return $this->pheException;
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,22 +35,17 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception;
+namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 
-class PureLogicException extends PureException
+class PureLogicErrorStatus extends BaseErrorStatus
 {
-    private $errorStatus;
-
-    public function __construct(PureLogicErrorStatus $errorStatus)
-    {
-        $this->errorStatus = $errorStatus;
-        parent::__construct($errorStatus->getMessage());
-    }
-
-    public function getErrorStatus(): PureLogicErrorStatus
-    {
-        return $this->errorStatus;
-    }
+    private const KEYS_VERSION_MISMATCH = [1, "Keys version mismatch"];
+    private const UPDATE_TOKEN_VERSION_MISMATCH = [2, "Update token version mismatch"];
+    private const NONROTABLE_MASTER_SECRET_INVALID_LENGTH = [3, "Nonrotatable master secret invalid length"];
+    private const CREDENTIALS_PARSING_ERROR = [4, "Credentials parsing error"];
+    private const INVALID_PASSWORD = [5, "Invalid password"];
+    private const USER_HAS_NO_ACCESS_TO_DATA = [6, "User has no access to data"];
+    private const GRANT_INVALID_PROTOBUF = [7, "Grant invalid protobuf"];
+    private const GRANT_IS_EXPIRED = [8, "Grant is expired"];
 }

@@ -37,32 +37,34 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use MyCLabs\Enum\Enum;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 
 /**
- * Class ServiceErrorCode
+ * Class PureStorageGenericException
  * @package Virgil\PureKit\Pure\Exception
  */
-class ServiceErrorCode extends Enum
+class PureStorageGenericException extends PureStorageException
 {
-    private $code;
+    /**
+     * @var PureStorageGenericErrorStatus
+     */
+    private $errorStatus;
 
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const UNDEFINED = 0;
-
-    public function __construct(int $code)
+    /**
+     * PureStorageGenericException constructor.
+     * @param PureStorageGenericErrorStatus $errorStatus
+     */
+    public function __construct(PureStorageGenericErrorStatus $errorStatus)
     {
-        $this->code = $code;
-        parent::__construct($code);
+        parent::__construct($errorStatus->getMessage());
+        $this->errorStatus = $errorStatus;
     }
 
     /**
-     * @return int
+     * @return PureStorageGenericErrorStatus
      */
-    public function getCode(): int
+    public function getErrorStatus(): PureStorageGenericErrorStatus
     {
-        return $this->getValue();
+        return $this->errorStatus;
     }
 }

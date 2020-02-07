@@ -44,7 +44,8 @@ use Virgil\PureKit\Http\HttpKmsClient;
 use Virgil\PureKit\Http\HttpPheClient;
 use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Storage\_\PureStorage;
 use Virgil\PureKit\Pure\Storage\VirgilCloudPureStorage;
@@ -85,7 +86,12 @@ class PureContext
         $this->nonrotableSecrets = NonrotatableSecretsGenerator::generateSecrets($nmsCred->getPayload1());
 
         $buppkData = self::parseCredentials(self::BUPPK_PREFIX, $buppk, false, false)->getPayload1();
-        $this->buppk = $crypto->importPublicKey($buppkData);
+
+        try {
+            $this->buppk = $crypto->importPublicKey($buppkData);
+        } catch (CryptoException $exception) {
+            throw new PureCryptoException($exception);
+        }
 
         $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true, true);
         $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true, true);
@@ -106,7 +112,13 @@ class PureContext
         if (!empty($externalPublicKeys)) {
             foreach ($externalPublicKeys as $key) {
                 if (is_string($key)) {
-                    $publicKey = $crypto->importPublicKey(base64_decode($key));
+
+                    try {
+                        $publicKey = $crypto->importPublicKey(base64_decode($key));
+
+                    } catch (CryptoException $exception) {
+                        throw new PureCryptoException($exception->getMessage(), $exception->getCode());
+                    }
                     $this->externalPublicKeys->add($publicKey);
                 }
             }
@@ -116,7 +128,7 @@ class PureContext
             throw new PureLogicException(ErrorStatus::KEYS_VERSION_MISMATCH());
     }
 
-    public static function createCustomContext(string $appToken, string $nms, string $bu,
+    public static function createCustomContext(string $at, string $nm, string $bu,
                                                PureStorage $storage, string $sk, string $pk,
                                                array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
@@ -124,8 +136,8 @@ class PureContext
     {
         return self::_createContext(
             new VirgilCrypto(),
-            $appToken,
-            $nms, $bu,
+            $at,
+            $nm, $bu,
             $sk, $pk,
             $storage,
             $externalPublicKeys,
@@ -134,18 +146,18 @@ class PureContext
         );
     }
 
-    public static function createVirgilContext(string $appToken, string $nms, string $bu, string $sk, string $pk,
+    public static function createVirgilContext(string $at, string $nm, string $bu, string $sk, string $pk,
                                                array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
                                                string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS,
                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
         $crypto = new VirgilCrypto();
-        $pureClient = new HttpPureClient($appToken, $pureServiceAddress);
+        $pureClient = new HttpPureClient($at, $pureServiceAddress);
 
         $storage = new VirgilCloudPureStorage($pureClient);
 
-        return self::_createContext($crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys,
+        return self::_createContext($crypto, $at, $nm, $bu, $sk, $pk, $storage, $externalPublicKeys,
             $pheServiceAddress, $kmsServiceAddress);
     }
 

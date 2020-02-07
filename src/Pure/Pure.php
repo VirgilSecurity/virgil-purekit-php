@@ -46,7 +46,7 @@ use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -384,11 +384,7 @@ class Pure
                 $this->storage->insertCellKey($cellKey);
                 $cpk = $ckp->getPublicKey();
 
-            } catch (PureStorageGenericException $exception) {
-                if ($exception->getErrorStatus() != ErrorStatus::CELL_KEY_ALREADY_EXISTS_IN_STORAGE()) {
-                    throw $exception;
-                }
-
+            } catch (PureStorageCellKeyAlreadyExistsException $exception) {
                 $cellKey = $this->storage->selectCellKey($userId, $dataId);
 
                 $cpk = $this->pureCrypto->importPublicKey($cellKey->getCpk());

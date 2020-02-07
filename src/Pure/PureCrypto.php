@@ -45,7 +45,7 @@ use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
-use Virgil\PureKit\Pure\Exception\Enum\ErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
 use Virgil\CryptoWrapper\Foundation\MessageInfoDerSerializer;
