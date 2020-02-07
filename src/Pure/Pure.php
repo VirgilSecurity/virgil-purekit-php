@@ -118,8 +118,9 @@ class Pure
 
             $ukp = $this->pureCrypto->importPrivateKey($uskData);
 
-            $creationDate = new \DateTime();
-            $expirationDate = new \DateTime($creationDate + $ttl * 1000);
+            $creationDate = new \DateTime("now");
+            $ts = $creationDate->getTimestamp() + ($ttl * 1000);
+            $expirationDate = new \DateTime("@$ts");
 
             $grant = new PureGrant($ukp, $userId, $sessionId, $creationDate, $expirationDate);
 
@@ -127,8 +128,8 @@ class Pure
             $keyId = $this->pureCrypto->computeSymmetricKeyId($grantKeyRaw);
 
             $headerBuilder = (new ProtoEncryptedGrantHeader)
-                ->setCreationDate($grant->getCreationDate() / 1000)
-                ->setExpirationDate($grant->getExpirationDate() / 1000)
+                ->setCreationDate($grant->getCreationDate()->getTimestamp() / 1000)
+                ->setExpirationDate($grant->getExpirationDate()->getTimestamp() / 1000)
                 ->setUserId($grant->getUserId())
                 ->setKeyId($keyId);
 

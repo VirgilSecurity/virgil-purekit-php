@@ -46,13 +46,20 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
+use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\UpdateUserRequest;
+use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
+use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
+use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
+use Virgil\PureKit\Pure\Exception\VirgilCloudStorageException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
@@ -108,10 +115,11 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function selectUser(string $userId): UserRecord
     {
         try {
-            $protobufRecord = $this->client->getUser($userId);
+            $request = new GetUserRequest(AvailableRequest::GET_USER(), $userId);
+            $protobufRecord = $this->client->getUser($request);
         } catch (ProtocolException $exception) {
             if ($exception->getErrorCode() == ServiceErrorCode::USER_NOT_FOUND()->getCode()) {
-                throw new PureStorageGenericException(ErrorStatus::USER_NOT_FOUND());
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
             }
 
             throw new VirgilCloudStorageException($exception);
@@ -121,8 +129,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         $userRecord = $this->pureModelSerializer->parseUserRecord($protobufRecord);
 
-        if ($userRecord->getUserId() == $userId)
-            throw new PureStorageGenericException(ErrorStatus::USER_ID_MISMATCH());
+        if ($userRecord->getUserId() != $userId)
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
 
 
         return $userRecord;
@@ -360,8 +368,10 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     {
         $protobufRecord = $this->pureModelSerializer->serializeGrantKey($grantKey);
 
+        $request = new InsertGrantKeyRequest(AvailableRequest::INSERT_GRANT_KEY(), $protobufRecord);
+
         try {
-            $this->client->insertGrantKey($protobufRecord);
+            $this->client->insertGrantKey($request);
         } catch (ProtocolException $e) {
             throw new VirgilCloudStorageException($e);
         } catch (ProtocolHttpException $e) {

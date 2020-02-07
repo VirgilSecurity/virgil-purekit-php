@@ -43,11 +43,14 @@ use Virgil\Crypto\Core\HashAlgorithms;
 use Virgil\CryptoWrapper\Phe\PheClient;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
+use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Phe\Exceptions\ProtocolException;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PheClientException;
 use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
+use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
@@ -117,23 +120,22 @@ class PheManager
     public function computePheKey_(UserRecord $userRecord, string $passwordHash): string
     {
         try {
-            $client = $this->getPheClient($userRecord->getPheRecordVersion());
+            $client = $this->getPheClient($userRecord->getRecordVersion());
 
                 $pheVerifyRequest = $client->createVerifyPasswordRequest($passwordHash,
                     $userRecord->getPheRecord());
 
-                $request = (new ProtoVerifyPasswordRequest)
-                ->setVersion($userRecord->getRecordVersion())
-                ->setRequest($pheVerifyRequest);
+                $request = new VerifyPasswordRequest(AvailableRequest::VERIFY_PASSWORD(), $pheVerifyRequest,
+            $userRecord->getRecordVersion());
 
                 $response = $this->httpClient->verifyPassword($request);
 
-                $phek = $this->client->checkResponseAndDecrypt($passwordHash,
+                $phek = $client->checkResponseAndDecrypt($passwordHash,
                     $userRecord->getPheRecord(),
                     $response->getResponse());
 
                 if (strlen($phek) == 0)
-                    throw new PureLogicException(ErrorStatus::INVALID_PASSWORD());
+                    throw new PureLogicException(PureLogicErrorStatus::INVALID_PASSWORD());
 
                 return $phek;
             }

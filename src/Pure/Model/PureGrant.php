@@ -48,7 +48,7 @@ class PureGrant
     private $creationDate;
     private $expirationDate;
 
-    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId, \DateTime $creationDate,
+    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId = null, \DateTime $creationDate,
                                 \DateTime $expirationDate)
     {
         ValidateUtil::checkNull($ukp, "ukp");
@@ -63,7 +63,7 @@ class PureGrant
         $this->expirationDate = $expirationDate;
     }
 
-    public function getUpk(): VirgilKeyPair
+    public function getUkp(): VirgilKeyPair
     {
         return $this->ukp;
     }
@@ -73,7 +73,7 @@ class PureGrant
         return $this->userId;
     }
 
-    public function getSessionId(): string
+    public function getSessionId(): ?string
     {
         return $this->sessionId;
     }

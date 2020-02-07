@@ -46,6 +46,8 @@ use Virgil\PureKit\Http\_\HttpVirgilAgent;
  */
 abstract class BaseRequest
 {
+    private $endpoint;
+
     /**
      * @var AvailableRequest
      */
@@ -73,11 +75,16 @@ abstract class BaseRequest
      */
     public function getEndpoint(): string
     {
-        return $this->request->getEndpoint();
+        return $this->endpoint ? $this->endpoint : $this->request->getEndpoint();
     }
 
     /**
      * @return string
      */
     abstract function getOptionsBody(): string;
+
+    public function setFormattedEndpoint(AvailableRequest $request, string $id)
+    {
+        $this->endpoint = sprintf($request->getEndpoint(), $id);
+    }
 }

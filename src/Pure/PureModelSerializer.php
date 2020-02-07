@@ -55,6 +55,7 @@ use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 use Virgil\PureKit\Pure\Exception\InvalidProtocolBufferException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
+use Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
@@ -168,9 +169,10 @@ class PureModelSerializer
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getUserRecordSigned());
 
         try {
-            $recordSigned = (new ProtoUserRecordSigned)->mergeFromString($protobufRecord->getUserRecordSigned());
-        } catch (InvalidProtocolBufferException $exception) {
-            throw new PureStorageInvalidProtobufException($exception);
+            $recordSigned = new ProtoUserRecordSigned();
+            $recordSigned->mergeFromString($protobufRecord->getUserRecordSigned());
+        } catch (\Exception $exception) {
+            throw new PureStorageInvalidProtobufException(new InvalidProtocolBufferException());
         }
 
         $pheRecord = (new ProtoEnrollmentRecord)
@@ -336,8 +338,8 @@ class PureModelSerializer
             ->setUserId($grantKey->getUserId())
             ->setKeyId($grantKey->getKeyId())
             ->setEncryptedGrantKey($grantKey->getEncryptedGrantKey())
-            ->setCreationDate($grantKey->getCreationDate()/1000)
-            ->setExpirationDate($grantKey->getExpirationDate()/1000)
+            ->setCreationDate($grantKey->getCreationDate()->getTimestamp() / 1000)
+            ->setExpirationDate($grantKey->getExpirationDate()->getTimestamp() / 1000)
             ->serializeToString();
 
         $signature = $this->generateSignature($grantKeySigned);

@@ -196,6 +196,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRegistrationNewUserShouldSucceed(): void
     {
+        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -220,13 +221,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testAuthenticationNewUserShouldSucceed(): void
     {
-        $this->sleep();
+        $this->sleep(0);
 
         try {
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, null, $storage);
+                $pureResult = $this->setupPure(null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -239,7 +240,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $this->assertNotNull($authResult->getEncryptedGrant());
 
                 $grant = $authResult->getGrant();
-
                 $this->assertNotNull($grant);
 
                 $this->assertEquals($userId, $grant->getUserId());
