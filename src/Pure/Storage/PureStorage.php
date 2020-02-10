@@ -122,10 +122,10 @@ interface PureStorage
     public function insertRole(Role $role): void;
 
     /**
-     * @param string ...$roleNames
+     * @param array $roleNames
      * @return RoleCollection
      */
-    public function selectRoles(string ...$roleNames): RoleCollection;
+    public function selectRoles(array $roleNames): RoleCollection;
 
     /**
      * @param RoleAssignmentCollection $roleAssignments

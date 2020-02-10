@@ -47,6 +47,7 @@ use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\CryptoWrapper\Foundation\Aes256Gcm;
 use Virgil\CryptoWrapper\Foundation\MessageInfoDerSerializer;
@@ -141,6 +142,7 @@ class PureCrypto
             $cipher = new RecipientCipher();
 
             $cipher->useRandom($this->crypto->getRng());
+
             $cipher->startVerifiedDecryptionWithKey($privateKey->getIdentifier(), $privateKey->getPrivateKey(),
                 $data->getCms(), "");
 
@@ -148,20 +150,20 @@ class PureCrypto
             $body2 = $cipher->finishEncryption();
 
             if (!$cipher->isDataSigned())
-                throw new PureCryptoException(ErrorStatus::SIGNATURE_IS_ABSENT());
+                throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_IS_ABSENT());
 
             $signerInfoList = $cipher->signerInfos();
 
             if (!$signerInfoList->hasItem() && $signerInfoList->hasNext())
-                throw new PureCryptoException(ErrorStatus::SIGNER_IS_ABSENT());
+                throw new PureCryptoException(PureCryptoErrorStatus::SIGNER_IS_ABSENT());
 
             $signerInfo = $signerInfoList->item();
 
             if ($signerInfo->signerId() != $verifyingKey->getIdentifier())
-                throw new PureCryptoException(ErrorStatus::SIGNER_IS_ABSENT());
+                throw new PureCryptoException(PureCryptoErrorStatus::SIGNER_IS_ABSENT());
 
             if (!$cipher->verifySignerInfo($signerInfo, $verifyingKey->getPublicKey()))
-                throw new PureCryptoException(ErrorStatus::SIGNATURE_VERIFICATION_FAILED());
+                throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_VERIFICATION_FAILED());
 
             return $this->concat($body1, $body2);
 
@@ -455,8 +457,14 @@ class PureCrypto
     $privateKey): string
     {
         try {
-            return $this->crypto->authEncrypt($plainText, $privateKey, $publicKeys);
-        } catch (EncryptionException | SigningException $exception) {
+            $data = new Data($plainText);
+            $pkl = new PublicKeyList();
+            foreach ($publicKeys->getAsArray() as $publicKey) {
+                $pkl->addPublicKey($publicKey);
+            }
+
+            return $this->crypto->authEncrypt($data, $privateKey, $pkl);
+        } catch (EncryptionException | SigningException | \Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }

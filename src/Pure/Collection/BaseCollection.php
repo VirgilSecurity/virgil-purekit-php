@@ -43,10 +43,10 @@ class BaseCollection
     protected $collection;
 
     /**
-     * @return array
+     * @return null|array
      */
-    public function getAsArray(): array
+    public function getAsArray(): ?array
     {
-        return [];
+        return $this->collection;
     }
 }

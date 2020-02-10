@@ -44,6 +44,8 @@ use Virgil\PureKit\Http\HttpKmsClient;
 use Virgil\PureKit\Http\HttpPheClient;
 use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
+use Virgil\PureKit\Pure\Collection\VirgilPublicKeyMap;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Storage\PureStorage;
@@ -106,25 +108,26 @@ class PureContext
 
         $this->storage = $storage;
 
-        $this->externalPublicKeys = new VirgilPublicKeyCollection();
+        $this->externalPublicKeys = new VirgilPublicKeyMap();
 
         if (!empty($externalPublicKeys)) {
-            foreach ($externalPublicKeys as $key) {
-                if (is_string($key)) {
+            foreach ($externalPublicKeys as $key => $publicKeysBase64) {
 
+                foreach ($publicKeysBase64 as $publicKeyBase64) {
                     try {
-                        $publicKey = $crypto->importPublicKey(base64_decode($key));
-
-                    } catch (CryptoException $exception) {
-                        throw new PureCryptoException($exception->getMessage(), $exception->getCode());
+                        $pubKey = $crypto->importPublicKey(base64_decode($publicKeyBase64));
+                    } catch (CryptoException | \Exception $exception) {
+                        throw new PureCryptoException($exception);
                     }
-                    $this->externalPublicKeys->add($publicKey);
+
+                    $this->externalPublicKeys->put($key, $pubKey);
                 }
+
             }
         }
 
         if ($this->secretKey->getVersion() != $this->publicKey->getVersion())
-            throw new PureLogicException(ErrorStatus::KEYS_VERSION_MISMATCH());
+            throw new PureLogicException(PureLogicErrorStatus::KEYS_VERSION_MISMATCH());
     }
 
     public static function createCustomContext(string $at, string $nm, string $bu,
@@ -260,7 +263,7 @@ class PureContext
         return $this->kmsClient;
     }
 
-    public function getExternalPublicKeys(): VirgilPublicKeyCollection
+    public function getExternalPublicKeys(): VirgilPublicKeyMap
     {
         return $this->externalPublicKeys;
     }

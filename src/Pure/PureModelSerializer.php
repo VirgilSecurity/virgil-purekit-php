@@ -219,18 +219,14 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
-    /**
-     * @param ProtoCellKey $protobufRecord
-     * @return CellKey
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getCellKeySigned());
 
         try {
-            $keySigned = (new ProtoCellKeySigned)->mergeFromString($protobufRecord->getCellKeySigned());
-        } catch (InvalidProtocolBufferException $exception) {
+            $keySigned = new ProtoCellKeySigned();
+            $keySigned->mergeFromString($protobufRecord->getCellKeySigned());
+        } catch (InvalidProtocolBufferException | \Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 

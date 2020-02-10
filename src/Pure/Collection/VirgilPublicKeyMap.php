@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -39,24 +39,23 @@ namespace Virgil\PureKit\Pure\Collection;
 
 use Virgil\Crypto\Core\VirgilPublicKey;
 
-class VirgilPublicKeyCollection extends BaseCollection
+class VirgilPublicKeyMap
 {
-    protected $collection;
+    private $collection;
+    private $virgilPublicKeyCollection;
 
     public function __construct()
     {
-        $this->collection = [];
+        $this->virgilPublicKeyCollection = new VirgilPublicKeyCollection();
     }
 
-    public function add(VirgilPublicKey $virgilPublicKey): void
+    public function put(string $key, VirgilPublicKey $virgilPublicKey): void
     {
-        $this->collection[] = $virgilPublicKey;
+        $this->virgilPublicKeyCollection->add($virgilPublicKey);
+        $this->collection[$key] = $this->virgilPublicKeyCollection;
     }
 
-    public function addCollection(VirgilPublicKeyCollection $virgilPublicKeyCollection)
-    {
-        foreach ($virgilPublicKeyCollection->getAsArray() as $virgilPublicKey) {
-            $this->collection[] = $virgilPublicKey;
-        }
+    public function get(string $key): ?VirgilPublicKeyCollection {
+        return $this->collection[$key];
     }
 }

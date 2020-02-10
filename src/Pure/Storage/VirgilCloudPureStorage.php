@@ -45,6 +45,8 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
+use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\GetRolesRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUsersRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
@@ -215,8 +217,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         $cellKey = $this->pureModelSerializer->parseCellKey($protobufRecord);
 
+
         if (($userId != $cellKey->getUserId()) || $dataId != $cellKey->getDataId()) {
-            throw new PureStorageGenericException(ErrorStatus::CELL_KEY_ID_MISMATCH());
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::CELL_KEY_ID_MISMATCH());
         }
 
         return $cellKey;
@@ -256,7 +259,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         }
     }
 
-    public function selectRoles(string ...$roleNames): RoleCollection
+    public function selectRoles(array $roleNames): RoleCollection
     {
         $roles = new RoleCollection();
 
@@ -264,18 +267,21 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             return $roles;
 
         try {
-            $protoRecords = $this->client->getRoles($roleNames);
+
+            $request = new GetRolesRequest(AvailableRequest::GET_ROLES(), $roleNames);
+
+            $protoRecords = $this->client->getRoles($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
 
-        if ($protoRecords->getRolesCount() != count($roleNames)) {
-            throw new PureStorageGenericException(ErrorStatus::DUPLICATE_ROLE_NAME());
+        if (count($protoRecords->getRoles()) != count($roleNames)) {
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::DUPLICATE_ROLE_NAME());
         }
 
-        foreach ($protoRecords->getRolesList() as $protobufRecord) {
+        foreach ($protoRecords->getRoles() as $protobufRecord) {
             $role = $this->pureModelSerializer->parseRole($protobufRecord);
 
             var_dump("TODO! Select roles");
@@ -392,7 +398,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             die;
             throw new VirgilCloudStorageException($e);
         } catch (\Exception $e) {
-            var_dump(777);
+            var_dump(777, $e->getMessage(), $e->getCode());
             die;
         }
     }
@@ -469,7 +475,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         try {
             if ($isInsert) {
                 try {
-                    $this->client->insertCellKey($protobufRecord);
+                    $request = new InsertCellKeyRequest(AvailableRequest::INSERT_CELL_KEY(), $protobufRecord);
+                    $this->client->insertCellKey($request);
                 } catch (ProtocolException $e) {
                     if ($e->getErrorCode() == ServiceErrorCode::CELL_KEY_ALREADY_EXISTS()->getCode()) {
                         throw new PureStorageCellKeyAlreadyExistsException();

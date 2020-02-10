@@ -37,8 +37,6 @@
 
 namespace Virgil\PureKit\Http;
 
-use function Couchbase\basicDecoderV1;
-use GuzzleHttp\Exception\ClientException;
 use PurekitV3Storage\CellKey as ProtoCellKey;
 use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
@@ -52,13 +50,13 @@ use Virgil\PureKit\Http\Request\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentsRequest;
-use Virgil\PureKit\Http\Request\GetRolesRequest;
-use Virgil\PureKit\Http\Request\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\GetRolesRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUsersRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
@@ -156,11 +154,6 @@ class HttpPureClient extends HttpBaseClient
         $this->_send($request);
     }
 
-    /**
-     * @param GetRolesRequest $request
-     * @return ProtoRoles
-     * @throws \Exception
-     */
     public function getRoles(GetRolesRequest $request): ProtoRoles
     {
         $r = $this->_send($request);
