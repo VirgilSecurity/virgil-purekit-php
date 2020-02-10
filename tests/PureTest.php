@@ -256,6 +256,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionRandomDataShouldMatch(): void
     {
+        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -283,87 +284,87 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testSharing2UsersShouldDecrypt(): void
-    {
-        $this->markTestSkipped("GET_CELL_KEY: response 404, skipped");
+//    public function testSharing2UsersShouldDecrypt(): void
+//    {
+//        $this->markTestSkipped("GET_CELL_KEY: response 404, skipped");
+//
+//        $this->sleep();
+//
+//        try {
+//            $storages = self::createStorages();
+//            foreach ($storages as $storage) {
+//
+//                $pureResult = $this->setupPure(null, false, [], $storage);
+//                $pure = new Pure($pureResult->getContext());
+//
+//                $userId1 = self::generateRandomString();
+//                $userId2 = self::generateRandomString();
+//                $password1 = self::generateRandomString();
+//                $password2 = self::generateRandomString();
+//                $dataId = self::generateRandomString();
+//                $text = self::generateRandomString();
+//
+//                $pure->registerUser($userId1, $password1);
+//                $pure->registerUser($userId2, $password2);
+//
+//                $authResult1 = $pure->authenticateUser($userId1, $password1);
+//                $authResult2 = $pure->authenticateUser($userId2, $password2);
+//
+//                $cipherText = $pure->encrypt($userId1, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+//
+//                $pure->share($authResult1->getGrant(), $dataId, $userId2);
+//
+//                $plainText1 = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+//                $plainText2 = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
+//
+//                $this->assertEquals($text, $plainText1);
+//                $this->assertEquals($text, $plainText2);
+//            }
+//        } catch (\Exception $exception) {
+//            $this->fail($exception->getMessage());
+//        }
+//    }
 
-        $this->sleep();
 
-        try {
-            $storages = self::createStorages();
-            foreach ($storages as $storage) {
-
-                $pureResult = $this->setupPure(null, false, [], $storage);
-                $pure = new Pure($pureResult->getContext());
-
-                $userId1 = self::generateRandomString();
-                $userId2 = self::generateRandomString();
-                $password1 = self::generateRandomString();
-                $password2 = self::generateRandomString();
-                $dataId = self::generateRandomString();
-                $text = self::generateRandomString();
-
-                $pure->registerUser($userId1, $password1);
-                $pure->registerUser($userId2, $password2);
-
-                $authResult1 = $pure->authenticateUser($userId1, $password1);
-                $authResult2 = $pure->authenticateUser($userId2, $password2);
-
-                $cipherText = $pure->encrypt($userId1, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
-
-                $pure->share($authResult1->getGrant(), $dataId, $userId2);
-
-                $plainText1 = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
-                $plainText2 = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
-
-                $this->assertEquals($text, $plainText1);
-                $this->assertEquals($text, $plainText2);
-            }
-        } catch (\Exception $exception) {
-            $this->fail($exception->getMessage());
-        }
-    }
-
-
-    public function testSharingRevokeAccessShouldNotDecrypt(): void
-    {
-        $this->markTestSkipped("GET_CELL_KEY: response 404, skipped");
-        $this->sleep();
-
-        try {
-            $storages = self::createStorages();
-            foreach ($storages as $storage) {
-
-                $pureResult = $this->setupPure(null, null, $storage);
-                $pure = new Pure($pureResult->getContext());
-
-                $userId1 = self::generateRandomString();
-                $userId2 = self::generateRandomString();
-                $password1 = self::generateRandomString();
-                $password2 = self::generateRandomString();
-                $dataId = self::generateRandomString();
-                $text = self::generateRandomString();
-
-                $pure->registerUser($userId1, $password1);
-                $pure->registerUser($userId2, $password2);
-
-                $authResult1 = $pure->authenticateUser($userId1, $password1);
-                $authResult2 = $pure->authenticateUser($userId2, $password2);
-
-                $cipherText = $pure->encrypt($userId1, $dataId, $text);
-
-                $pure->share($authResult1->getGrant(), $dataId, $userId2);
-                $pure->unshare($userId1, $dataId, $userId2);
-
-                $this->expectException("PureLogicException");
-                $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
-            }
-        } catch (\Exception $exception) {
-            // TODO!
-            $this->assertEquals($exception->getErrorStatus(), ErrorStatus::USER_HAS_NO_ACCESS_TO_DATA());
-            $this->fail($exception->getMessage());
-        }
-    }
+//    public function testSharingRevokeAccessShouldNotDecrypt(): void
+//    {
+//        $this->markTestSkipped("GET_CELL_KEY: response 404, skipped");
+//        $this->sleep();
+//
+//        try {
+//            $storages = self::createStorages();
+//            foreach ($storages as $storage) {
+//
+//                $pureResult = $this->setupPure(null, null, $storage);
+//                $pure = new Pure($pureResult->getContext());
+//
+//                $userId1 = self::generateRandomString();
+//                $userId2 = self::generateRandomString();
+//                $password1 = self::generateRandomString();
+//                $password2 = self::generateRandomString();
+//                $dataId = self::generateRandomString();
+//                $text = self::generateRandomString();
+//
+//                $pure->registerUser($userId1, $password1);
+//                $pure->registerUser($userId2, $password2);
+//
+//                $authResult1 = $pure->authenticateUser($userId1, $password1);
+//                $authResult2 = $pure->authenticateUser($userId2, $password2);
+//
+//                $cipherText = $pure->encrypt($userId1, $dataId, $text);
+//
+//                $pure->share($authResult1->getGrant(), $dataId, $userId2);
+//                $pure->unshare($userId1, $dataId, $userId2);
+//
+//                $this->expectException("PureLogicException");
+//                $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
+//            }
+//        } catch (\Exception $exception) {
+//            // TODO!
+//            $this->assertEquals($exception->getErrorStatus(), ErrorStatus::USER_HAS_NO_ACCESS_TO_DATA());
+//            $this->fail($exception->getMessage());
+//        }
+//    }
 
 //    public function testGrantChangePasswordShouldNotDecrypt(): void
 //    {

@@ -147,7 +147,7 @@ class PureCrypto
                 $data->getCms(), "");
 
             $body1 = $cipher->processDecryption($data->getBody());
-            $body2 = $cipher->finishEncryption();
+            $body2 = $cipher->finishDecryption();
 
             if (!$cipher->isDataSigned())
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_IS_ABSENT());
@@ -472,8 +472,12 @@ class PureCrypto
     public function decryptData(string $cipherText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
     {
         try {
-            return $this->crypto->authDecrypt($cipherText, $privateKey, $publicKey);
-        } catch (VerificationException | DecryptionException $exception) {
+            $data = new Data($cipherText);
+            $pkl = new PublicKeyList();
+            $pkl->addPublicKey($publicKey);
+
+            return $this->crypto->authDecrypt($data, $privateKey, $pkl);
+        } catch (VerificationException | DecryptionException | \Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -482,7 +486,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->authEncrypt($plainText, $privateKey, $publicKey);
-        } catch (SigningException | EncryptionException $exception) {
+        } catch (SigningException | EncryptionException | \Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
