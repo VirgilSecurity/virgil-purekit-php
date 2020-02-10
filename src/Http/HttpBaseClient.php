@@ -38,9 +38,12 @@
 namespace Virgil\PureKit\Http;
 
 use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
-use Virgil\PureKit\Phe\Exceptions\ProtocolException;
+use Purekit\HttpError as ProtoHttpError;
 use Virgil\PureKit\Http\Request\BaseRequest;
+use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 
 /**
@@ -81,23 +84,27 @@ class HttpBaseClient
         $this->httpClient = new GuzzleClient(['base_uri' => $this->_getServiceBaseUrl()]);
     }
 
-    /**
-     * @param BaseRequest $request
-     * @param int|null $acceptedResponseCode
-     * @return ResponseInterface
-     * @throws ProtocolHttpException
-     */
-    protected function _send(BaseRequest $request, int $acceptedResponseCode = null): ResponseInterface
+    protected function _send(BaseRequest $request): ResponseInterface
     {
-        $r = $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
-            [
-                "headers" => $request->getOptionsHeader($this->appToken),
-                "body" => $request->getOptionsBody(),
-                'debug' => $this->debug
-            ]);
+        try {
+            return $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
+                [
+                    "headers" => $request->getOptionsHeader($this->appToken),
+                    "body" => $request->getOptionsBody(),
+                    'debug' => $this->debug
+                ]);
+        } catch (ClientException $exception) {
 
-        $this->_checkStatus($r, $acceptedResponseCode);
-        return $r;
+            $protoBody =  $exception->getResponse()->getBody()->getContents();
+
+            $protoHttpErr = new ProtoHttpError();
+            $protoHttpErr->mergeFromString($protoBody);
+
+            $code = $protoHttpErr->getCode();
+            $msg = $protoHttpErr->getMessage();
+
+            throw new ProtocolException($msg, $code);
+        }
     }
 
     /**
@@ -106,11 +113,5 @@ class HttpBaseClient
     private function _getServiceBaseUrl(): string
     {
         return $this->serviceBaseUrl;
-    }
-
-    private function _checkStatus(ResponseInterface $r, int $acceptedResponseCode = null): void
-    {
-        if (200 != $r->getStatusCode() || $acceptedResponseCode ? $acceptedResponseCode != $r->getStatusCode() : null)
-            throw new ProtocolHttpException("Api error. Status code: {$r->getStatusCode()}", $r->getStatusCode());
     }
 }

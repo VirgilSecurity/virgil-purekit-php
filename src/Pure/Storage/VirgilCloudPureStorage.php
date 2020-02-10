@@ -45,22 +45,23 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
+use Virgil\PureKit\Http\Request\Pure\GetUsersRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
-use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
-use Virgil\PureKit\Pure\Exception\ServiceErrorCode;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\ServiceErrorCode;
 use Virgil\PureKit\Pure\Exception\VirgilCloudStorageException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -120,7 +121,10 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $request = new GetUserRequest(AvailableRequest::GET_USER(), $userId);
             $protobufRecord = $this->client->getUser($request);
         } catch (ProtocolException $exception) {
-            if ($exception->getErrorCode() == ServiceErrorCode::USER_NOT_FOUND()->getCode()) {
+            var_dump(123);
+            die;
+
+            if ($exception->getCode() == ServiceErrorCode::USER_NOT_FOUND()->getCode()) {
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
             }
 
@@ -138,35 +142,39 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $userRecord;
     }
 
-    public function selectUsers(string ...$userIds): UserRecordCollection
+    public function selectUsers(array $userIds): UserRecordCollection
     {
         $userRecords = new UserRecordCollection();
 
         if (empty($userIds))
             return $userRecords;
 
+        $idsSet = $userIds;
+
         try {
-            $protoRecords = $this->client->getUsers($userIds);
+            $request = new GetUsersRequest(AvailableRequest::GET_USERS(), $userIds);
+
+            $protoRecords = $this->client->getUsers($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
 
-        if ($protoRecords->getUserRecordsCount() != count($userIds)) {
-            throw new PureStorageGenericException(ErrorStatus::DUPLICATE_USER_ID());
+        if (count($protoRecords->getUserRecords()) != count($userIds)) {
+            throw new PureStorageGenericException( PureStorageGenericErrorStatus::DUPLICATE_USER_ID());
         }
 
-        foreach ($protoRecords->getUserRecordsList() as $protobufRecord) {
+        foreach ($protoRecords->getUserRecords() as $protobufRecord) {
             $userRecord = $this->pureModelSerializer->parseUserRecord($protobufRecord);
 
-            var_dump("TODO!");
-            die;
+            if (!in_array($userRecord->getUserId(), $idsSet))
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
 
-//            if (!idsSet.contains(userRecord.getUserId())) {
-//                throw new PureStorageGenericException(ErrorStatus::USER_ID_MISMATCH());
-//            }
-//            idsSet.remove(userRecord.getUserId());
+            if (($key = array_search($userRecord->getUserId(), $idsSet)) !== false) {
+                unset($idsSet[$key]);
+                $idsSet = array_values($idsSet);
+            }
 
             $userRecords->add($userRecord);
         }
@@ -193,12 +201,11 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function selectCellKey(string $userId, string $dataId): CellKey
     {
         try {
-
             $request = new GetCellKeyRequest(AvailableRequest::GET_CELL_KEY(), $userId, $dataId);
             $protobufRecord = $this->client->getCellKey($request);
-
-        } catch (ProtocolException $exception) {
-            if ($exception->getErrorCode() == ServiceErrorCode::CELL_KEY_NOT_FOUND()->getCode()) {
+        }
+        catch (ProtocolException $exception) {
+            if ($exception->getCode() == ServiceErrorCode::CELL_KEY_NOT_FOUND()->getCode()) {
                 throw new PureStorageCellKeyNotFoundException();
             }
             throw new VirgilCloudStorageException($exception);
@@ -396,8 +403,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $protobufRecord = $this->client->getGrantKey($request);
-        } catch (ProtocolException $e) {
-
+        }
+        catch (ProtocolException $e) {
             if ($e->getErrorCode() == ServiceErrorCode::GRANT_KEY_NOT_FOUND()->getCode())
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND());
 

@@ -41,7 +41,7 @@ namespace Virgil\PureKit\Phe\Exceptions;
  * Class ProtocolException
  * @package Virgil\PureKit\Exeptions
  */
-class ProtocolException extends \Exception
+class _ProtocolException extends \Exception
 {
 
 }

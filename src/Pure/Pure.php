@@ -53,6 +53,7 @@ use Virgil\PureKit\Pure\Model\PureGrant;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
+use Virgil\PureKit\Pure\Storage\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 
@@ -205,6 +206,7 @@ class Pure
             if ($grantKey->getExpirationDate() < new \DateTime("now"))
                 throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
+
             $grantKeyRaw = $this->pureCrypto->decryptSymmetricNewNonce($grantKey->getEncryptedGrantKey(), "", $this->ak);
 
             $phek = $this->pureCrypto->decryptSymmetricOneTime($encryptedData, $encryptedGrant->getHeader(),
@@ -353,7 +355,7 @@ class Pure
                 $recipientList[] = $publicKeys;
 
                 $userIds[] = $userId;
-                $userIds[] = $otherUserIds;
+                $userIds = array_merge($userIds, $otherUserIds);
 
                 $userRecords = $this->storage->selectUsers($userIds);
 

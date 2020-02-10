@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Http;
 
+use function Couchbase\basicDecoderV1;
+use GuzzleHttp\Exception\ClientException;
 use PurekitV3Storage\CellKey as ProtoCellKey;
 use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
@@ -51,12 +53,12 @@ use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\GetRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\GetRolesRequest;
-use Virgil\PureKit\Http\Request\GetUsersRequest;
 use Virgil\PureKit\Http\Request\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
+use Virgil\PureKit\Http\Request\Pure\GetUsersRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
@@ -86,17 +88,17 @@ class HttpPureClient extends HttpBaseClient
 
     public function insertUser(InsertUserRequest $request): void
     {
-        $this->_send($request, 201);
+        $this->_send($request, [201]);
     }
 
     public function updateUser(UpdateUserRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, [200]);
     }
 
     public function getUser(GetUserRequest $request): ProtoUserRecord
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, [200]);
 
         $res = new ProtoUserRecord();
         $res->mergeFromString($r->getBody()->getContents());
@@ -104,11 +106,6 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    /**
-     * @param GetUsersRequest $request
-     * @return ProtoUserRecords
-     * @throws \Exception
-     */
     public function getUsers(GetUsersRequest $request): ProtoUserRecords
     {
         $r = $this->_send($request);
@@ -216,7 +213,7 @@ class HttpPureClient extends HttpBaseClient
 
     public function insertGrantKey(InsertGrantKeyRequest $request): void
     {
-        $this->_send($request, 201);
+        $this->_send($request, [201]);
     }
 
     public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey

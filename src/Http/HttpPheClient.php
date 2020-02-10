@@ -75,10 +75,10 @@ class HttpPheClient extends HttpBaseClient
 
         $r = $this->_send($request);
 
-         $res = new ProtoEnrollmentResponse();
-         $res->mergeFromString($r->getBody()->getContents());
+        $res = new ProtoEnrollmentResponse();
+        $res->mergeFromString($r->getBody()->getContents());
 
-         return $res;
+        return $res;
     }
 
     /**

@@ -76,10 +76,10 @@ interface PureStorage
     public function selectUser(string $userId): UserRecord;
 
     /**
-     * @param string ...$userIds
+     * @param array $userIds
      * @return UserRecordCollection
      */
-    public function selectUsers(string ...$userIds): UserRecordCollection;
+    public function selectUsers(array $userIds): UserRecordCollection;
 
     /**
      * @param int $pheRecordVersion
