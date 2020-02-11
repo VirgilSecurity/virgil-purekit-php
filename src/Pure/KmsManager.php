@@ -39,9 +39,15 @@ namespace Virgil\PureKit\Pure;
 
 
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
+use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\CryptoWrapper\Phe\UokmsClient;
 use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
+use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
+use Virgil\PureKit\Pure\Exception\KmsClientException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
+use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
@@ -113,27 +119,30 @@ class KmsManager
         try {
             $kmsClient = $this->getKmsClient($userRecord->getRecordVersion());
 
+            // [deblind_factor, decrypt_request]
             $uokmsClientGenerateDecryptRequestResult = $kmsClient->generateDecryptRequest(
                 $userRecord->getPasswordRecoveryWrap());
 
             $decryptRequest = (new ProtoDecryptRequest)
                 ->setVersion($userRecord->getRecordVersion())
                 ->setAlias(self::RECOVER_PWD_ALIAS)
-                ->setRequest($uokmsClientGenerateDecryptRequestResult->getDecryptRequest());
+                ->setRequest($uokmsClientGenerateDecryptRequestResult[1]);
 
-            $decryptResponse = $this->httpClient->decrypt($decryptRequest);
+            $request = new DecryptRequest(AvailableRequest::DECRYPT_REQUEST(), $decryptRequest);
 
-            return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoverytWrap(),
-                $uokmsClientGenerateDecryptRequestResult->getDecryptRequest(),
+            $decryptResponse = $this->httpClient->decrypt($request);
+
+            return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoveryWrap(),
+                $uokmsClientGenerateDecryptRequestResult[1],
                 $decryptResponse->getResponse(),
-                $uokmsClientGenerateDecryptRequestResult->getDeblindFactor(),
+                $uokmsClientGenerateDecryptRequestResult[0],
                 PureCrypto::DERIVED_SECRET_LENGTH);
-        } catch (PheException $exceptione) {
-            throw new PureCryptoException($exceptione);
-        } catch (ProtocolException $exceptione) {
-            throw new KmsClientException($exceptione);
-        } catch (ProtocolHttpException $exceptione) {
-            throw new KmsClientException($exceptione);
+        } catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        } catch (ProtocolException $exception) {
+            throw new KmsClientException($exception);
+        } catch (ProtocolHttpException $exception) {
+            throw new KmsClientException($exception);
         }
 
     }

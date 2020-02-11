@@ -311,7 +311,7 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function decryptSymmetricOneTime(string $cipherText, string $ad, string $key): string
+    public function decryptSymmetricOneTimeKey(string $cipherText, string $ad, string $key): string
     {
         try {
             $aes256Gcm = new Aes256Gcm();
@@ -320,8 +320,9 @@ class PureCrypto
 
             return $aes256Gcm->authDecrypt($cipherText, $ad, "");
         }
-            catch (FoundationException $exception) {
-                throw new PureCryptoException($exception);
+            catch (\Exception $exception) {
+                throw new PureCryptoException(new FoundationException($exception->getMessage(), $exception->getCode()
+                    , $exception));
         }
     }
 

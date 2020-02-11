@@ -38,6 +38,8 @@
 namespace Virgil\PureKit\Tests;
 
 use Dotenv\Dotenv;
+use Virgil\Crypto\Core\Data;
+use Virgil\Crypto\Core\HashAlgorithms;
 use Virgil\Crypto\Core\KeyPairType;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
@@ -714,7 +716,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteUserNoCascadeShouldDeleteUser(): void
     {
-        $this->markTestSkipped("Need to be updated for MariaDB, skipped");
+        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -725,24 +727,27 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 if (StorageType::MARIADB() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure(null, null, $storage);
+                $pureResult = $this->setupPure(null, false , [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
-                $userId = (string) rand(1000, 9999);
-                $password = (string) rand(1000, 9999);
-                $dataId = (string) rand(1000, 9999);
-                $text = (string) rand(1000, 9999);
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password);
 
-                $cipherText = $pure->encrypt($userId, $dataId, $text);
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
 
                 $authResult1 = $pure->authenticateUser($userId, $password);
 
                 $pure->deleteUser($userId, false);
 
-                $this->expectException("PureLogicException");
-                $pure->authenticateUser($userId, $password);
+                try {
+                    $pure->authenticateUser($userId, $password);
+                } catch (PureStorageGenericException $exception) {
+                    $this->assertEquals(PureStorageGenericErrorStatus::USER_NOT_FOUND(), $exception->getErrorStatus());
+                }
 
                 $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
 
@@ -750,87 +755,82 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
             }
         } catch (\Exception $exception) {
-            $this->assertEquals(ErrorStatus::USER_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
-
             $this->fail($exception->getMessage());
         }
     }
 
-//    public function testDeleteKeyNewKeyShouldDelete(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password = (string) rand(1000, 9999);
-//                $dataId = (string) rand(1000, 9999);
-//                $text = (string) rand(1000, 9999);
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $authResult1 = $pure->authenticateUser($userId, $password);
-//
-//                $pure->deleteKey($userId, $dataId);
-//
-//                $this->expectException("PureLogicException");
-//                $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->assertEquals(ErrorStatus::CELL_KEY_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
-//
-//
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testDeleteKeyNewKeyShouldDelete(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
 
-//    public function testRegistrationNewUserBackupsPwdHash(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password = (string) rand(1000, 9999);
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $record = $pure->getStorage()->selectUser($userId);
-//
-//                $pwdHashDecrypted = $pure->getCrypto()->decrypt($record->getEncryptedPwdHash(),
-//                    $pureResult->getBupkp()->getPrivateKey());
-//
-//                $pwdHash = $pure->getCrypto()->computeHash($password);
-//
-//                $this->assertEquals($pwdHash, $pwdHashDecrypted);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $authResult1 = $pure->authenticateUser($userId, $password);
+
+                $pure->deleteKey($userId, $dataId);
+
+                try {
+                    $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+                } catch (\Exception $exception) {
+                    $this->assertTrue($exception instanceof PureStorageCellKeyNotFoundException);
+                }
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
+
+    public function testRegistrationNewUserBackupsPwdHash(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+
+                $pure->registerUser($userId, $password);
+
+                $record = $pure->getStorage()->selectUser($userId);
+
+                $data = new Data($record->getBackupPwdHash());
+
+                $pwdHashDecrypted = $pureResult->getContext()->getCrypto()->decrypt($data, $pureResult->getBupkp()
+                    ->getPrivateKey());
+
+                $pwdHash = $pureResult->getContext()->getCrypto()->computeHash($password, HashAlgorithms::SHA512());
+
+                $this->assertEquals($pwdHash, $pwdHashDecrypted);
+
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 //    public function testEncryptionRolesShouldDecrypt(): void
 //    {
-//        $this->markTestSkipped("sk");
-//
 //        $this->sleep();
 //
 //        try {
@@ -878,41 +878,46 @@ class PureTest extends \PHPUnit\Framework\TestCase
 //    }
 
 
-//    public function testRecoveryNewUserShouldRecover(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password1 = (string) rand(1000, 9999);
-//                $password2 = (string) rand(1000, 9999);
-//
-//                // TODO: Check encryption
-//                $pure->registerUser($userId, $password1);
-//
-//                $pure->recoverUser($userId, $password2);
-//
-//                $this->expectException(PureLogicException::class);
-//                $pure->authenticateUser($userId, $password1);
-//
-//
-//                $grant = $pure->authenticateUser($userId, $password2);
-//                $this->assertNotNull($grant);
-//
-//            }
-//        } catch (\Exception $exception) {
-//
-//            $this->assertEquals($exception->getErrorStatus(), ErrorStatus::INVALID_PASSWORD());
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testRecoveryNewUserShouldRecover(): void
+    {
+        $this->sleep(0);
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+
+                $pure->registerUser($userId, $password1);
+
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $blob = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $pure->recoverUser($userId, $password2);
+
+                try {
+                    $pure->authenticateUser($userId, $password1);
+                } catch (PureLogicException $exception) {
+                    $this->assertEquals(PureLogicErrorStatus::INVALID_PASSWORD(), $exception->getErrorStatus());
+                }
+
+                $authResult = $pure->authenticateUser($userId, $password2);
+                $this->assertNotNull($authResult);
+
+                $decrypted = $pure->decrypt($authResult->getGrant(), $userId, $dataId, $blob);
+                $this->assertEquals($text, $decrypted);
+
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 }

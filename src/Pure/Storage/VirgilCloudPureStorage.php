@@ -45,6 +45,7 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
+use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
@@ -239,7 +240,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function deleteCellKey(string $userId, string $dataId): void
     {
         try {
-            $this->client->deleteCellKey($userId, $dataId);
+            $request = new DeleteCellKeyRequest(AvailableRequest::DELETE_CELL_KEY(), $userId, $dataId);
+
+            $this->client->deleteCellKey($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
