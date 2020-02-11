@@ -124,7 +124,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
      * @param int $length
      * @return string
      */
-    private static function generateRandomString(int $length = 16) {
+    private static function generateRandomString(int $length = 16)
+    {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = "";
@@ -265,7 +266,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false,[], $storage);
+                $pureResult = $this->setupPure(null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -364,8 +365,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                     $this->assertEquals($exception->getErrorStatus(), PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA());
                 }
             }
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->fail($exception->getMessage());
         }
     }
@@ -414,7 +414,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     public function testGrantAdminAccessShouldDecrypt(): void
     {
         $this->markTestSkipped("OK, skipped");
-        $this->sleep(0);
+        $this->sleep();
 
         try {
             $storages = self::createStorages();
@@ -446,43 +446,46 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
 
-//    public function testResetPwdNewUserShouldNotDecrypt(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = self::generateRandomString();
-//                $password1 = self::generateRandomString();
-//                $password2 = self::generateRandomString();
-//                $dataId = self::generateRandomString();
-//                $text = self::generateRandomString();
-//
-//                $pure->registerUser($userId, $password1);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $pure->resetUserPassword($userId, $password2);
-//
-//                $authResult = $pure->authenticateUser($userId, $password2);
-//
-//                $this->assertNotNull($authResult);
-//                $pure->decrypt($authResult->getGrant(), null, $dataId, $cipherText);
-//            }
-//        } catch (\Exception $exception) {
-//
-//            $this->assertEquals($exception->getErrorStatus(), ErrorStatus::USER_HAS_NO_ACCESS_TO_DATA());
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testResetPwdNewUserShouldNotDecrypt(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password1);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $pure->resetUserPassword($userId, $password2);
+
+                $authResult = $pure->authenticateUser($userId, $password2);
+
+                $this->assertNotNull($authResult);
+
+                try {
+                    $pure->decrypt($authResult->getGrant(), null, $dataId, $cipherText);
+                } catch (PureLogicException $exception) {
+                    $this->assertEquals(PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA(), $exception->getErrorStatus
+                    ());
+                }
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 
 //    public function testRestorePwdNewUserShouldDecrypt(): void
