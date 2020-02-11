@@ -87,7 +87,8 @@ class HttpBaseClient
     protected function _send(BaseRequest $request): ResponseInterface
     {
         try {
-            return $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint(),
+            return $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint() .
+                $request->getParams(),
                 [
                     "headers" => $request->getOptionsHeader($this->appToken),
                     "body" => $request->getOptionsBody(),

@@ -42,9 +42,12 @@ use Virgil\Crypto\Core\KeyPairType;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
+use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
 use Virgil\PureKit\Pure\PureSetupResult;
@@ -487,318 +490,271 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    public function testRestorePwdNewUserShouldDecrypt(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep(0);
 
-//    public function testRestorePwdNewUserShouldDecrypt(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = self::generateRandomString();
-//                $password1 = self::generateRandomString();
-//                $password2 = self::generateRandomString();
-//                $dataId = self::generateRandomString();
-//                $text = self::generateRandomString();
-//
-//                $pure->registerUser($userId, $password1);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $adminGrant = $pure->createUserGrantAsAdmin($userId, $pureResult->getBupkp()->getPrivateKey());
-//
-//                $pure->changeUserPassword($adminGrant, $password2);
-//
-//                $authResult = $pure->authenticateUser($userId, $password2);
-//
-//                $this->assertNotNull($authResult);
-//
-//                $plainText = $pure->decrypt($authResult->getGrant(), null, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
 
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
 
-//    public function testRotationLocalStorageShouldRotate(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                // VirgilCloudPureStorage should not support that
-//                if (StorageType::VIRGIL_CLOUD() == $storage) {
-//                    continue;
-//                }
-//
-//                $total = 30;
-//
-//                    $pureResult = $this->setupPure(null, null, $storage);
-//                    $pure = new Pure($pureResult->getContext());
-//                    $pureStorage = $pure->getStorage();
-//
-//                    if (StorageType::MARIADB() == $storage) {
-//                        $mariaDbPureStorage = $pure->getStorage();
-//                        $mariaDbPureStorage->dropTables();
-//                        $mariaDbPureStorage->createTables();
-//                    }
-//
-//                    for ($i = 0; $i < $total; $i++) {
-//                    $userId = (string) rand(1000, 9999);
-//                        $password = (string) rand(1000, 9999);
-//
-//                        $pure->registerUser($userId, $password);
-//                    }
-//
-//                $pureResult = $this->setupPure($this->updateToken, null, $storage);
-//                $pureResult->getContext()->setStorage($pureStorage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $rotated = $pure->performRotation();
-//
-//                $this->assertEquals($total, $rotated);
-//
-//                // TODO: Check auth and decryption works
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+                $userId = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password1);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $adminGrant = $pure->createUserGrantAsAdmin($userId, $pureResult->getBupkp()->getPrivateKey());
+
+                // TODO! Fix method name
+                $pure->changeUserPassword_($adminGrant, $password2);
+
+                $authResult = $pure->authenticateUser($userId, $password2);
+
+                $this->assertNotNull($authResult);
+
+                $plainText = $pure->decrypt($authResult->getGrant(), null, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 
-//    public function testPerformance(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                if (StorageType::VIRGIL_CLOUD() == $storage) {
-//                    continue;
-//                }
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $total = 10;
-//
-//                for ($i = 0; $i < $total; $i++) {
-//                    $userId = (string) rand(1000, 9999);
-//                    $password = (string) rand(1000, 9999);
-//
-//                    // TODO! Add in ms
-//                    $startTime = new \DateTime("now");
-//
-//                    $pure->registerUser($userId, $password);
-//
-//                    $finishTime = new \DateTime("now");
-//
-//                    $diff = $finishTime - $startTime;
-//
-////                    var_dump("That took: " . $diff . " ms");
-//                }
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    // TODO! Update test for MariaDB
+    public function testRotationLocalStorageShouldRotate(): void
+    {
+        $this->markTestSkipped("Need to be updated for MariaDB, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                // VirgilCloudPureStorage should not support that
+                if (StorageType::VIRGIL_CLOUD() == $storage) {
+                    continue;
+                }
+
+                $total = 30;
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+                $pureStorage = $pure->getStorage();
+
+                if (StorageType::MARIADB() == $storage) {
+                    $mariaDbPureStorage = $pure->getStorage();
+                    $mariaDbPureStorage->dropTables();
+                    $mariaDbPureStorage->createTables();
+                }
+
+                for ($i = 0; $i < $total; $i++) {
+                    $userId = (string)rand(1000, 9999);
+                    $password = (string)rand(1000, 9999);
+
+                    $pure->registerUser($userId, $password);
+                }
+
+                $pureResult = $this->setupPure($this->updateToken, false, [], $storage);
+                $pureResult->getContext()->setStorage($pureStorage);
+                $pure = new Pure($pureResult->getContext());
+
+                $rotated = $pure->performRotation();
+
+                $this->assertEquals($total, $rotated);
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
+
+    public function testEncryptionAdditionalKeysShouldDecrypt(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId1 = self::generateRandomString();
+                $userId2 = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId1, $password1);
+                $pure->registerUser($userId2, $password2);
+
+                $authResult1 = $pure->authenticateUser($userId1, $password1);
+                $authResult2 = $pure->authenticateUser($userId2, $password2);
+
+                $keyPair = $pureResult->getContext()->getCrypto()->generateKeyPair();
+
+                $pkc = new VirgilPublicKeyCollection();
+                $pkc->add($keyPair->getPublicKey());
+
+                $cipherText = $pure->encrypt($userId1, $dataId, [$userId2], [],
+                    $pkc, $text);
+
+                $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+
+                $plainText = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+
+                // TODO! Fix method name
+                $plainText = $pure->decrypt_($keyPair->getPrivateKey(), $userId1, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 
-//    public function testEncryptionAdditionalKeysShouldDecrypt(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId1 = self::generateRandomString();
-//                $userId2 = self::generateRandomString();
-//                $password1 = self::generateRandomString();
-//                $password2 = self::generateRandomString();
-//                $dataId = self::generateRandomString();
-//                $text = self::generateRandomString();
-//
-//                $pure->registerUser($userId1, $password1);
-//                $pure->registerUser($userId2, $password2);
-//
-//                $authResult1 = $pure->authenticateUser($userId1, $password1);
-//                $authResult2 = $pure->authenticateUser($userId2, $password2);
-//
-//                $keyPair = $pure->getCrypto()->generateKeyPair();
-//
-//                $cipherText = $pure->encrypt($userId1, $dataId, $userId2, [],
-//                    $keyPair->getPublicKey(), $text);
-//
-//                $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//                $plainText = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//                $plainText = $pure->decrypt($keyPair->getPrivateKey(), $userId1, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testEncryptionExternalKeysShouldDecrypt(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $keyPair = $this->crypto->generateKeyPair();
+                $dataId = self::generateRandomString();
+
+                $publicKeyBase64 = base64_encode($this->crypto->exportPublicKey($keyPair->getPublicKey()));
+                $externalPublicKeys = [$dataId => [$publicKeyBase64]];
+
+                $pureResult = $this->setupPure(null, false, $externalPublicKeys, $storage);
+
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                // TODO!
+                $plainText = $pure->decrypt_($keyPair->getPrivateKey(), $userId, $dataId, $cipherText);
+                $this->assertEquals($text, $plainText);
+
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
+
+    public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep();
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+
+                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $authResult1 = $pure->authenticateUser($userId, $password);
+
+                $pure->deleteUser($userId, true);
+
+                try {
+                    $pure->authenticateUser($userId, $password);
+                } catch (PureStorageGenericException $exception) {
+                    $this->assertEquals(PureStorageGenericErrorStatus::USER_NOT_FOUND(), $exception->getErrorStatus());
+                }
+
+                try {
+                    $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+                } catch (\Exception $exception) {
+                    $this->assertTrue($exception instanceof PureStorageCellKeyNotFoundException);
+                }
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 
-//    public function testEncryptionExternalKeysShouldDecrypt(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $keyPair = $this->crypto->generateKeyPair();
-//                $dataId = (string) rand(1000, 9999);
-//                $publicKeyBase64 = base64_encode($this->crypto->exportPublicKey($keyPair->getPublicKey()));
-////                Map<String, List<String>> externalPublicKeys = Collections.singletonMap(dataId, Collections.singletonList(publicKeyBase64));
-//
-//                $externalPublicKeys = [$dataId => $publicKeyBase64];
-//
-//                $pureResult = $this->setupPure(null, $externalPublicKeys, $storage);
-//
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password = (string) rand(1000, 9999);
-//
-//                $text = (string) rand(1000, 9999);
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $plainText = $pure->decrypt($keyPair->getPrivateKey(), $userId, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testDeleteUserNoCascadeShouldDeleteUser(): void
+    {
+        $this->markTestSkipped("Need to be updated for MariaDB, skipped");
+        $this->sleep();
 
-//    public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password = (string) rand(1000, 9999);
-//                $dataId = (string) rand(1000, 9999);
-//                $text = (string) rand(1000, 9999);
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $authResult1 = $pure->authenticateUser($userId, $password);
-//
-//                $pure->deleteUser($userId, true);
-//
-//                $this->expectException("PureLogicException");
-//                $pure->authenticateUser($userId, $password);
-//
-//                $this->expectException("PureLogicException");
-//                $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
-//            }
-//        } catch (\Exception $exception) {
-//            // TODO!
-//            $this->assertEquals(ErrorStatus::USER_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
-//            $this->assertEquals(ErrorStatus::CELL_KEY_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
-//
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
 
+                // MariaDbPureStorage only supports cascade = true
+                if (StorageType::MARIADB() == $storage)
+                    continue;
 
-//    public function testDeleteUserNoCascadeShouldDeleteUser(): void
-//    {
-//        $this->markTestSkipped("sk");
-//
-//        $this->sleep();
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//
-//                // MariaDbPureStorage only supports cascade = true
-//                if (StorageType::MARIADB() == $storage)
-//                    continue;
-//
-//                $pureResult = $this->setupPure(null, null, $storage);
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = (string) rand(1000, 9999);
-//                $password = (string) rand(1000, 9999);
-//                $dataId = (string) rand(1000, 9999);
-//                $text = (string) rand(1000, 9999);
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $authResult1 = $pure->authenticateUser($userId, $password);
-//
-//                $pure->deleteUser($userId, false);
-//
-//                $this->expectException("PureLogicException");
-//                $pure->authenticateUser($userId, $password);
-//
-//                $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//
-//            }
-//        } catch (\Exception $exception) {
-//            $this->assertEquals(ErrorStatus::USER_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
-//
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+                $pureResult = $this->setupPure(null, null, $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = (string) rand(1000, 9999);
+                $password = (string) rand(1000, 9999);
+                $dataId = (string) rand(1000, 9999);
+                $text = (string) rand(1000, 9999);
+
+                $pure->registerUser($userId, $password);
+
+                $cipherText = $pure->encrypt($userId, $dataId, $text);
+
+                $authResult1 = $pure->authenticateUser($userId, $password);
+
+                $pure->deleteUser($userId, false);
+
+                $this->expectException("PureLogicException");
+                $pure->authenticateUser($userId, $password);
+
+                $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+
+            }
+        } catch (\Exception $exception) {
+            $this->assertEquals(ErrorStatus::USER_NOT_FOUND_IN_STORAGE(), $exception->getErrorStatus());
+
+            $this->fail($exception->getMessage());
+        }
+    }
 
 //    public function testDeleteKeyNewKeyShouldDelete(): void
 //    {

@@ -45,6 +45,7 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
+use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRolesRequest;
@@ -125,9 +126,6 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $request = new GetUserRequest(AvailableRequest::GET_USER(), $userId);
             $protobufRecord = $this->client->getUser($request);
         } catch (ProtocolException $exception) {
-            var_dump(123);
-            die;
-
             if ($exception->getCode() == ServiceErrorCode::USER_NOT_FOUND()->getCode()) {
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
             }
@@ -194,7 +192,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function deleteUser(string $userId, bool $cascade): void
     {
         try {
-            $this->client->deleteUser($userId, $cascade);
+            $request = new DeleteUserRequest(AvailableRequest::DELETE_USER(), $userId, $cascade);
+            $this->client->deleteUser($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {

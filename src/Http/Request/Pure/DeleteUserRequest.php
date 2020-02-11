@@ -37,20 +37,29 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 class DeleteUserRequest extends BaseRequest
 {
-    private const KEY_CASCADE = "cascade";
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
 
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    public function __construct(AvailableRequest $request, string $userId, bool $cascade)
     {
-        parent::__construct($endpoint, $method);
+        $cascade = $cascade ? "true" : "false";
+
+        $this->request = $request;
+        $this->setFormattedEndpoint($request, $userId);
+        $this->setParams([HttpPureClient::KEY_CASCADE => $cascade]);
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return "";

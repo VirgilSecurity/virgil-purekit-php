@@ -48,6 +48,8 @@ abstract class BaseRequest
 {
     private $endpoint;
 
+    protected $params = null;
+
     /**
      * @var AvailableRequest
      */
@@ -85,6 +87,16 @@ abstract class BaseRequest
     public function setFormattedEndpoint(AvailableRequest $request, string ...$args)
     {
         $this->endpoint = sprintf($request->getEndpoint(), ...$args);
+    }
+
+    public function setParams(array $params)
+    {
+        $this->params = "?".http_build_query($params);
+    }
+
+    public function getParams(): ?string
+    {
+        return $this->params;
     }
 
     /**

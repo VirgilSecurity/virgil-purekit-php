@@ -67,6 +67,7 @@ use Virgil\PureKit\Pure\Util\ValidateUtil;
 class HttpPureClient extends HttpBaseClient
 {
     public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
+    public const KEY_CASCADE = "cascade";
 
     /**
      * HttpPureClient constructor.
