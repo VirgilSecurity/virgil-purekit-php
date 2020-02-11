@@ -206,7 +206,6 @@ class Pure
         if ($grantKey->getExpirationDate() < new \DateTime("now"))
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
-
         $grantKeyRaw = $this->pureCrypto->decryptSymmetricNewNonce($grantKey->getEncryptedGrantKey(), "", $this->ak);
 
         $phek = $this->pureCrypto->decryptSymmetricOneTime($encryptedData, $encryptedGrant->getHeader(),

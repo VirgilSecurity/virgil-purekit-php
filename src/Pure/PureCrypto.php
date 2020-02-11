@@ -46,6 +46,7 @@ use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Foundation\Exception\FoundationException;
+use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
@@ -298,7 +299,7 @@ class PureCrypto
         catch (FoundationException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception);
+            var_dump(7777, $exception);
             die;
         }
     }
@@ -336,8 +337,9 @@ class PureCrypto
         try {
             return $this->pheCipher->authEncrypt($plainText, $ad, $key);
         }
-        catch (PheException $exception) {
-            throw new PureCryptoException($exception);
+        catch (\Exception $exception) {
+            throw new PureCryptoException(new PheException($exception->getMessage(), $exception->getCode(),
+                $exception));
         }
     }
 
@@ -353,8 +355,9 @@ class PureCrypto
         try {
             return $this->pheCipher->authDecrypt($cipherText, $ad, $key);
         }
-        catch (PheException $exception) {
-            throw new PureCryptoException($exception);
+        catch (\Exception $exception) {
+            throw new PureCryptoException(new PheException($exception->getMessage(), $exception->getCode(),
+            $exception));
         }
     }
 
