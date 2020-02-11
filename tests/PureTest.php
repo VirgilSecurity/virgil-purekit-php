@@ -411,40 +411,39 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-//    public function testGrantAdminAccessShouldDecrypt(): void
-//    {
-//        $this->markTestSkipped("Temp err, skipped");
-//
-//        $this->sleep(0);
-//
-//        try {
-//            $storages = self::createStorages();
-//            foreach ($storages as $storage) {
-//                $pureResult = $this->setupPure(null, null, $storage);
-//
-//                $pure = new Pure($pureResult->getContext());
-//
-//                $userId = self::generateRandomString();
-//                $password = self::generateRandomString();
-//                $dataId = self::generateRandomString();
-//                $text = self::generateRandomString();
-//
-//                $pure->registerUser($userId, $password);
-//
-//                $cipherText = $pure->encrypt($userId, $dataId, $text);
-//
-//                $adminGrant = $pure->createUserGrantAsAdmin($userId, $pureResult->getBupkp()->getPrivateKey());
-//
-//                $this->assertNotNull($adminGrant);
-//
-//                $plainText = $pure->decrypt($adminGrant, null, $dataId, $cipherText);
-//
-//                $this->assertEquals($text, $plainText);
-//            }
-//        } catch (\Exception $exception) {
-//            $this->fail($exception->getMessage());
-//        }
-//    }
+    public function testGrantAdminAccessShouldDecrypt(): void
+    {
+        $this->markTestSkipped("OK, skipped");
+        $this->sleep(0);
+
+        try {
+            $storages = self::createStorages();
+            foreach ($storages as $storage) {
+                $pureResult = $this->setupPure(null, false, [], $storage);
+
+                $pure = new Pure($pureResult->getContext());
+
+                $userId = self::generateRandomString();
+                $password = self::generateRandomString();
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                $pure->registerUser($userId, $password);
+
+                $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                $adminGrant = $pure->createUserGrantAsAdmin($userId, $pureResult->getBupkp()->getPrivateKey());
+
+                $this->assertNotNull($adminGrant);
+
+                $plainText = $pure->decrypt($adminGrant, null, $dataId, $cipherText);
+
+                $this->assertEquals($text, $plainText);
+            }
+        } catch (\Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+    }
 
 
 //    public function testResetPwdNewUserShouldNotDecrypt(): void

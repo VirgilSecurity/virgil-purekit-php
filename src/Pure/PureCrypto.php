@@ -447,7 +447,7 @@ class PureCrypto
         } catch (SigningException | EncryptionException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception);
+            var_dump($exception, get_class($exception));
             die;
         }
     }
@@ -455,9 +455,16 @@ class PureCrypto
     public function decryptBackup(string $cipherText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
     {
         try {
-            return $this->crypto->authDecrypt($cipherText, $privateKey, $publicKey);
+            $data = new Data($cipherText);
+            $pkl = new PublicKeyList();
+            $pkl->addPublicKey($publicKey);
+
+            return $this->crypto->authDecrypt($data, $privateKey, $pkl);
         } catch (VerificationException | DecryptionException $exception) {
             throw new PureCryptoException($exception);
+        } catch (\Exception $exception) {
+            var_dump($exception, get_class($exception));
+            die;
         }
     }
 

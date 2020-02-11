@@ -173,8 +173,9 @@ class Pure
 
         $upk = $this->pureCrypto->importPrivateKey($usk);
 
-        $creationDate = new \DateTime();
-        $expirationDate = new \DateTime($creationDate + $ttl * 1000);
+        $creationDate = new \DateTime("now");
+        $ts = $creationDate->getTimestamp() + ($ttl * 1000);
+        $expirationDate = new \DateTime("@$ts");
 
         return new PureGrant($upk, $userId, null, $creationDate, $expirationDate);
     }
