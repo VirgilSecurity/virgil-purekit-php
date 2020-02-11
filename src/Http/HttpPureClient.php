@@ -44,13 +44,13 @@ use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\Roles as ProtoRoles;
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\UserRecords as ProtoUserRecords;
-use Virgil\PureKit\Http\Request\DeleteCellKeyRequest;
-use Virgil\PureKit\Http\Request\DeleteRoleAssignmentRequest;
-use Virgil\PureKit\Http\Request\DeleteUserRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
-use Virgil\PureKit\Http\Request\GetRoleAssignmentRequest;
-use Virgil\PureKit\Http\Request\GetRoleAssignmentsRequest;
-use Virgil\PureKit\Http\Request\InsertRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
+use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRolesRequest;
@@ -60,6 +60,7 @@ use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
+use Virgil\PureKit\Http\Request\Pure\UpdateCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
@@ -124,7 +125,7 @@ class HttpPureClient extends HttpBaseClient
         $this->_send($request);
     }
 
-    public function updateCellKey(UpdateUserRequest $request): void
+    public function updateCellKey(UpdateCellKeyRequest $request): void
     {
         $this->_send($request);
     }

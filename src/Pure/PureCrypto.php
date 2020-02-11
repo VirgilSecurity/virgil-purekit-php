@@ -45,6 +45,7 @@ use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
+use Virgil\CryptoWrapper\Foundation\Exception\FoundationException;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
@@ -139,15 +140,19 @@ class PureCrypto
     string
     {
         try {
-            $cipher = new RecipientCipher();
+            try {
+                $cipher = new RecipientCipher();
 
-            $cipher->useRandom($this->crypto->getRng());
+                $cipher->useRandom($this->crypto->getRng());
 
-            $cipher->startVerifiedDecryptionWithKey($privateKey->getIdentifier(), $privateKey->getPrivateKey(),
-                $data->getCms(), "");
+                $cipher->startVerifiedDecryptionWithKey($privateKey->getIdentifier(), $privateKey->getPrivateKey(),
+                    $data->getCms(), "");
 
-            $body1 = $cipher->processDecryption($data->getBody());
-            $body2 = $cipher->finishDecryption();
+                $body1 = $cipher->processDecryption($data->getBody());
+                $body2 = $cipher->finishDecryption();
+            } catch (\Exception $exception) {
+                throw new FoundationException($exception->getMessage(), $exception->getCode(), $exception);
+            }
 
             if (!$cipher->isDataSigned())
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_IS_ABSENT());
@@ -167,7 +172,7 @@ class PureCrypto
 
             return $this->concat($body1, $body2);
 
-        } catch (\Exception $exception) {
+        } catch (FoundationException $exception) {
             throw new PureCryptoException($exception);
         }
     }

@@ -35,21 +35,34 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Pure;
 
 
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use PurekitV3Client\GetRoleAssignments as ProtoGetRoleAssignments;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 class GetRoleAssignmentsRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
+    private $userId;
+
+    public function __construct(AvailableRequest $request, string $userId)
     {
-        parent::__construct($endpoint, $method);
+        $this->request = $request;
+        $this->userId = $userId;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
-        return "";
+        $r = new ProtoGetRoleAssignments();
+        $r->setUserId($this->userId);
+        return $r->serializeToString();
     }
 }

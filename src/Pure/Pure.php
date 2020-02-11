@@ -419,37 +419,38 @@ class Pure
             $cellKey->getEncryptedCskBody());
 
         $csk = null;
-
         try {
             $csk = $this->pureCrypto->decryptCellKey(
                 $pureCryptoData,
                 $grant->getUkp()->getPrivateKey(),
                 $this->oskp->getPublicKey());
 
-        } catch (PureCryptoException | \Exception $exception) {
+        } catch (PureCryptoException $exception) {
+
             if (is_null($exception->getFoundationException()) ||
-                ($exception->getFoundationException()->getStatusCode() != ErrorStatus::ERROR_KEY_RECIPIENT_IS_NOT_FOUND())) {
-                var_dump(get_class($exception), $exception->getMessage(), $exception->getCode());
-                die;
+                // TODO! Add Error code enum!
+                ($exception->getFoundationException()->getCode() != -303)) {
+                throw $exception;
             }
 
             $roleAssignments = $this->storage->selectRoleAssignments($grant->getUserId());
-
             $publicKeysIds = $this->pureCrypto->extractPublicKeysIdsFromCellKey($cellKey->getEncryptedCskCms());
 
-            foreach ($roleAssignments as $roleAssignment) {
-                $publicKeyId = $roleAssignment->getPublicKeyId();
+            if ($roleAssignments->getAsArray()) {
+                foreach ($roleAssignments->getAsArray() as $roleAssignment) {
+                    $publicKeyId = $roleAssignment->getPublicKeyId();
 
-                if ($publicKeysIds . contains($publicKeyId)) {
+                    if (in_array($publicKeyId, $publicKeysIds)) {
 
-                    $rskData = $this->pureCrypto->decryptRolePrivateKey($roleAssignment->getEncryptedRsk(),
-                        $grant->getUkp()->getPrivateKey(), $this->oskp->getPublicKey());
+                        $rskData = $this->pureCrypto->decryptRolePrivateKey($roleAssignment->getEncryptedRsk(),
+                            $grant->getUkp()->getPrivateKey(), $this->oskp->getPublicKey());
 
-                    $rkp = $this->pureCrypto->importPrivateKey($rskData);
+                        $rkp = $this->pureCrypto->importPrivateKey($rskData);
 
-                    $csk = $this->pureCrypto->decryptCellKey($pureCryptoData, $rkp->getPrivateKey(),
-                        $this->oskp->getPublicKey());
-                    break;
+                        $csk = $this->pureCrypto->decryptCellKey($pureCryptoData, $rkp->getPrivateKey(),
+                            $this->oskp->getPublicKey());
+                        break;
+                    }
                 }
             }
 
@@ -487,12 +488,11 @@ class Pure
         ValidateUtil::checkNullOrEmpty($dataId, "dataId");
         ValidateUtil::checkNullOrEmpty($otherUserId, "otherUserId");
 
-        $this->share_($grant, $dataId, $otherUserId, null);
+        $this->share_($grant, $dataId, [$otherUserId], new VirgilPublicKeyCollection());
     }
 
-    // TODO!
     public function share_(PureGrant $grant, string $dataId, array $otherUserIds,
-                           VirgilPublicKeyCollection $publicKeys = null): void
+                           VirgilPublicKeyCollection $publicKeys): void
     {
         ValidateUtil::checkNull($grant, "grant");
         ValidateUtil::checkNull($otherUserIds, "otherUserIds");
@@ -516,10 +516,9 @@ class Pure
 
     public function unshare(string $ownerUserId, string $dataId, string $otherUserId): void
     {
-        $this->unshare_($ownerUserId, $dataId, $otherUserId, new VirgilPublicKeyCollection());
+        $this->unshare_($ownerUserId, $dataId, [$otherUserId], new VirgilPublicKeyCollection());
     }
 
-    // TODO!
     public function unshare_(string $ownerUserId, string $dataId, array $otherUserIds,
                              VirgilPublicKeyCollection $publicKeys): void
     {
@@ -675,13 +674,12 @@ class Pure
     }
 
     private function keysWithOthers(VirgilPublicKeyCollection $publicKeys,
-                                    string ...$otherUserIds): VirgilPublicKeyCollection
+                                    array $otherUserIds): VirgilPublicKeyCollection
     {
         $otherUserRecords = $this->storage->selectUsers($otherUserIds);
 
-        foreach ($otherUserRecords as $record) {
+        foreach ($otherUserRecords->getAsArray() as $record) {
             $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
-
             $publicKeys->add($otherUpk);
         }
 

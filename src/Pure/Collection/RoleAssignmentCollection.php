@@ -38,7 +38,12 @@
 namespace Virgil\PureKit\Pure\Collection;
 
 
+use Virgil\PureKit\Pure\Model\RoleAssignment;
+
 class RoleAssignmentCollection extends BaseCollection
 {
-
+    public function add(RoleAssignment $roleAssignment): void
+    {
+        $this->collection[] = $roleAssignment;
+    }
 }

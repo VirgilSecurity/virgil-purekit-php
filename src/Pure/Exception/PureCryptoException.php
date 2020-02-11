@@ -37,6 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use RuntimeException;
+use Virgil\Crypto\Exceptions\VirgilCryptoException;
+use Virgil\CryptoWrapper\Foundation\Exception\FoundationException;
+use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 
 class PureCryptoException extends PureException
@@ -56,9 +60,15 @@ class PureCryptoException extends PureException
         switch ($e) {
             case ($e instanceof PureCryptoErrorStatus):
                 parent::__construct($e->getMessage());
+
+                if ($e == PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION()
+                    || $e == PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION()) {
+                    throw new RuntimeException("Underlying foundation/phe exception");
+                }
+
                 $this->errorStatus = $e;
                 break;
-            case ($e instanceof CryptoException):
+            case ($e instanceof VirgilCryptoException):
                 parent::__construct($e);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_CRYPTO_EXCEPTION();
                 $this->cryptoException = $e;
@@ -74,7 +84,8 @@ class PureCryptoException extends PureException
                 $this->pheException = $e;
                 break;
             default:
-                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
+                var_dump("_1: Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile(), get_class
+                ($e));
                 die;
         }
     }
@@ -85,15 +96,15 @@ class PureCryptoException extends PureException
     }
 
     /**
-     * @return CryptoException
+     * @return null|VirgilCryptoException
      */
-    public function getCryptoException(): ?CryptoException
+    public function getCryptoException(): ?VirgilCryptoException
     {
         return $this->cryptoException;
     }
 
     /**
-     * @return FoundationException
+     * @return null|FoundationException
      */
     public function getFoundationException(): ?FoundationException
     {
@@ -101,7 +112,7 @@ class PureCryptoException extends PureException
     }
 
     /**
-     * @return PheException
+     * @return null|PheException
      */
     public function getPheException(): ?PheException
     {

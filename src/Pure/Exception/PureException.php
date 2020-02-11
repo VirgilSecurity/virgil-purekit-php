@@ -51,7 +51,7 @@ class PureException extends \Exception
                 parent::__construct($e->getMessage(), $e->getCode());
                 break;
             default:
-                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
+                var_dump("2222Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
                 die;
         }
     }
