@@ -76,6 +76,6 @@ class Role
      */
     public function getRpk(): string
     {
-        return $this->getRpk();
+        return $this->rpk;
     }
 }

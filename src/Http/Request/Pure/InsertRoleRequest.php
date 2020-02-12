@@ -38,19 +38,26 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use PurekitV3Storage\Role as ProtoRole;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 class InsertRoleRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
+    private $protoRole;
+
+    public function __construct(AvailableRequest $request, ProtoRole $protoRole)
     {
-        parent::__construct($endpoint, $method);
+        $this->request = $request;
+        $this->protoRole = $protoRole;
     }
 
     public function getOptionsBody(): string
     {
-        return "";
+        return $this->protoRole->serializeToString();
     }
 }

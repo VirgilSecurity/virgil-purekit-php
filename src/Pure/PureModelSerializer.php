@@ -258,19 +258,15 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
-    /**
-     * @param ProtoRole $protobufRecord
-     * @return Role
-     * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
+
     public function parseRole(ProtoRole $protobufRecord): Role
     {
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleSigned());
 
         try {
-            $roleSigned = (new ProtoRoleSigned)->mergeFromString($protobufRecord->getRoleSigned());
-        } catch (InvalidProtocolBufferException $exception) {
+            $roleSigned = new ProtoRoleSigned();
+            $roleSigned->mergeFromString($protobufRecord->getRoleSigned());
+        } catch (InvalidProtocolBufferException | \Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 
@@ -300,19 +296,14 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
-    /**
-     * @param ProtoRoleAssignment $protobufRecord
-     * @return RoleAssignment
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
-     */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleAssignmentSigned());
 
         try {
-            $roleAssignmentSigned = (new ProtoRoleAssignmentSigned)
-                ->mergeFromString($protobufRecord->getRoleAssignmentSigned());
-        } catch (InvalidProtocolBufferException $exception) {
+            $roleAssignmentSigned = new ProtoRoleAssignmentSigned();
+            $roleAssignmentSigned->mergeFromString($protobufRecord->getRoleAssignmentSigned());
+        } catch (InvalidProtocolBufferException | \Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 

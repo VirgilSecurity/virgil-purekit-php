@@ -147,9 +147,9 @@ interface PureStorage
 
     /**
      * @param string $roleName
-     * @param string ...$userIds
+     * @param array $userIds
      */
-    public function deleteRoleAssignments(string $roleName, string ...$userIds): void;
+    public function deleteRoleAssignments(string $roleName, array $userIds): void;
 
     /**
      * @param GrantKey $grantKey

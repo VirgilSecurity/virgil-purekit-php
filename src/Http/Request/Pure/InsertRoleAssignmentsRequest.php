@@ -35,21 +35,28 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request;
+namespace Virgil\PureKit\Http\Request\Pure;
 
-
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use PurekitV3Storage\RoleAssignments;
 use Virgil\PureKit\Http\_\AvailableRequest;
+use Virgil\PureKit\Http\Request\BaseRequest;
 
 class InsertRoleAssignmentsRequest extends BaseRequest
 {
-    public function __construct(AvailableRequest $endpoint, AvailableHttpMethod $method)
+    /**
+     * @var AvailableRequest
+     */
+    protected $request;
+    private $protoRoleAssignments;
+
+    public function __construct(AvailableRequest $request, RoleAssignments $protoRoleAssignments)
     {
-        parent::__construct($endpoint, $method);
+        $this->request = $request;
+        $this->protoRoleAssignments = $protoRoleAssignments;
     }
 
     public function getOptionsBody(): string
     {
-        return "";
+        return $this->protoRoleAssignments->serializeToString();
     }
 }

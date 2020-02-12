@@ -37,8 +37,12 @@
 
 namespace Virgil\PureKit\Pure\Collection;
 
+use Virgil\PureKit\Pure\Model\Role;
 
 class RoleCollection extends BaseCollection
 {
-
+    public function add(Role $role): void
+    {
+        $this->collection[] = $role;
+    }
 }

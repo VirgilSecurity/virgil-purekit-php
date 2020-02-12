@@ -85,7 +85,7 @@ class PureCryptoException extends PureException
                 break;
             default:
                 var_dump("_1: Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile(), get_class
-                ($e));
+                ($e), $e->getLine());
                 die;
         }
     }

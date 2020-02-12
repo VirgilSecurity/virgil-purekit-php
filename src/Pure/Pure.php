@@ -42,6 +42,7 @@ use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
@@ -268,11 +269,11 @@ class Pure
 
         $pwdHash = $this->kmsManager->recoverPwd($userRecord);
 
-        $oldPhek = $this->pheManager->computePheKey($userRecord, $pwdHash);
+        $oldPhek = $this->pheManager->computePheKey_($userRecord, $pwdHash);
 
         $privateKeyData = $this->pureCrypto->decryptSymmetricNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
 
-        $this->changeUserPassword($userRecord, $privateKeyData, $newPassword);
+        $this->_changeUserPassword($userRecord, $privateKeyData, $newPassword);
     }
 
     public function resetUserPassword(string $userId, string $newPassword): void
@@ -545,7 +546,7 @@ class Pure
         $this->storage->deleteCellKey($userId, $dataId);
     }
 
-    public function createRole(string $roleName, string ...$userIds): void
+    public function createRole(string $roleName, array $userIds): void
     {
         $rkp = $this->pureCrypto->generateRoleKey();
         $rpkData = $this->pureCrypto->exportPublicKey($rkp->getPublicKey());
@@ -558,7 +559,7 @@ class Pure
         $this->assignRole_($roleName, $rkp->getPublicKey()->getIdentifier(), $rskData, $userIds);
     }
 
-    public function assignRole(string $roleToAssign, PureGrant $grant, string ...$userIds): void
+    public function assignRole(string $roleToAssign, PureGrant $grant, array $userIds): void
     {
         $roleAssignment = $this->storage->selectRoleAssignment($roleToAssign, $grant->getUserId());
 
@@ -568,24 +569,24 @@ class Pure
         $this->assignRole_($roleToAssign, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
     }
 
-    private function assignRole_(string $roleName, string $publicKeyId, string $rskData, string ...$userIds): void
+    private function assignRole_(string $roleName, string $publicKeyId, string $rskData, array $userIds): void
     {
         $userRecords = $this->storage->selectUsers($userIds);
 
-        $roleAssignments = [];
+        $roleAssignments = new RoleAssignmentCollection();
 
-        foreach ($userRecords as $userRecord) {
+        foreach ($userRecords->getAsArray() as $userRecord) {
             $upk = $this->pureCrypto->importPublicKey($userRecord->getUpk());
 
             $encryptedRsk = $this->pureCrypto->encryptRolePrivateKey($rskData, $upk, $this->oskp->getPrivateKey());
 
-            $roleAssignments[] = new RoleAssignment($roleName, $userRecord->getUserId(), $publicKeyId, $encryptedRsk);
+            $roleAssignments->add(new RoleAssignment($roleName, $userRecord->getUserId(), $publicKeyId, $encryptedRsk));
         }
 
         $this->storage->insertRoleAssignments($roleAssignments);
     }
 
-    public function unassignRole(string $roleName, string ...$userIds): void
+    public function unassignRole(string $roleName, array $userIds): void
     {
         $this->storage->deleteRoleAssignments($roleName, $userIds);
     }

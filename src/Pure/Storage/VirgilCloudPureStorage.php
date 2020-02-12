@@ -55,6 +55,8 @@ use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetUserRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertGrantKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
@@ -253,9 +255,10 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function insertRole(Role $role): void
     {
         $protobufRecord = $this->pureModelSerializer->serializeRole($role);
+        $request = new InsertRoleRequest(AvailableRequest::INSERT_ROLE(), $protobufRecord);
 
         try {
-            $this->client->insertRole($protobufRecord);
+            $this->client->insertRole($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
@@ -266,14 +269,13 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function selectRoles(array $roleNames): RoleCollection
     {
         $roles = new RoleCollection();
+        $namesSet = $roleNames;
 
         if (empty($roleNames))
             return $roles;
 
         try {
-
             $request = new GetRolesRequest(AvailableRequest::GET_ROLES(), $roleNames);
-
             $protoRecords = $this->client->getRoles($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
@@ -288,14 +290,13 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         foreach ($protoRecords->getRoles() as $protobufRecord) {
             $role = $this->pureModelSerializer->parseRole($protobufRecord);
 
-            var_dump("TODO! Select roles");
-            die;
+            if (!in_array($role->getRoleName(), $namesSet))
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_NAME_MISMATCH());
 
-//            if (!namesSet.contains(role.getRoleName())) {
-//                throw new PureStorageGenericException(PureStorageGenericException.ErrorStatus.ROLE_NAME_MISMATCH);
-//            }
-//            namesSet.remove(role.getRoleName());
-
+            if (($key = array_search($role->getRoleName(), $namesSet)) !== false) {
+                unset($namesSet[$key]);
+                $namesSet = array_values($namesSet);
+            }
             $roles->add($role);
         }
 
@@ -305,15 +306,21 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
     {
         $protobufBuilder = new ProtoRoleAssignments();
+        $ra = [];
 
-        foreach ($roleAssignments->getAsArray() as $roleAssignment) {
-            $protobufBuilder->addRoleAssignments($this->pureModelSerializer->serializeRoleAssignment($roleAssignment));
+        if (!empty($roleAssignments->getAsArray())) {
+            foreach ($roleAssignments->getAsArray() as $roleAssignment) {
+                $ra[] = $this->pureModelSerializer->serializeRoleAssignment($roleAssignment);
+            }
         }
 
+        $protobufBuilder->setRoleAssignments($ra);
         $protobufRecord = $protobufBuilder;
 
+        $request = new InsertRoleAssignmentsRequest(AvailableRequest::INSERT_ROLE_ASSIGNMENTS(), $protobufRecord);
+
         try {
-            $this->client->insertRoleAssignments($protobufRecord);
+            $this->client->insertRoleAssignments($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
@@ -365,13 +372,19 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $this->pureModelSerializer->parseRoleAssignment($protobufRecord);
     }
 
-    public function deleteRoleAssignments(string $roleName, string ...$userIds): void
+    public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
+        var_dump(993939393939, $userIds);
+        die;
+
         if (empty($userIds))
             return;
 
+        var_dump(11111);
+        die;
+
         $request = (new ProtoDeleteRoleAssignments)
-            ->addAllUserIds($userIds)
+            ->setUserIds($userIds)
             ->setRoleName($roleName);
 
         try {

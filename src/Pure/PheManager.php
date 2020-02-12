@@ -37,17 +37,16 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
-use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use Virgil\Crypto\Core\HashAlgorithms;
+use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\CryptoWrapper\Phe\PheClient;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
-use Virgil\PureKit\Phe\Exceptions\ProtocolException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PheClientException;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
@@ -139,14 +138,14 @@ class PheManager
 
                 return $phek;
             }
+        catch (PheException $exception) {
+            throw new PureCryptoException($exception);
+        }
         catch (ProtocolException $exception) {
             throw new PheClientException($exception);
         }
         catch (ProtocolHttpException $exception) {
             throw new PheClientException($exception);
-        }
-        catch (\Exception $exception) {
-            throw new PureCryptoException($exception);
         }
     }
 
