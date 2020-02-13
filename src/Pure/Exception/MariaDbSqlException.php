@@ -39,46 +39,14 @@ namespace Virgil\PureKit\Pure\Exception;
 
 class MariaDbSqlException extends PureStorageException
 {
-    /**
-     * @var \mysqli_sql_exception
-     */
-    private $sqlException;
-    /**
-     * @var \Exception
-     */
-    private $exception;
+    protected $message;
+    protected $code;
 
-    public function __construct($e)
+    public function __construct(string $message, int $code)
     {
-        $this->sqlException = null;
-        $this->exception = null;
+        $this->message = $message;
+        $this->code = $code;
 
-        switch ($e) {
-            case ($e instanceof \mysqli_sql_exception):
-                $this->sqlException = $e;
-                break;
-            case ($e instanceof \Exception):
-                $this->exception = $e;
-                break;
-            default:
-                var_dump("5555Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
-                die;
-        }
-    }
-
-    /**
-     * @return null|\Exception
-     */
-    public function getException(): ?\Exception
-    {
-        return $this->exception;
-    }
-
-    /**
-     * @return null|\mysqli_sql_exception
-     */
-    public function getSqlException(): ?\mysqli_sql_exception
-    {
-        return $this->sqlException;
+        parent::__construct($message);
     }
 }

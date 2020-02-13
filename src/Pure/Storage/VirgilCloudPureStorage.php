@@ -374,14 +374,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
-        var_dump(993939393939, $userIds);
-        die;
-
         if (empty($userIds))
             return;
-
-        var_dump(11111);
-        die;
 
         $request = (new ProtoDeleteRoleAssignments)
             ->setUserIds($userIds)
@@ -461,12 +455,6 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         }
     }
 
-    /**
-     * @param UserRecord $userRecord
-     * @param bool $isInsert
-     * @throws ProtocolException
-     * @throws PureStorageGenericException
-     */
     private function _sendUser(UserRecord $userRecord, bool $isInsert): void
     {
         $protobufRecord = $this->getPureModelSerializer()->serializeUserRecord($userRecord);

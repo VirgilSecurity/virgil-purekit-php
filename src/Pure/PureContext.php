@@ -134,7 +134,7 @@ class PureContext
                                                PureStorage $storage, string $sk, string $pk,
                                                array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
-                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
+                                               string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
         return self::_createContext(
             new VirgilCrypto(),

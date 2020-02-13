@@ -103,6 +103,22 @@ class PureTest extends \PHPUnit\Framework\TestCase
      * @var string
      */
     private $kmsServerAddress;
+    /**
+     * @var string
+     */
+    private $dbHost;
+    /**
+     * @var string
+     */
+    private $dbUsername;
+    /**
+     * @var string
+     */
+    private $dbPassword;
+    /**
+     * @var string
+     */
+    private $dbName;
 
     /**
      *
@@ -123,6 +139,11 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->pheServerAddress = $_ENV["TEST_PHE_SERVER_ADDRESS"];
         $this->pureServerAddress = $_ENV["TEST_PURE_SERVER_ADDRESS"];
         $this->kmsServerAddress = $_ENV["TEST_KMS_SERVER_ADDRESS"];
+
+        $this->dbHost = $_ENV["TEST_DB_HOST"];
+        $this->dbUsername = $_ENV["TEST_DB_USERNAME"];
+        $this->dbPassword = $_ENV["TEST_DB_PASSWORD"];
+        $this->dbName = $_ENV["purekit_mariadb"];
     }
 
     /**
@@ -177,7 +198,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 break;
 
             case StorageType::MARIADB():
-                $mariaDbPureStorage = new MariaDbPureStorage("jdbc:mariadb://localhost/puretest?user=root&password=qwerty");
+                $mariaDbPureStorage = new MariaDbPureStorage($this->dbHost, $this->dbUsername, $this->dbPassword,
+                    $this->dbName);
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
                     $mariaDbPureStorage, $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
@@ -198,15 +220,14 @@ class PureTest extends \PHPUnit\Framework\TestCase
      */
     private static function createStorages(): array
     {
-        // storages[0] = StorageType::RAM();
-        // storages[1] = StorageType::MariaDB();
-        $storages[0] = StorageType::VIRGIL_CLOUD();
+        // $storages[0] = StorageType::RAM();
+         $storages[0] = StorageType::MariaDB();
+//        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
     public function testRegistrationNewUserShouldSucceed(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -231,7 +252,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testAuthenticationNewUserShouldSucceed(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -265,7 +285,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionRandomDataShouldMatch(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -295,7 +314,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testSharing2UsersShouldDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -336,7 +354,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testSharingRevokeAccessShouldNotDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -377,7 +394,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testGrantChangePasswordShouldNotDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -418,7 +434,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testGrantAdminAccessShouldDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -453,7 +468,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testResetPwdNewUserShouldNotDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -494,7 +508,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRestorePwdNewUserShouldDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep(0);
 
         try {
@@ -583,7 +596,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionAdditionalKeysShouldDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -636,7 +648,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionExternalKeysShouldDecrypt(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -673,7 +684,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -716,7 +726,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteUserNoCascadeShouldDeleteUser(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -761,7 +770,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteKeyNewKeyShouldDelete(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -797,7 +805,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRegistrationNewUserBackupsPwdHash(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
@@ -831,7 +838,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionRolesShouldDecrypt(): void
     {
-        $this->sleep(0);
+        $this->markTestIncomplete();
+        $this->sleep();
 
         try {
             $storages = self::createStorages();
@@ -901,7 +909,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             }
         } catch (\Exception $exception) {
 
-            var_dump(383838383838, get_class($exception), $exception->getMessage(), $exception->getCode(),
+            var_dump(get_class($exception), $exception->getMessage(), $exception->getCode(),
                 $exception->getFile(), $exception->getLine());
             die;
 
@@ -912,7 +920,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRecoveryNewUserShouldRecover(): void
     {
-        $this->markTestSkipped("OK, skipped");
         $this->sleep();
 
         try {
