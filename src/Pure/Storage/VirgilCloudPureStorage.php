@@ -46,7 +46,9 @@ use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
+use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRolesRequest;
@@ -321,7 +323,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $this->client->insertRoleAssignments($request);
-        } catch (ProtocolException $exception) {
+        }
+        catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
@@ -333,9 +336,11 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         $roleAssignments = new RoleAssignmentCollection();
         $request = new GetRoleAssignmentsRequest(AvailableRequest::GET_ROLE_ASSIGNMENTS(), $userId);
         $protoRecords = null;
+
         try {
             $protoRecords = $this->client->getRoleAssignments($request);
-        } catch (ProtocolException $exception) {
+        }
+        catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
@@ -355,9 +360,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
     {
-        $request = (new ProtoGetRoleAssignment)
-            ->setUserId($userId)
-            ->setRoleName($roleName);
+        $request = new GetRoleAssignmentRequest(AvailableRequest::GET_ROLE_ASSIGNMENT(), $roleName, $userId);
 
         $protobufRecord = null;
 
@@ -377,9 +380,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         if (empty($userIds))
             return;
 
-        $request = (new ProtoDeleteRoleAssignments)
-            ->setUserIds($userIds)
-            ->setRoleName($roleName);
+        $request = new DeleteRoleAssignmentsRequest(AvailableRequest::DELETE_ROLE_ASSIGNMENTS(), $roleName, $userIds);
 
         try {
             $this->client->deleteRoleAssignments($request);

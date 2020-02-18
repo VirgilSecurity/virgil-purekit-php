@@ -45,7 +45,7 @@ use PurekitV3Storage\Roles as ProtoRoles;
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\UserRecords as ProtoUserRecords;
 use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
-use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
@@ -189,7 +189,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetRoleAssignmentRequest $request
      * @return ProtoRoleAssignment
-     * @throws \Exception
+     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
      */
     public function getRoleAssignment(GetRoleAssignmentRequest $request): ProtoRoleAssignment
     {
@@ -201,7 +201,7 @@ class HttpPureClient extends HttpBaseClient
         return $res;
     }
 
-    public function deleteRoleAssignment(DeleteRoleAssignmentRequest $request): void
+    public function deleteRoleAssignments(DeleteRoleAssignmentsRequest $request): void
     {
         $this->_send($request);
     }

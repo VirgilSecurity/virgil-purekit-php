@@ -514,8 +514,12 @@ class PureCrypto
     public function decryptRolePrivateKey(string $plainText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
     {
         try {
-            return $this->crypto->authDecrypt($plainText, $privateKey, $publicKey);
-        } catch (VerificationException | DecryptionException $exception) {
+            $data = new Data($plainText);
+            $pkl = new PublicKeyList();
+            $pkl->addPublicKey($publicKey);
+
+            return $this->crypto->authDecrypt($data, $privateKey, $pkl);
+        } catch (VerificationException | DecryptionException | \Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }

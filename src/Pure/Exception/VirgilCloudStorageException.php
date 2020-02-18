@@ -37,8 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Phe\Exceptions\ProtocolException;
-
 /**
  * Class VirgilCloudStorageException
  * @package Virgil\PureKit\Pure\Exception
@@ -65,7 +63,8 @@ class VirgilCloudStorageException extends PureStorageException
                 $this->protocolHttpException = $e;
                 break;
             default:
-                var_dump("7777Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
+                var_dump("7777Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile(), $e->getLine
+            (), get_class($e));
                 die;
         }
     }

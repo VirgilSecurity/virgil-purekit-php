@@ -210,7 +210,7 @@ class Pure
 
         $grantKeyRaw = $this->pureCrypto->decryptSymmetricNewNonce($grantKey->getEncryptedGrantKey(), "", $this->ak);
 
-        $phek = $this->pureCrypto->decryptSymmetricOneTime($encryptedData, $encryptedGrant->getHeader(),
+        $phek = $this->pureCrypto->decryptSymmetricOneTimeKey($encryptedData, $encryptedGrant->getHeader(),
             $grantKeyRaw);
 
         $userRecord = $this->storage->selectUser($header->getUserId());

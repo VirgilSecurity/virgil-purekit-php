@@ -143,7 +143,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->dbHost = $_ENV["TEST_DB_HOST"];
         $this->dbUsername = $_ENV["TEST_DB_USERNAME"];
         $this->dbPassword = $_ENV["TEST_DB_PASSWORD"];
-        $this->dbName = $_ENV["purekit_mariadb"];
+        $this->dbName = $_ENV["TEST_DB_NAME"];
     }
 
     /**
@@ -171,7 +171,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     private function setupPure(string $nms = null, bool $updateToken = false,
                                array $externalPublicKeys = [],
-                               StorageType $storageType): PureSetupResult
+                               StorageType $storageType, bool $skipClean = false): PureSetupResult
     {
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
 
@@ -200,6 +200,11 @@ class PureTest extends \PHPUnit\Framework\TestCase
             case StorageType::MARIADB():
                 $mariaDbPureStorage = new MariaDbPureStorage($this->dbHost, $this->dbUsername, $this->dbPassword,
                     $this->dbName);
+                if (!$skipClean) {
+                    $mariaDbPureStorage->cleanDb();
+                    $mariaDbPureStorage->initDb(20);
+                }
+
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
                     $mariaDbPureStorage, $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
@@ -221,8 +226,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
     private static function createStorages(): array
     {
         // $storages[0] = StorageType::RAM();
-         $storages[0] = StorageType::MariaDB();
-//        $storages[0] = StorageType::VIRGIL_CLOUD();
+//         $storages[0] = StorageType::MARIADB();
+        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
@@ -838,9 +843,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionRolesShouldDecrypt(): void
     {
-        $this->markTestIncomplete();
-        $this->sleep();
-
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
@@ -875,7 +877,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $cipherText = $pure->encrypt($userId1, $dataId, [], [$roleName], new VirgilPublicKeyCollection(),
                     $text);
 
-//                $plainText11 = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
+                $plainText11 = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
                 $plainText21 = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $cipherText);
 
                 $this->assertEquals($text, $plainText11);
@@ -908,11 +910,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $this->assertEquals($text, $plaintText23);
             }
         } catch (\Exception $exception) {
-
-            var_dump(get_class($exception), $exception->getMessage(), $exception->getCode(),
-                $exception->getFile(), $exception->getLine());
-            die;
-
             $this->fail($exception->getMessage());
         }
     }
