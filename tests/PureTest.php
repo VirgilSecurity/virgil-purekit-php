@@ -226,8 +226,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
     private static function createStorages(): array
     {
         // $storages[0] = StorageType::RAM();
-//         $storages[0] = StorageType::MARIADB();
-        $storages[0] = StorageType::VIRGIL_CLOUD();
+         $storages[0] = StorageType::MARIADB();
+//        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 

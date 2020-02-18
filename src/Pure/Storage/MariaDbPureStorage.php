@@ -101,7 +101,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
         if (!$stmt)
             var_dump($conn->error, $conn->errno);
-            die;
+        die;
 
         $stmt->bind_param("sss", $userRecord->getUserId(), $userRecord->getRecordVersion(), $protobuf);
 
