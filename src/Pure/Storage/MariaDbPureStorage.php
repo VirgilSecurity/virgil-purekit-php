@@ -37,6 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
+use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
@@ -100,10 +101,13 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         );
 
         if (!$stmt)
-            var_dump($conn->error, $conn->errno);
-        die;
+            throw new MariaDbSqlException($conn->error, $conn->errno);
 
-        $stmt->bind_param("sss", $userRecord->getUserId(), $userRecord->getRecordVersion(), $protobuf);
+        $userId = $userRecord->getUserId();
+        $recordVersion = $userRecord->getRecordVersion();
+        $protobufString = $protobuf->serializeToString();
+
+        $stmt->bind_param("sis", $userId, $recordVersion, $protobufString);
 
         try {
             $stmt->execute();
@@ -112,6 +116,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             if ($exception->getCode() != 1062) {
                 throw $exception;
             }
+
             throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ALREADY_EXISTS());
         }
     }
@@ -126,12 +131,18 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
         $stmt = $conn->prepare(
             "UPDATE virgil_users " .
-            "SET phe_record_version=?," .
-            "protobuf=? " .
+            "SET phe_record_version=?, protobuf=? " .
             "WHERE user_id=?;"
         );
 
-        $stmt->bind_param("iss",$userRecord->getRecordVersion(), $protobuf, $userRecord->getUserId());
+        if (!$stmt)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $recordVersion = $userRecord->getRecordVersion();
+        $protobufString = $protobuf->serializeToString();
+        $userId = $userRecord->getUserId();
+
+        $stmt->bind_param("iss",$recordVersion, $protobufString, $userId);
 
         $rows = $stmt->execute();
         if (!$rows)
@@ -143,27 +154,115 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function updateUsers(UserRecordCollection $userRecords, int $previousPheVersion): void
     {
-        // TODO: Implement updateUsers() method.
+        $conn = $this->getConnection();
+
+        if (!$conn)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $conn->autocommit(false);
+
+        $stmt = $conn->prepare(
+            "UPDATE virgil_users " .
+            "SET phe_record_version=?," .
+            "protobuf=? " .
+            "WHERE user_id=? AND phe_record_version=?;"
+        );
+
+        if (!$stmt)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        if (!empty($userRecords->getAsArray())) {
+            foreach ($userRecords->getAsArray() as $userRecord) {
+                $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
+                $protobufString = $protobuf->serializeToString();
+
+                $stmt->bind_param("issi",$recordVersion, $protobufString, $userId);
+                try {
+                    $stmt->execute();
+                }
+                catch (\mysqli_sql_exception $exception) {
+                    throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+                }
+            }
+        }
+
+        $conn->autocommit(true);
     }
 
-    private function parseUserRecord(array $rs): UserRecord
+    private function parseUserRecord(string $rs): UserRecord
     {
+        try {
+            $protobuf = new ProtoUserRecord();
+            $protobuf->mergeFromString($rs);
+        } catch (\Exception $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
 
+        return $this->getPureModelSerializer()->parseUserRecord($protobuf);
     }
 
     public function selectUser(string $userId): UserRecord
     {
-        // TODO: Implement selectUser() method.
+        $conn = $this->getConnection();
+
+        if (!$conn)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt = $conn->prepare(
+            "SELECT protobuf " .
+            "FROM virgil_users " .
+            "WHERE user_id=?;"
+        );
+
+        if (!$stmt)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt->bind_param("s",$userId);
+        try {
+            $stmt->execute();
+
+            $stmt->bind_result($rs);
+            $stmt->fetch();
+
+            if ($rs) {
+                $userRecord = $this->parseUserRecord($rs);
+
+                if ($userId != $userRecord->getUserId())
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
+
+                return $userRecord;
+            } else {
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+            }
+        }
+        catch (\mysqli_sql_exception $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function selectUsers(array $userIds): UserRecordCollection
     {
-        // TODO: Implement selectUsers() method.
+        // TODO:
     }
 
     public function selectUsers_(int $pheRecordVersion): UserRecords
     {
-        // TODO: Implement selectUsers_() method.
+        $conn = $this->getConnection();
+
+        if (!$conn)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt = $conn->prepare(
+            "SELECT protobuf " .
+            "FROM virgil_users " .
+            "WHERE phe_record_version=? " .
+            "LIMIT 1000;"
+        );
+
+        if (!$stmt)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt->bind_param("i",$pheRecordVersion);
     }
 
     public function deleteUser(string $userId, bool $cascade): void

@@ -37,9 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
-use PurekitV3Client\DeleteRoleAssignments as ProtoDeleteRoleAssignments;
-use PurekitV3Client\GetRoleAssignment as ProtoGetRoleAssignment;
-use PurekitV3Client\GetRoleAssignments as ProtoGetRoleAssignments;
 use PurekitV3Client\GrantKeyDescriptor;
 use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
 use PurekitV3Storage\UserRecords;

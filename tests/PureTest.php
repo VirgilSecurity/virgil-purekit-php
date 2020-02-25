@@ -251,6 +251,9 @@ class PureTest extends \PHPUnit\Framework\TestCase
             }
 
         } catch (\Exception $exception) {
+            var_dump(123, get_class($exception), $exception->getMessage(), $exception->getCode(), $exception->getFile
+            (), $exception->getLine());
+            die;
             $this->fail($exception->getMessage());
         }
     }
