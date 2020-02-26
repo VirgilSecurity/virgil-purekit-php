@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
-use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
@@ -83,9 +82,9 @@ interface PureStorage
 
     /**
      * @param int $pheRecordVersion
-     * @return UserRecords
+     * @return UserRecordCollection
      */
-    public function selectUsers_(int $pheRecordVersion): UserRecords;
+    public function selectUsers_(int $pheRecordVersion): UserRecordCollection;
 
     /**
      * @param string $userId

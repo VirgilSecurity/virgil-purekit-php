@@ -387,6 +387,9 @@ class Pure
                 $cellKey = new CellKey($userId, $dataId, $cpkData, $encryptedCskData->getCms(),
                     $encryptedCskData->getBody());
 
+                var_dump(88888);
+                die;
+
                 $this->storage->insertCellKey($cellKey);
 
                 $cpk = $ckp->getPublicKey();

@@ -186,7 +186,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $userRecords;
     }
 
-    public function selectUsers_(int $pheRecordVersion): UserRecords
+    public function selectUsers_(int $pheRecordVersion): UserRecordCollection
     {
         throw new UnsupportedOperationException("This method always throws UnsupportedOperationException, as in case of using Virgil Cloud storage, rotation happens on the Virgil side");
     }
@@ -397,8 +397,6 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         try {
             $this->client->insertGrantKey($request);
         } catch (ProtocolException $e) {
-            var_dump(666);
-            die;
             throw new VirgilCloudStorageException($e);
         } catch (ProtocolHttpException $e) {
             var_dump($e->getMessage(), $e->getCode());

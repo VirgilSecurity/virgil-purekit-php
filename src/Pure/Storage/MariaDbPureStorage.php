@@ -37,13 +37,19 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
+use PDO;
+use PDOException;
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
-use PurekitV3Storage\UserRecords;
+use PurekitV3Storage\CellKey as ProtoCellKey;
+use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
+use Virgil\PureKit\Pure\Exception\MariaDbOperationNotSupportedException;
 use Virgil\PureKit\Pure\Exception\MariaDbSqlException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
+use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -56,17 +62,15 @@ use Virgil\PureKit\Pure\PureModelSerializerDependent;
 class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 {
     private $host;
-    private $userName;
+    private $login;
     private $password;
-    private $dbName;
     private $pureModelSerializer;
 
-    public function __construct(string $host, string $userName, string $password, string $dbName)
+    public function __construct(string $host, string $login, string $password)
     {
         $this->host = $host;
-        $this->userName = $userName;
+        $this->login = $login;
         $this->password = $password;
-        $this->dbName = $dbName;
     }
 
     public function getPureModelSerializer(): PureModelSerializer
@@ -81,41 +85,36 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     private function getConnection()
     {
-        return mysqli_connect($this->host, $this->userName, $this->password, $this->dbName);
+        return new PDO($this->host, $this->login, $this->password);
     }
 
     public function insertUser(UserRecord $userRecord): void
     {
         $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
 
-        $conn = $this->getConnection();
-        if (!$conn)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
-
-        $stmt = $conn->prepare(
-            "INSERT INTO virgil_users (" .
-            "user_id," .
-            "phe_record_version," .
-            "protobuf) " .
-            "VALUES (?, ?, ?);"
-        );
-
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
-
-        $userId = $userRecord->getUserId();
-        $recordVersion = $userRecord->getRecordVersion();
-        $protobufString = $protobuf->serializeToString();
-
-        $stmt->bind_param("sis", $userId, $recordVersion, $protobufString);
-
         try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "INSERT INTO virgil_users (" .
+                "user_id," .
+                "phe_record_version," .
+                "protobuf) " .
+                "VALUES (?, ?, ?);"
+            );
+
+            $userId = $userRecord->getUserId();
+            $recordVersion = $userRecord->getRecordVersion();
+            $protobufString = $protobuf->serializeToString();
+
+            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(2, $recordVersion);
+            $stmt->bindParam(3, $protobufString);
             $stmt->execute();
-        }
-        catch (\mysqli_sql_exception $exception) {
-            if ($exception->getCode() != 1062) {
+
+        } catch (PDOException $exception) {
+            if ($exception->getCode() != 1062)
                 throw $exception;
-            }
 
             throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ALREADY_EXISTS());
         }
@@ -125,68 +124,61 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
     {
         $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
 
-        $conn = $this->getConnection();
-        if (!$conn)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+        try {
+            $conn = $this->getConnection();
 
-        $stmt = $conn->prepare(
-            "UPDATE virgil_users " .
-            "SET phe_record_version=?, protobuf=? " .
-            "WHERE user_id=?;"
-        );
+            $stmt = $conn->prepare(
+                "UPDATE virgil_users " .
+                "SET phe_record_version=?, protobuf=? " .
+                "WHERE user_id=?;"
+            );
 
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $stmt->bindParam(1, $userRecord->getRecordVersion());
+            $stmt->bindParam(2, $protobuf->serializeToString());
+            $stmt->bindParam(3, $userRecord->getUserId());
 
-        $recordVersion = $userRecord->getRecordVersion();
-        $protobufString = $protobuf->serializeToString();
-        $userId = $userRecord->getUserId();
+            $rows = $stmt->execute();
 
-        $stmt->bind_param("iss",$recordVersion, $protobufString, $userId);
+            if ($rows != 1)
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
 
-        $rows = $stmt->execute();
-        if (!$rows)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
-
-        if ($rows != 1)
-            throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function updateUsers(UserRecordCollection $userRecords, int $previousPheVersion): void
     {
-        $conn = $this->getConnection();
+        try {
+            $conn = $this->getConnection();
 
-        if (!$conn)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->beginTransaction();
 
-        $conn->autocommit(false);
+            $stmt = $conn->prepare(
+                "UPDATE virgil_users " .
+                "SET phe_record_version=?," .
+                "protobuf=? " .
+                "WHERE user_id=? AND phe_record_version=?;"
+            );
 
-        $stmt = $conn->prepare(
-            "UPDATE virgil_users " .
-            "SET phe_record_version=?," .
-            "protobuf=? " .
-            "WHERE user_id=? AND phe_record_version=?;"
-        );
+            if (!empty($userRecords->getAsArray())) {
+                foreach ($userRecords->getAsArray() as $userRecord) {
+                    $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
 
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+                    $stmt->bindParam(1, $userRecord->getRecordVersion());
+                    $stmt->bindParam(2, $protobuf->serializeToString());
+                    $stmt->bindParam(3, $userRecord->getUserId());
+                    $stmt->bindParam(4, $previousPheVersion);
 
-        if (!empty($userRecords->getAsArray())) {
-            foreach ($userRecords->getAsArray() as $userRecord) {
-                $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
-                $protobufString = $protobuf->serializeToString();
-
-                $stmt->bind_param("issi",$recordVersion, $protobufString, $userId);
-                try {
                     $stmt->execute();
                 }
-                catch (\mysqli_sql_exception $exception) {
-                    throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
-                }
             }
-        }
 
-        $conn->autocommit(true);
+            $conn->commit();
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     private function parseUserRecord(string $rs): UserRecord
@@ -203,50 +195,103 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function selectUser(string $userId): UserRecord
     {
-        $conn = $this->getConnection();
-
-        if (!$conn)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
-
-        $stmt = $conn->prepare(
-            "SELECT protobuf " .
-            "FROM virgil_users " .
-            "WHERE user_id=?;"
-        );
-
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
-
-        $stmt->bind_param("s",$userId);
         try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "SELECT protobuf " .
+                "FROM virgil_users " .
+                "WHERE user_id=?;"
+            );
+
+            $stmt->bindParam(1, $userId);
+
             $stmt->execute();
 
-            $stmt->bind_result($rs);
-            $stmt->fetch();
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
 
-            if ($rs) {
-                $userRecord = $this->parseUserRecord($rs);
-
-                if ($userId != $userRecord->getUserId())
-                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
-
-                return $userRecord;
-            } else {
+            if(empty($result))
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
-            }
-        }
-        catch (\mysqli_sql_exception $exception) {
+
+            $userRecord = $this->parseUserRecord($result[0]['protobuf']);
+
+            if ($userId != $userRecord->getUserId())
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
+
+            return $userRecord;
+
+        } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
         }
     }
 
     public function selectUsers(array $userIds): UserRecordCollection
     {
-        // TODO:
+        if (empty($userIds))
+            return new UserRecordCollection();
+
+        try {
+            $conn = $this->getConnection();
+
+            $idsSet = $userIds;
+
+            // TODO: Add userIds size limit and compute StringBuilder size properly
+
+            $sbSql = "SELECT protobuf FROM virgil_users WHERE user_id in (";
+
+            for ($i = 0; $i < count($userIds); $i++) {
+                if ($i > 0)
+                    $sbSql .= ",";
+
+                $sbSql .= "?";
+            }
+
+            $sbSql .= ");";
+
+            $stmt = $conn->prepare($sbSql);
+
+            $j = 1;
+            foreach ($userIds as $userId) {
+                $stmt->bindParam($j++, $userId);
+            }
+
+            $userRecords = new UserRecordCollection();
+
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+
+            foreach ($result as $rs) {
+                $userRecord = $this->parseUserRecord($rs['protobuf']);
+
+                if (!in_array($userRecord->getUserId(), $idsSet))
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ID_MISMATCH());
+
+                if (($key = array_search($userRecord->getUserId(), $idsSet)) !== false) {
+                    unset($idsSet[$key]);
+                    $idsSet = array_values($idsSet);
+                }
+
+                $userRecords->add($userRecord);
+            }
+
+            if (!empty($idsSet))
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+
+            return $userRecords;
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
-    public function selectUsers_(int $pheRecordVersion): UserRecords
+    public function selectUsers_(int $pheRecordVersion): UserRecordCollection
     {
+        var_dump(3333);
+        die;
+
         $conn = $this->getConnection();
 
         if (!$conn)
@@ -262,27 +307,142 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         if (!$stmt)
             throw new MariaDbSqlException($conn->error, $conn->errno);
 
-        $stmt->bind_param("i",$pheRecordVersion);
+        $stmt->bind_param("i", $pheRecordVersion);
+
+        try {
+            $stmt->execute();
+
+            $stmt->bind_result($rs);
+            $stmt->fetch();
+
+            $userRecords = new UserRecordCollection();
+
+            if ($rs) {
+
+                var_dump(112312312312312, $rs);
+                die;
+
+                $userRecord = $this->parseUserRecord($rs);
+
+                if ($pheRecordVersion != $userRecord->getRecordVersion())
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::PHE_VERSION_MISMATCH());
+
+                $userRecords->add($userRecord);
+
+            } else {
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+            }
+
+            return $userRecords;
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function deleteUser(string $userId, bool $cascade): void
     {
-        // TODO: Implement deleteUser() method.
+        var_dump(555);
+        die;
+
+
+        if (!$cascade)
+            throw new MariaDbOperationNotSupportedException();
+
+        $conn = $this->getConnection();
+
+        if (!$conn)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt = $conn->prepare("DELETE FROM virgil_users WHERE user_id = ?;");
+
+        if (!$stmt)
+            throw new MariaDbSqlException($conn->error, $conn->errno);
+
+        $stmt->bind_param("s", $userId);
+
+        $rows = $stmt->execute();
+
+        if ($rows != 1)
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
     }
 
-    private function parseCellKey(array $rs): CellKey
+    private function parseCellKey(string $rs): CellKey
     {
+        try {
+            $protobuf = new ProtoCellKey();
+            $protobuf->mergeFromString($rs);
+        } catch (\Exception $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
 
+        return $this->getPureModelSerializer()->parseCellKey($protobuf);
     }
 
     public function selectCellKey(string $userId, string $dataId): CellKey
     {
-        // TODO: Implement selectCellKey() method.
+        try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "SELECT protobuf " .
+                "FROM virgil_keys " .
+                "WHERE user_id=? AND data_id=?;"
+            );
+
+            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(2, $dataId);
+
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+
+            if (!empty($result)) {
+                $cellKey = $this->parseCellKey($result[0]['protobuf']);
+
+                if ($userId != $cellKey->getUserId() || $dataId != $cellKey->getDataId())
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::CELL_KEY_ID_MISMATCH());
+
+                return $cellKey;
+            } else {
+                throw new PureStorageCellKeyNotFoundException();
+            }
+
+        } catch (PDOExceptionException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function insertCellKey(CellKey $cellKey): void
     {
-        // TODO: Implement insertCellKey() method.
+        $protobuf = $this->getPureModelSerializer()->serializeCellKey($cellKey);
+
+        try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "INSERT INTO virgil_keys (" .
+                "user_id," .
+                "data_id," .
+                "protobuf) " .
+                "VALUES (?, ?, ?);"
+            );
+
+            $userId = $cellKey->getUserId();
+            $dataId = $cellKey->getDataId();
+            $protobufString = $protobuf->serializeToString();
+
+            $stmt->bindParam(1,$userId);
+            $stmt->bindParam(2, $dataId);
+            $stmt->bindParam(3, $protobufString);
+            $stmt->execute();
+
+        } catch (PDOException $exception) {
+            if ($exception->getCode() != 1062)
+                throw $exception;
+
+            throw new PureStorageCellKEyAlreadyExistsException();
+        }
     }
 
     public function updateCellKey(CellKey $cellKey): void
@@ -300,14 +460,71 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         // TODO: Implement insertRole() method.
     }
 
-    private function parseRole(array $rs): Role
+    private function parseRole(string $rs): Role
     {
 
     }
 
     public function selectRoles(array $roleNames): RoleCollection
     {
-        // TODO: Implement selectRoles() method.
+        $roleCollection = new RoleCollection();
+
+        if (empty($userIds))
+            return $roleCollection;
+
+        try {
+            $conn = $this->getConnection();
+
+            $namesSet = $roleNames;
+
+            // TODO: Proper StringBuilder size
+
+            $sbSql = "SELECT protobuf FROM virgil_roles WHERE role_name in (";
+
+            for ($i = 0; $i < count($roleNames); $i++) {
+                if ($i > 0)
+                    $sbSql .= ",";
+
+                $sbSql .= "?";
+            }
+
+            $sbSql .= ");";
+
+            $stmt = $conn->prepare($sbSql);
+
+            $j = 1;
+
+            foreach ($roleNames as $roleName) {
+                $stmt->bindParam($j++, $roleName);
+            }
+
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+
+            foreach ($result as $rs) {
+                $role = $this->parseRole($rs['protobuf']);
+
+                if (!in_array($role->getRoleName(), $namesSet))
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_NAME_MISMATCH());
+
+                if (($key = array_search($role->getRoleName(), $namesSet)) !== false) {
+                    unset($namesSet[$key]);
+                    $idsSet = array_values($namesSet);
+                }
+
+                $roleCollection->add($role);
+            }
+
+            if (!empty($idsSet))
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_NOT_FOUND());
+
+            return $roleCollection;
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
@@ -315,14 +532,53 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         // TODO: Implement insertRoleAssignments() method.
     }
 
-    private function parseRoleAssignment(array $rs): RoleAssignment
+    private function parseRoleAssignment(string $rs): RoleAssignment
     {
+        try {
+            $protobuf = new ProtoRoleAssignment();
+            $protobuf->mergeFromString($rs);
+        } catch (\Exception $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
 
+        return $this->getPureModelSerializer()->parseRoleAssignment($protobuf);
     }
 
     public function selectRoleAssignments(string $userId): RoleAssignmentCollection
     {
-        // TODO: Implement selectRoleAssignments() method.
+        $roleAssignments = new RoleAssignmentCollection();
+
+        try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "SELECT protobuf " .
+                "FROM virgil_role_assignments " .
+                "WHERE user_id=?;"
+            );
+
+            $stmt->bindParam(1, $userId);
+
+            $stmt->execute();
+
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+
+            foreach ($result as $rs) {
+                $roleAssignment = $this->parseRoleAssignment($rs);
+
+                if ($roleAssignment->getUserId() != $userId) {
+                    throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_USER_ID_MISMATCH());
+                }
+
+                $roleAssignments->add($roleAssignment);
+            }
+
+            return $roleAssignments;
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
@@ -337,7 +593,44 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function insertGrantKey(GrantKey $grantKey): void
     {
-        // TODO: Implement insertGrantKey() method.
+        $protobuf = $this->getPureModelSerializer()->serializeGrantKey($grantKey);
+
+        try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "INSERT INTO virgil_grant_keys (" .
+                "user_id," .
+                "key_id," .
+                "expiration_date," .
+                "protobuf) " .
+                "VALUES (?, ?, ?, ?);"
+            );
+
+            $userId = $grantKey->getUserId();
+            $keyId = $grantKey->getKeyId();
+            $expirationDate = date("Y-m-d H:i:s", $grantKey->getExpirationDate()->getTimestamp());
+            $protobufString = $protobuf->serializeToString();
+
+            var_dump($userId, $keyId, $expirationDate, $protobufString);
+            die;
+
+            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(2, $keyId);
+            $stmt->bindParam(3, $expirationDate);
+            $stmt->bindParam(3, $protobufString);
+
+            try {
+                $stmt->execute();
+            } catch (PDOException $exception) {
+                if ($exception->getCode() != 1062)
+                    throw $exception;
+
+                throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_ALREADY_EXISTS());
+            }
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     public function selectGrantKey(string $userId, string $keyId): GrantKey
@@ -345,7 +638,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         // TODO: Implement selectGrantKey() method.
     }
 
-    private function parseGrantKey(array $rs): GrantKey
+    private function parseGrantKey(string $rs): GrantKey
     {
 
     }
@@ -357,93 +650,92 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function cleanDb(): void
     {
-        $conn = $this->getConnection();
-        $stmt = $conn->query(
-            "DROP TABLE IF EXISTS virgil_grant_keys, virgil_role_assignments, virgil_roles, virgil_keys, virgil_users;"
-        );
-        $stmt = $conn->query("DROP EVENT IF EXISTS delete_expired_grant_keys;");
+        try {
+            $conn = $this->getConnection();
+
+            $conn->query(
+                "DROP TABLE IF EXISTS virgil_grant_keys, virgil_role_assignments, virgil_roles, virgil_keys, virgil_users;"
+            );
+
+            $conn->query("DROP EVENT IF EXISTS delete_expired_grant_keys;");
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
-    public function initDb(int $cleanGrantKeysIntervalSeconds): void {
-        $conn = $this->getConnection();
+    public function initDb(int $cleanGrantKeysIntervalSeconds): void
+    {
+        try {
+            $conn = $this->getConnection();
 
-        $stmt = $conn->query(
-            "CREATE TABLE virgil_users (" .
-            "user_id CHAR(36) NOT NULL PRIMARY KEY," .
-            "phe_record_version INTEGER NOT NULL," .
-            "    INDEX phe_record_version_index(phe_record_version)," .
-            "    UNIQUE INDEX user_id_phe_record_version_index(user_id, phe_record_version)," .
-            "protobuf VARBINARY(2048) NOT NULL" .
-            ");");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE TABLE virgil_users (" .
+                "user_id CHAR(36) NOT NULL PRIMARY KEY," .
+                "phe_record_version INTEGER NOT NULL," .
+                "    INDEX phe_record_version_index(phe_record_version)," .
+                "    UNIQUE INDEX user_id_phe_record_version_index(user_id, phe_record_version)," .
+                "protobuf VARBINARY(2048) NOT NULL" .
+                ");");
 
-        $stmt = $conn->query(
-            "CREATE TABLE virgil_keys (" .
-            "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
-            "user_id CHAR(36) NOT NULL," .
-            "    FOREIGN KEY (user_id)" .
-            "        REFERENCES virgil_users(user_id)" .
-            "        ON DELETE CASCADE," .
-            "data_id VARCHAR(128) NOT NULL," .
-            "    UNIQUE INDEX user_id_data_id_index(user_id, data_id)," .
-            "protobuf VARBINARY(32768) NOT NULL /* FIXME Up to 128 recipients */" .
-            ");");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE TABLE virgil_keys (" .
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
+                "user_id CHAR(36) NOT NULL," .
+                "    FOREIGN KEY (user_id)" .
+                "        REFERENCES virgil_users(user_id)" .
+                "        ON DELETE CASCADE," .
+                "data_id VARCHAR(128) NOT NULL," .
+                "    UNIQUE INDEX user_id_data_id_index(user_id, data_id)," .
+                "protobuf VARBINARY(32768) NOT NULL /* FIXME Up to 128 recipients */" .
+                ");");
 
-        $stmt = $conn->query(
-            "CREATE TABLE virgil_roles (".
-            "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,".
-            "role_name VARCHAR(64) NOT NULL,".
-            "    INDEX role_name_index(role_name),".
-            "protobuf VARBINARY(196) NOT NULL".
-            ");");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE TABLE virgil_roles (" .
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
+                "role_name VARCHAR(64) NOT NULL," .
+                "    INDEX role_name_index(role_name)," .
+                "protobuf VARBINARY(196) NOT NULL" .
+                ");");
 
-        $stmt = $conn->query(
-            "CREATE TABLE virgil_role_assignments (" .
-            "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
-            "role_name VARCHAR(64) NOT NULL," .
-            "    FOREIGN KEY (role_name)" .
-            "        REFERENCES virgil_roles(role_name)" .
-            "        ON DELETE CASCADE," .
-            "user_id CHAR(36) NOT NULL," .
-            "    FOREIGN KEY (user_id)" .
-            "        REFERENCES virgil_users(user_id)" .
-            "        ON DELETE CASCADE," .
-            "    INDEX user_id_index(user_id)," .
-            "    UNIQUE INDEX user_id_role_name_index(user_id, role_name)," .
-            "protobuf VARBINARY(1024) NOT NULL" .
-            ");");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE TABLE virgil_role_assignments (" .
+                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
+                "role_name VARCHAR(64) NOT NULL," .
+                "    FOREIGN KEY (role_name)" .
+                "        REFERENCES virgil_roles(role_name)" .
+                "        ON DELETE CASCADE," .
+                "user_id CHAR(36) NOT NULL," .
+                "    FOREIGN KEY (user_id)" .
+                "        REFERENCES virgil_users(user_id)" .
+                "        ON DELETE CASCADE," .
+                "    INDEX user_id_index(user_id)," .
+                "    UNIQUE INDEX user_id_role_name_index(user_id, role_name)," .
+                "protobuf VARBINARY(1024) NOT NULL" .
+                ");");
 
-        $stmt = $conn->query(
-            "CREATE TABLE virgil_grant_keys (" .
-            "user_id CHAR(36) NOT NULL," .
-            "    FOREIGN KEY (user_id)" .
-            "        REFERENCES virgil_users(user_id)" .
-            "        ON DELETE CASCADE," .
-            "key_id BINARY(64) NOT NULL," .
-            "expiration_date TIMESTAMP NOT NULL," .
-            "    INDEX expiration_date_index(expiration_date)," .
-            "protobuf VARBINARY(1024) NOT NULL," .
-            "    PRIMARY KEY(user_id, key_id)" .
-            ");");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE TABLE virgil_grant_keys (" .
+                "user_id CHAR(36) NOT NULL," .
+                "    FOREIGN KEY (user_id)" .
+                "        REFERENCES virgil_users(user_id)" .
+                "        ON DELETE CASCADE," .
+                "key_id BINARY(64) NOT NULL," .
+                "expiration_date TIMESTAMP NOT NULL," .
+                "    INDEX expiration_date_index(expiration_date)," .
+                "protobuf VARBINARY(1024) NOT NULL," .
+                "    PRIMARY KEY(user_id, key_id)" .
+                ");");
 
-        $stmt = $conn->query("SET @@global.event_scheduler = 1;");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query("SET @@global.event_scheduler = 1;");
 
-        $stmt = $conn->query(
-            "CREATE EVENT delete_expired_grant_keys ON SCHEDULE EVERY $cleanGrantKeysIntervalSeconds SECOND" .
-            "    DO" .
-            "        DELETE FROM virgil_grant_keys WHERE expiration_date < CURRENT_TIMESTAMP;");
-        if (!$stmt)
-            throw new MariaDbSqlException($conn->error, $conn->errno);
+            $conn->query(
+                "CREATE EVENT delete_expired_grant_keys ON SCHEDULE EVERY $cleanGrantKeysIntervalSeconds SECOND" .
+                "    DO" .
+                "        DELETE FROM virgil_grant_keys WHERE expiration_date < CURRENT_TIMESTAMP;");
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
+
     }
 }
