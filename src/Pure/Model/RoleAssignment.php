@@ -37,6 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class RoleAssignment
 {
@@ -47,6 +48,11 @@ class RoleAssignment
 
     public function __construct(string $roleName, string $userId, string $publicKeyId, string $encryptedRsk)
     {
+        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($publicKeyId, "publicKeyId");
+        ValidateUtil::checkNullOrEmpty($encryptedRsk, "encryptedRsk");
+
         $this->roleName = $roleName;
         $this->userId = $userId;
         $this->publicKeyId = $publicKeyId;

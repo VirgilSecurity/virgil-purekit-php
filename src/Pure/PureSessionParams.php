@@ -37,53 +37,47 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-/**
- * Class NonrotableSecrets
- * @package Virgil\PureKit\Pure
- */
-class NonrotableSecrets
+class PureSessionParams
 {
-    /**
-     * @var VirgilKeyPair
-     */
-    private $vskp;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $oskp;
+    private $sessionId;
+    private $ttl;
 
-    /**
-     * NonrotableSecrets constructor.
-     * @param VirgilKeyPair $vskp
-     * @param VirgilKeyPair $oskp
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     */
-    public function __construct(VirgilKeyPair $vskp, VirgilKeyPair $oskp)
+    public function __construct(string $sessionId = null, int $ttl = Pure::DEFAULT_GRANT_TTL)
     {
-        ValidateUtil::checkNull($vskp, "vskp");
-        ValidateUtil::checkNull($oskp, "oskp");
-
-        $this->vskp = $vskp;
-        $this->oskp = $oskp;
+        $this->sessionId = $sessionId;
+        $this->ttl = $ttl;
     }
 
     /**
-     * @return VirgilKeyPair
+     * @return string
      */
-    public function getVskp(): VirgilKeyPair
+    public function getSessionId(): string
     {
-        return $this->vskp;
+        return $this->sessionId;
     }
 
     /**
-     * @return VirgilKeyPair
+     * @param string $sessionId
      */
-    public function getOskp(): VirgilKeyPair
+    public function setSessionId(string $sessionId): void
     {
-        return $this->oskp;
+        $this->sessionId = $sessionId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTtl(): int
+    {
+        return $this->ttl;
+    }
+
+    /**
+     * @param int $ttl
+     */
+    public function setTtl(int $ttl): void
+    {
+        $this->ttl = $ttl;
     }
 }

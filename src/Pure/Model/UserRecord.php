@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
 /**
  * Class UserRecord
  * @package Virgil\PureKit\Pure\model
@@ -91,11 +93,23 @@ class UserRecord
      * @param string $backupPwdHash
      * @param string $passwordRecoveryWrap
      * @param string $passwordRecoveryBlob
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function __construct(string $userId, string $pheRecord, int $recordVersion, string $upk,
                                 string $encryptedUsk, string $encryptedUskBackup, string $backupPwdHash,
                                 string $passwordRecoveryWrap, string $passwordRecoveryBlob)
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($pheRecord, "pheRecord");
+        ValidateUtil::checkNullOrEmpty($upk, "upk");
+        ValidateUtil::checkNullOrEmpty($encryptedUsk, "encryptedUsk");
+        ValidateUtil::checkNullOrEmpty($encryptedUskBackup, "encryptedUskBackup");
+        ValidateUtil::checkNullOrEmpty($backupPwdHash, "backupPwdHash");
+        ValidateUtil::checkNullOrEmpty($passwordRecoveryWrap, "passwordRecoveryWrap");
+        ValidateUtil::checkNullOrEmpty($passwordRecoveryBlob, "passwordRecoveryBlob");
+
         $this->userId = $userId;
         $this->pheRecord = $pheRecord;
         $this->recordVersion = $recordVersion;

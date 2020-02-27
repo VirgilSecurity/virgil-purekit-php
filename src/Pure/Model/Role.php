@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
 /**
  * Class Role
  * @package Virgil\PureKit\Pure\model
@@ -56,9 +58,15 @@ class Role
      * Role constructor.
      * @param string $roleName
      * @param string $rpk
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function __construct(string $roleName, string $rpk)
     {
+        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
+        ValidateUtil::checkNullOrEmpty($rpk, "rpk");
+
         $this->roleName = $roleName;
         $this->rpk = $rpk;
     }

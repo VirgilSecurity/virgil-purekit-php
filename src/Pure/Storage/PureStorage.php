@@ -37,6 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
+use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
@@ -127,6 +128,12 @@ interface PureStorage
     public function selectRoles(array $roleNames): RoleCollection;
 
     /**
+     * @param string $roleName
+     * @param bool $cascade
+     */
+    public function deleteRole(string $roleName, bool $cascade): void;
+
+    /**
      * @param RoleAssignmentCollection $roleAssignments
      */
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void;
@@ -161,6 +168,18 @@ interface PureStorage
      * @return GrantKey
      */
     public function selectGrantKey(string $userId, string $keyId): GrantKey;
+
+    /**
+     * @param int $recordVersion
+     * @return GrantKeyCollection
+     */
+    public function selectGrantKeys(int $recordVersion): GrantKeyCollection;
+
+    /**
+     * @param GrantKeyCollection $grantKeys
+     * @return void
+     */
+    public function updateGrantKeys(GrantKeyCollection $grantKeys): void;
 
     /**
      * @param string $userId

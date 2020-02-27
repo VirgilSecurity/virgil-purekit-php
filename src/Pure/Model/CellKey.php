@@ -37,6 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
 
 class CellKey
 {
@@ -46,8 +47,25 @@ class CellKey
     private $encryptedCskCms;
     private $encryptedCskBody;
 
+    /**
+     * CellKey constructor.
+     * @param string $userId
+     * @param string $dataId
+     * @param string $cpk
+     * @param string $encryptedCskCms
+     * @param string $encryptedCskBody
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function __construct(string $userId, string $dataId, string $cpk, string $encryptedCskCms, string $encryptedCskBody)
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidateUtil::checkNullOrEmpty($cpk, "cpk");
+        ValidateUtil::checkNullOrEmpty($encryptedCskCms, "encryptedCskCms");
+        ValidateUtil::checkNullOrEmpty($encryptedCskBody, "encryptedCskBody");
+
         $this->userId = $userId;
         $this->dataId = $dataId;
         $this->cpk = $cpk;

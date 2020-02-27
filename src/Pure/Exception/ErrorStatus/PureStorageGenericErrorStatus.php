@@ -43,11 +43,11 @@ class PureStorageGenericErrorStatus extends BaseErrorStatus
     private const STORAGE_SIGNATURE_VERIFICATION_FAILED = [2, "Storage signature verification has been failed"];
     private const USER_ID_MISMATCH = [3, "User Id mismatch"];
     private const CELL_KEY_ID_MISMATCH = [4, "Cell key id mismatch"];
-    private const PHE_VERSION_MISMATCH = [5, "PHE version mismatch"];
+    private const RECORD_VERSION_MISMATCH = [5, "Record version mismatch"];
     private const ROLE_NAME_MISMATCH = [6, "Role name mismatch"];
     private const ROLE_USER_ID_MISMATCH = [7, "Role user id mismatch"];
     private const ROLE_NAME_USER_ID_MISMATCH = [8, "Role name and user id mismatch"];
-    private const DUPLICATE_USER_ID = [9, "Duplicate user Id"];
+    private const USER_COUNT_MISMATCH = [9, "User count mismatch"];
     private const DUPLICATE_ROLE_NAME = [10, "Duplicate role name"];
     private const GRANT_KEY_NOT_FOUND = [11, "Grant key has not been found in the storage"];
     private const GRANT_KEY_ID_MISMATCH = [12, "Grant key id mismatch"];

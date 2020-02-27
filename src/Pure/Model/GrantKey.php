@@ -52,9 +52,17 @@ class GrantKey
      */
     private $keyId;
     /**
+     * @var int
+     */
+    private $recordVersion;
+    /**
      * @var string
      */
-    private $encryptedGrantKey;
+    private $encryptedGrantKeyWrap;
+    /**
+     * @var string
+     */
+    private $encryptedGrantKeyBlob;
     /**
      * @var \DateTime
      */
@@ -64,12 +72,31 @@ class GrantKey
      */
     private $expirationDate;
 
-    public function __construct(string $userId, string $keyId, string $encryptedGrantKey, \DateTime $creationDate,
-\DateTime $expirationDate)
+    /**
+     * GrantKey constructor.
+     * @param string $userId
+     * @param string $keyId
+     * @param int $recordVersion
+     * @param string $encryptedGrantKeyWrap
+     * @param string $encryptedGrantKeyBlob
+     * @param \DateTime $creationDate
+     * @param \DateTime $expirationDate
+     */
+    public function __construct(string $userId, string $keyId, int $recordVersion, string $encryptedGrantKeyWrap, string
+    $encryptedGrantKeyBlob, \DateTime $creationDate, \DateTime $expirationDate)
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
+        ValidateUtil::checkNullOrEmpty($encryptedGrantKeyWrap, "encryptedGrantKeyWrap");
+        ValidateUtil::checkNullOrEmpty($encryptedGrantKeyBlob, "encryptedGrantKeyBlob");
+        ValidateUtil::checkNull($creationDate, "creationDate");
+        ValidateUtil::checkNull($expirationDate, "expirationDate");
+
         $this->userId = $userId;
         $this->keyId = $keyId;
-        $this->encryptedGrantKey = $encryptedGrantKey;
+        $this->recordVersion = $recordVersion;
+        $this->encryptedGrantKeyWrap = $encryptedGrantKeyWrap;
+        $this->encryptedGrantKeyBlob = $encryptedGrantKeyBlob;
         $this->creationDate = $creationDate;
         $this->expirationDate = $expirationDate;
     }
@@ -91,11 +118,27 @@ class GrantKey
     }
 
     /**
+     * @return int
+     */
+    public function getRecordVersion(): int
+    {
+        return $this->recordVersion;
+    }
+
+    /**
      * @return string
      */
-    public function getEncryptedGrantKey(): string
+    public function getEncryptedGrantKeyWrap(): string
     {
-        return $this->encryptedGrantKey;
+        return $this->encryptedGrantKeyWrap;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEncryptedGrantKeyBlob(): string
+    {
+        return $this->encryptedGrantKeyBlob;
     }
 
     /**

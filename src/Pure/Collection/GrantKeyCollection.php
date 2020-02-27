@@ -35,55 +35,15 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Pure\Collection;
 
-use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-/**
- * Class NonrotableSecrets
- * @package Virgil\PureKit\Pure
- */
-class NonrotableSecrets
+use Virgil\PureKit\Pure\Model\GrantKey;
+
+class GrantKeyCollection extends BaseCollection
 {
-    /**
-     * @var VirgilKeyPair
-     */
-    private $vskp;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $oskp;
-
-    /**
-     * NonrotableSecrets constructor.
-     * @param VirgilKeyPair $vskp
-     * @param VirgilKeyPair $oskp
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     */
-    public function __construct(VirgilKeyPair $vskp, VirgilKeyPair $oskp)
+    public function add(GrantKey $grantKey): void
     {
-        ValidateUtil::checkNull($vskp, "vskp");
-        ValidateUtil::checkNull($oskp, "oskp");
-
-        $this->vskp = $vskp;
-        $this->oskp = $oskp;
-    }
-
-    /**
-     * @return VirgilKeyPair
-     */
-    public function getVskp(): VirgilKeyPair
-    {
-        return $this->vskp;
-    }
-
-    /**
-     * @return VirgilKeyPair
-     */
-    public function getOskp(): VirgilKeyPair
-    {
-        return $this->oskp;
+        $this->collection[] = $grantKey;
     }
 }
