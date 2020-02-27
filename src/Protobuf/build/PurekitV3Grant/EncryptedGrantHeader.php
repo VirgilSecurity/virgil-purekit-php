@@ -26,11 +26,11 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      */
     private $key_id = '';
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
+     * Generated from protobuf field <code>uint64 creation_date = 4;</code>
      */
     private $creation_date = 0;
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
+     * Generated from protobuf field <code>uint64 expiration_date = 5;</code>
      */
     private $expiration_date = 0;
 
@@ -43,8 +43,8 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      *     @type string $user_id
      *     @type string $session_id
      *     @type string $key_id
-     *     @type int $creation_date
-     *     @type int $expiration_date
+     *     @type int|string $creation_date
+     *     @type int|string $expiration_date
      * }
      */
     public function __construct($data = NULL) {
@@ -119,8 +119,8 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
-     * @return int
+     * Generated from protobuf field <code>uint64 creation_date = 4;</code>
+     * @return int|string
      */
     public function getCreationDate()
     {
@@ -128,21 +128,21 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 4;</code>
-     * @param int $var
+     * Generated from protobuf field <code>uint64 creation_date = 4;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setCreationDate($var)
     {
-        GPBUtil::checkUint32($var);
+        GPBUtil::checkUint64($var);
         $this->creation_date = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
-     * @return int
+     * Generated from protobuf field <code>uint64 expiration_date = 5;</code>
+     * @return int|string
      */
     public function getExpirationDate()
     {
@@ -150,13 +150,13 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 5;</code>
-     * @param int $var
+     * Generated from protobuf field <code>uint64 expiration_date = 5;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setExpirationDate($var)
     {
-        GPBUtil::checkUint32($var);
+        GPBUtil::checkUint64($var);
         $this->expiration_date = $var;
 
         return $this;

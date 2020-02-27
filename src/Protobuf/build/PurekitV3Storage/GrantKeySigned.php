@@ -26,15 +26,15 @@ class GrantKeySigned extends \Google\Protobuf\Internal\Message
      */
     private $key_id = '';
     /**
-     * Generated from protobuf field <code>bytes encrypted_grant_key = 4;</code>
+     * Generated from protobuf field <code>bytes encrypted_grant_key_blob = 4;</code>
      */
-    private $encrypted_grant_key = '';
+    private $encrypted_grant_key_blob = '';
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 5;</code>
+     * Generated from protobuf field <code>uint64 creation_date = 5;</code>
      */
     private $creation_date = 0;
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 6;</code>
+     * Generated from protobuf field <code>uint64 expiration_date = 6;</code>
      */
     private $expiration_date = 0;
 
@@ -47,9 +47,9 @@ class GrantKeySigned extends \Google\Protobuf\Internal\Message
      *     @type int $version
      *     @type string $user_id
      *     @type string $key_id
-     *     @type string $encrypted_grant_key
-     *     @type int $creation_date
-     *     @type int $expiration_date
+     *     @type string $encrypted_grant_key_blob
+     *     @type int|string $creation_date
+     *     @type int|string $expiration_date
      * }
      */
     public function __construct($data = NULL) {
@@ -124,30 +124,30 @@ class GrantKeySigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>bytes encrypted_grant_key = 4;</code>
+     * Generated from protobuf field <code>bytes encrypted_grant_key_blob = 4;</code>
      * @return string
      */
-    public function getEncryptedGrantKey()
+    public function getEncryptedGrantKeyBlob()
     {
-        return $this->encrypted_grant_key;
+        return $this->encrypted_grant_key_blob;
     }
 
     /**
-     * Generated from protobuf field <code>bytes encrypted_grant_key = 4;</code>
+     * Generated from protobuf field <code>bytes encrypted_grant_key_blob = 4;</code>
      * @param string $var
      * @return $this
      */
-    public function setEncryptedGrantKey($var)
+    public function setEncryptedGrantKeyBlob($var)
     {
         GPBUtil::checkString($var, False);
-        $this->encrypted_grant_key = $var;
+        $this->encrypted_grant_key_blob = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 5;</code>
-     * @return int
+     * Generated from protobuf field <code>uint64 creation_date = 5;</code>
+     * @return int|string
      */
     public function getCreationDate()
     {
@@ -155,21 +155,21 @@ class GrantKeySigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 creation_date = 5;</code>
-     * @param int $var
+     * Generated from protobuf field <code>uint64 creation_date = 5;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setCreationDate($var)
     {
-        GPBUtil::checkUint32($var);
+        GPBUtil::checkUint64($var);
         $this->creation_date = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 6;</code>
-     * @return int
+     * Generated from protobuf field <code>uint64 expiration_date = 6;</code>
+     * @return int|string
      */
     public function getExpirationDate()
     {
@@ -177,13 +177,13 @@ class GrantKeySigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>uint32 expiration_date = 6;</code>
-     * @param int $var
+     * Generated from protobuf field <code>uint64 expiration_date = 6;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setExpirationDate($var)
     {
-        GPBUtil::checkUint32($var);
+        GPBUtil::checkUint64($var);
         $this->expiration_date = $var;
 
         return $this;
