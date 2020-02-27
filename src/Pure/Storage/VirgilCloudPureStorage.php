@@ -37,12 +37,13 @@
 
 namespace Virgil\PureKit\Pure\Storage;
 
+use PurekitV3Client\GetRoles as ProtoGetRoles;
 use PurekitV3Client\GrantKeyDescriptor;
 use PurekitV3Storage\RoleAssignments as ProtoRoleAssignments;
-use PurekitV3Storage\UserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentsRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
@@ -59,6 +60,7 @@ use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
+use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
@@ -69,6 +71,7 @@ use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\ServiceErrorCode;
+use Virgil\PureKit\Pure\Exception\UnsupportedOperationException;
 use Virgil\PureKit\Pure\Exception\VirgilCloudStorageException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -104,16 +107,19 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
     {
+        ValidateUtil::checkNull($pureModelSerializer, "pureModelSerializer");
         $this->pureModelSerializer = $pureModelSerializer;
     }
 
     public function insertUser(UserRecord $userRecord): void
     {
+        ValidateUtil::checkNull($userRecord, "userRecord");
         $this->_sendUser($userRecord, true);
     }
 
     public function updateUser(UserRecord $userRecord): void
     {
+        ValidateUtil::checkNull($userRecord, "userRecord");
         $this->_sendUser($userRecord, false);
     }
 
@@ -124,6 +130,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectUser(string $userId): UserRecord
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+
         try {
             $request = new GetUserRequest(AvailableRequest::GET_USER(), $userId);
             $protobufRecord = $this->client->getUser($request);
@@ -148,6 +156,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectUsers(array $userIds): UserRecordCollection
     {
+        ValidateUtil::checkNull($userIds, "userIds");
+
         $userRecords = new UserRecordCollection();
 
         if (empty($userIds))
@@ -166,7 +176,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         }
 
         if (count($protoRecords->getUserRecords()) != count($userIds)) {
-            throw new PureStorageGenericException( PureStorageGenericErrorStatus::DUPLICATE_USER_ID());
+            throw new PureStorageGenericException( PureStorageGenericErrorStatus::USER_COUNT_MISMATCH());
         }
 
         foreach ($protoRecords->getUserRecords() as $protobufRecord) {
@@ -186,13 +196,15 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $userRecords;
     }
 
-    public function selectUsers_(int $pheRecordVersion): UserRecordCollection
+    public function selectUsers_(int $recordVersion): UserRecordCollection
     {
         throw new UnsupportedOperationException("This method always throws UnsupportedOperationException, as in case of using Virgil Cloud storage, rotation happens on the Virgil side");
     }
 
     public function deleteUser(string $userId, bool $cascade): void
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+
         try {
             $request = new DeleteUserRequest(AvailableRequest::DELETE_USER(), $userId, $cascade);
             $this->client->deleteUser($request);
@@ -205,6 +217,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectCellKey(string $userId, string $dataId): CellKey
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+
         try {
             $request = new GetCellKeyRequest(AvailableRequest::GET_CELL_KEY(), $userId, $dataId);
             $protobufRecord = $this->client->getCellKey($request);
@@ -230,16 +245,23 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function insertCellKey(CellKey $cellKey): void
     {
+        ValidateUtil::checkNull($cellKey, "cellKey");
+
         $this->insertKey($cellKey, true);
     }
 
     public function updateCellKey(CellKey $cellKey): void
     {
+        ValidateUtil::checkNull($cellKey, "cellKey");
+
         $this->insertKey($cellKey, false);
     }
 
     public function deleteCellKey(string $userId, string $dataId): void
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+
         try {
             $request = new DeleteCellKeyRequest(AvailableRequest::DELETE_CELL_KEY(), $userId, $dataId);
 
@@ -253,6 +275,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function insertRole(Role $role): void
     {
+        ValidateUtil::checkNull($role, "role");
+
         $protobufRecord = $this->pureModelSerializer->serializeRole($role);
         $request = new InsertRoleRequest(AvailableRequest::INSERT_ROLE(), $protobufRecord);
 
@@ -267,6 +291,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectRoles(array $roleNames): RoleCollection
     {
+        ValidateUtil::checkNull($roleNames, "roleNames");
+
         $roles = new RoleCollection();
         $namesSet = $roleNames;
 
@@ -302,8 +328,20 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $roles;
     }
 
+    public function deleteRole(string $roleName, bool $cascade): void
+    {
+        // TODO: Implement
+        throw new UnsupportedOperationException();
+    }
+
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
     {
+        ValidateUtil::checkNull($roleAssignments, "roleAssignments");
+
+        if (empty($roleAssignments->getAsArray())) {
+            return;
+        }
+
         $protobufBuilder = new ProtoRoleAssignments();
         $ra = [];
 
@@ -330,6 +368,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectRoleAssignments(string $userId): RoleAssignmentCollection
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+
         $roleAssignments = new RoleAssignmentCollection();
         $request = new GetRoleAssignmentsRequest(AvailableRequest::GET_ROLE_ASSIGNMENTS(), $userId);
         $protoRecords = null;
@@ -357,6 +397,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
     {
+        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+
         $request = new GetRoleAssignmentRequest(AvailableRequest::GET_ROLE_ASSIGNMENT(), $roleName, $userId);
 
         $protobufRecord = null;
@@ -374,6 +417,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
+        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
+        ValidateUtil::checkNull($userIds, "userIds");
+
         if (empty($userIds))
             return;
 
@@ -390,6 +436,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function insertGrantKey(GrantKey $grantKey): void
     {
+        ValidateUtil::checkNull($grantKey, "grantKey");
+
         $protobufRecord = $this->pureModelSerializer->serializeGrantKey($grantKey);
 
         $request = new InsertGrantKeyRequest(AvailableRequest::INSERT_GRANT_KEY(), $protobufRecord);
@@ -410,6 +458,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     public function selectGrantKey(string $userId, string $keyId): GrantKey
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
+
         $request = new GetGrantKeyRequest(AvailableRequest::GET_GRANT_KEY(), $userId, $keyId);
 
         try {
@@ -436,14 +487,29 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         return $grantKey;
     }
 
+    public function selectGrantKeys(int $recordVersion): GrantKeyCollection
+    {
+        throw new UnsupportedOperationException(
+            "This method always throws UnsupportedOperationException, as in case of using Virgil Cloud storage, rotation happens on the Virgil side."
+        );
+    }
+
+    public function updateGrantKeys(GrantKeyCollection $grantKeys): void
+    {
+        throw new UnsupportedOperationException(
+            "This method always throws UnsupportedOperationException, as in case of using Virgil Cloud storage, rotation happens on the Virgil side."
+        );
+    }
+
     public function deleteGrantKey(string $userId, string $keyId): void
     {
-        $request = (new GrantKeyDescriptor)
-            ->setUserId($userId)
-            ->setKeyId($keyId);
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
+
+        $r = new DeleteGrantKeyRequest(AvailableRequest::DELETE_GRANT_KEY(), $userId, $keyId);
 
         try {
-            $this->client->deleteGrantKey($request);
+            $this->client->deleteGrantKey($r);
         } catch (ProtocolException $e) {
             throw new VirgilCloudStorageException($e);
         } catch (ProtocolHttpException $e) {

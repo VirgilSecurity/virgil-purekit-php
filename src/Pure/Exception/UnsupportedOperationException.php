@@ -35,37 +35,10 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request\Pure;
+namespace Virgil\PureKit\Pure\Exception;
 
-use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
-use Virgil\PureKit\Http\_\AvailableRequest;
-use Virgil\PureKit\Http\Request\BaseRequest;
 
-class DeleteGrantKeyRequest extends BaseRequest
+class UnsupportedOperationException extends \Exception
 {
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    private $userId;
-    private $keyId;
 
-    public function __construct(AvailableRequest $request, string $userId, string $keyId)
-    {
-        $this->request = $request;
-        $this->userId = $userId;
-        $this->keyId = $keyId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOptionsBody(): string
-    {
-        $r = (new ProtoGrantKeyDescriptor)
-            ->setUserId($this->userId)
-            ->setKeyId($this->keyId);
-
-        return $r->serializeToString();
-    }
 }

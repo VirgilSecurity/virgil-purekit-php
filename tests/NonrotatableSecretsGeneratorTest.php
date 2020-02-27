@@ -50,9 +50,8 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
     protected function setUp(): void
     {
         $this->nms = "6PvWsrUn/U6ggoabbXCriBk7dtV3NfT+cvqbFGG3DGU=";
-        $this->ak = "67s7EAt22cKY+M+OFFG7qBbT0f8J0ZIYlCph8rb8vJo=";
-        $this->oskpId = "45IvIXkOQ7c=";
-        $this->vskpId = "7QksLSjG56g=";
+        $this->oskpId = "7QksLSjG56g=";
+        $this->vskpId = "l3RDBZ9U6Cs=";
 
     }
 
@@ -62,7 +61,6 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
             $data = base64_decode($this->nms);
             $nonrotatableSecrets = NonrotatableSecretsGenerator::generateSecrets($data);
 
-            $this->assertEquals(base64_decode($this->ak), $nonrotatableSecrets->getAk());
             $this->assertEquals(base64_decode($this->oskpId), $nonrotatableSecrets->getOskp()->getPublicKey()
                 ->getIdentifier());
             $this->assertEquals(base64_decode($this->vskpId), $nonrotatableSecrets->getVskp()->getPublicKey()
