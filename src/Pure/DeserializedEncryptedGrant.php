@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,48 +37,33 @@
 
 namespace Virgil\PureKit\Pure;
 
-/**
- * Class PureCryptoData
- * @package Virgil\PureKit\Pure
- */
-class PureCryptoData
+use PurekitV3Grant\EncryptedGrant;
+use PurekitV3Grant\EncryptedGrantHeader;
+
+class DeserializedEncryptedGrant
 {
-    /**
-     * @var string
-     */
-    private $cms;
-    /**
-     * @var string
-     */
-    private $body;
+    private $encryptedGrant;
+    private $header;
 
-    /**
-     * PureCryptoData constructor.
-     * @param string $cms
-     * @param string $body
-     */
-    public function __construct(string $cms, string $body)
+    public function __construct(EncryptedGrant $encryptedGrant, EncryptedGrantHeader $header)
     {
-        ValidateUtil::checkNullOrEmpty($cms, "cms");
-        ValidateUtil::checkNullOrEmpty($body, "body");
-
-        $this->cms = $cms;
-        $this->body = $body;
+        $this->encryptedGrant = $encryptedGrant;
+        $this->header = $header;
     }
 
     /**
-     * @return string
+     * @return EncryptedGrant
      */
-    public function getCms(): string
+    public function getEncryptedGrant(): EncryptedGrant
     {
-        return $this->cms;
+        return $this->encryptedGrant;
     }
 
     /**
-     * @return string
+     * @return EncryptedGrantHeader
      */
-    public function getBody(): string
+    public function getHeader(): EncryptedGrantHeader
     {
-        return $this->body;
+        return $this->header;
     }
 }

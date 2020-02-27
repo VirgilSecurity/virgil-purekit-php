@@ -51,6 +51,8 @@ class Credentials
      * @var
      */
     private $payload2;
+
+    private $payload3;
     /**
      * @var int
      */
@@ -62,10 +64,11 @@ class Credentials
      * @param string $payload2
      * @param int $version
      */
-    public function __construct(string $payload1, string $payload2, int $version)
+    public function __construct(string $payload1, string $payload2, string $payload3, int $version)
     {
         $this->payload1 = $payload1;
         $this->payload2 = $payload2;
+        $this->payload3 = $payload3;
         $this->version = $version;
     }
 
@@ -80,6 +83,14 @@ class Credentials
     public function getPayload2(): string
     {
         return $this->payload2;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPayload3(): string
+    {
+        return $this->payload3;
     }
 
     /**

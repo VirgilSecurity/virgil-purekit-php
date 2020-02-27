@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,48 +37,43 @@
 
 namespace Virgil\PureKit\Pure;
 
-/**
- * Class PureCryptoData
- * @package Virgil\PureKit\Pure
- */
-class PureCryptoData
+use Virgil\Crypto\Core\VirgilKeyPair;
+use Virgil\PureKit\Pure\Model\UserRecord;
+
+class RegisterResult
 {
-    /**
-     * @var string
-     */
-    private $cms;
-    /**
-     * @var string
-     */
-    private $body;
+    private $userRecord;
+    private $ukp;
+    private $phek;
 
-    /**
-     * PureCryptoData constructor.
-     * @param string $cms
-     * @param string $body
-     */
-    public function __construct(string $cms, string $body)
+    public function __construct(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek)
     {
-        ValidateUtil::checkNullOrEmpty($cms, "cms");
-        ValidateUtil::checkNullOrEmpty($body, "body");
+        $this->userRecord = $userRecord;
+        $this->ukp = $ukp;
+        $this->phek = $phek;
+    }
 
-        $this->cms = $cms;
-        $this->body = $body;
+    /**
+     * @return UserRecord
+     */
+    public function getUserRecord(): UserRecord
+    {
+        return $this->userRecord;
+    }
+
+    /**
+     * @return VirgilKeyPair
+     */
+    public function getUkp(): VirgilKeyPair
+    {
+        return $this->ukp;
     }
 
     /**
      * @return string
      */
-    public function getCms(): string
+    public function getPhek(): string
     {
-        return $this->cms;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBody(): string
-    {
-        return $this->body;
+        return $this->phek;
     }
 }

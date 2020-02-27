@@ -42,8 +42,13 @@ use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
+use Virgil\PureKit\Pure\Collection\RoleCollection;
+use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
+use Virgil\PureKit\Pure\Collection\VirgilPublicKeyMap;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
@@ -62,29 +67,30 @@ class Pure
 {
     public const DEFAULT_GRANT_TTL = 60 * 60;
 
+    private $currentGrantVersion = 1;
+
     private $currentVersion;
     private $pureCrypto;
     private $storage;
-    private $ak;
     private $buppk;
     private $oskp;
     private $externalPublicKeys;
     private $pheManager;
     private $kmsManager;
 
-    private $currentGrantVersion = 1;
-
     /**
      * Pure constructor.
      * @param PureContext $context
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     public function __construct(PureContext $context)
     {
+        ValidateUtil::checkNull($context, "context");
 
         $this->pureCrypto = new PureCrypto($context->getCrypto());
         $this->storage = $context->getStorage();
-        $this->ak = $context->getNonrotableSecrets()->getAk();
         $this->buppk = $context->getBuppk();
         $this->oskp = $context->getNonrotableSecrets()->getOskp();
         $this->externalPublicKeys = $context->getExternalPublicKeys();
@@ -98,20 +104,31 @@ class Pure
         }
     }
 
-    /**
-     * @param string $userId
-     * @param string $password
-     * @throws PureCryptoException
-     */
     public function registerUser(string $userId, string $password): void
     {
-        $this->_registerUser($userId, $password, true);
+        $this->_registerUserInternal($userId, $password);
     }
 
 
-    public function authenticateUser(string $userId, string $password, string $sessionId = null, int $ttl = self::DEFAULT_GRANT_TTL):
+    public function registerUser_(string $userId, string $password, PureSessionParams $pureSessionParams):
     AuthResult
     {
+        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidateUtil::checkNullOrEmpty($password, "password");
+        ValidateUtil::checkNull($pureSessionParams, "pureSessionParams");
+
+        $registerResult = $this->_registerUserInternal($userId, $password);
+
+        return $this->_authenticateUserInternal($registerResult->getUserRecord(), $registerResult->getUkp(),
+            $registerResult->getPhek(), $pureSessionParams->getSessionId(), $pureSessionParams->getTtl());
+    }
+
+    public function authenticateUser(string $userId, string $password, PureSessionParams $pureSessionParams = null):
+    AuthResult
+    {
+        if (is_null($pureSessionParams))
+            $pureSessionParams = new PureSessionParams();
+
         ValidateUtil::checkNullOrEmpty($userId, "userId");
         ValidateUtil::checkNullOrEmpty($password, "password");
 
@@ -119,48 +136,23 @@ class Pure
 
         $phek = $this->pheManager->computePheKey($userRecord, $password);
 
-        $uskData = $this->pureCrypto->decryptSymmetricNewNonce($userRecord->getEncryptedUsk(), "", $phek);
+        $uskData = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $phek);
 
         $ukp = $this->pureCrypto->importPrivateKey($uskData);
 
-        $creationDate = new \DateTime("now");
-        $ts = $creationDate->getTimestamp() + ($ttl * 1000);
-        $expirationDate = new \DateTime("@$ts");
+        return $this->_authenticateUserInternal($userRecord, $ukp, $phek, $pureSessionParams->getSessionId(),
+            $pureSessionParams->getTtl());
+    }
 
-        $grant = new PureGrant($ukp, $userId, $sessionId, $creationDate, $expirationDate);
+    public function invalidateEncryptedUserGrant(string $encryptedGrantString): void
+    {
+        $deserializedEncryptedGrant = $this->deserializeEncryptedGrant($encryptedGrantString);
 
-        $grantKeyRaw = $this->pureCrypto->generateSymmetricOneTimeKey();
-        $keyId = $this->pureCrypto->computeSymmetricKeyId($grantKeyRaw);
+        // Just to check that grant was valid
+        $this->decryptPheKeyFromEncryptedGrant($deserializedEncryptedGrant);
 
-        $headerBuilder = (new ProtoEncryptedGrantHeader)
-            ->setCreationDate($grant->getCreationDate()->getTimestamp() / 1000)
-            ->setExpirationDate($grant->getExpirationDate()->getTimestamp() / 1000)
-            ->setUserId($grant->getUserId())
-            ->setKeyId($keyId);
-
-        if (!is_null($sessionId)) {
-            $headerBuilder->setSessionId($sessionId);
-        }
-
-        $headerBytes = $headerBuilder->serializeToString();
-
-        $encryptedGrantKey = $this->pureCrypto->encryptSymmetricNewNonce($grantKeyRaw, "", $this->ak);
-
-        $grantKey = new GrantKey($userId, $keyId, $encryptedGrantKey, $creationDate, $expirationDate);
-
-        $this->storage->insertGrantKey($grantKey);
-
-        $encryptedPhek = $this->pureCrypto->encryptSymmetricOneTimeKey($phek, $headerBytes, $grantKeyRaw);
-
-        $encryptedGrantData = (new ProtoEncryptedGrant)
-            ->setVersion($this->currentGrantVersion)
-            ->setHeader($headerBytes)
-            ->setEncryptedPhek($encryptedPhek)
-            ->serializeToString();
-
-        $encryptedGrant = base64_encode($encryptedGrantData);
-
-        return new AuthResult($grant, $encryptedGrant);
+        $this->getStorage()->deleteGrantKey($deserializedEncryptedGrant->getHeader()->getUserId(),
+        $deserializedEncryptedGrant->getHeader()->getKeyId());
     }
 
     public function createUserGrantAsAdmin(string $userId, VirgilPrivateKey $bupsk, int $ttl = self::DEFAULT_GRANT_TTL): PureGrant
@@ -181,7 +173,7 @@ class Pure
         return new PureGrant($upk, $userId, null, $creationDate, $expirationDate);
     }
 
-    public function decryptGrantFromUser(string $encryptedGrantString): PureGrant
+    private function deserializeEncryptedGrant(string $encryptedGrantString): DeserializedEncryptedGrant
     {
         ValidateUtil::checkNullOrEmpty($encryptedGrantString, "encryptedGrantString");
 
@@ -194,8 +186,6 @@ class Pure
             throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
         }
 
-        $encryptedData = $encryptedGrant->getEncryptedPhek();
-
         try {
             $header = new ProtoEncryptedGrantHeader();
             $header->mergeFromString($encryptedGrant->getHeader());
@@ -203,31 +193,46 @@ class Pure
             throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
         }
 
-        $grantKey = $this->storage->selectGrantKey($header->getUserId(), $header->getKeyId());
+        return new DeserializedEncryptedGrant($encryptedGrant, $header);
+    }
+
+    private function decryptPheKeyFromEncryptedGrant(DeserializedEncryptedGrant $deserializedEncryptedGrant): string
+    {
+        $encryptedData = $deserializedEncryptedGrant->getEncryptedGrant()->getEncryptedPhek();
+
+        $grantKey = $this->storage->selectGrantKey($deserializedEncryptedGrant->getHeader()->getUserId(),
+            $deserializedEncryptedGrant->getHeader()->getKeyId());
 
         if ($grantKey->getExpirationDate() < new \DateTime("now"))
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
-        $grantKeyRaw = $this->pureCrypto->decryptSymmetricNewNonce($grantKey->getEncryptedGrantKey(), "", $this->ak);
+        $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $deserializedEncryptedGrant->getHeader());
 
-        $phek = $this->pureCrypto->decryptSymmetricOneTimeKey($encryptedData, $encryptedGrant->getHeader(),
-            $grantKeyRaw);
+        return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData,
+            $deserializedEncryptedGrant->getHeader(), $grantKeyRaw);
+    }
 
-        $userRecord = $this->storage->selectUser($header->getUserId());
+    public function decryptGrantFromUser(string $encryptedGrantString): PureGrant
+    {
+        $deserializedEncryptedGrant = $this->deserializeEncryptedGrant($encryptedGrantString);
 
-        $usk = $this->pureCrypto->decryptSymmetricNewNonce($userRecord->getEncryptedUsk(), "", $phek);
+        $phek = $this->decryptPheKeyFromEncryptedGrant($deserializedEncryptedGrant);
+
+        $userRecord = $this->storage->selectUser($deserializedEncryptedGrant->getHeader()->getUserId());
+
+        $usk = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $phek);
 
         $ukp = $this->pureCrypto->importPrivateKey($usk);
 
-        $sessionId = $header->getSessionId();
+        $sessionId = $deserializedEncryptedGrant->getHeader()->getSessionId();
 
         if (empty($sessionId))
             $sessionId = null;
 
-        $cd = $header->getCreationDate() * 1000;
-        $ed = $header->getExpirationDate() * 1000;
+        $cd = $deserializedEncryptedGrant->getHeader()->getCreationDate() * 1000;
+        $ed = $deserializedEncryptedGrant->getHeader()->getExpirationDate() * 1000;
 
-        return new PureGrant($ukp, $header->getUserId(), $sessionId,
+        return new PureGrant($ukp, $deserializedEncryptedGrant->getHeader()->getUserId(), $sessionId,
             new \DateTime("@$cd"),
             new \DateTime("@$ed"));
     }
@@ -242,9 +247,9 @@ class Pure
 
         $oldPhek = $this->pheManager->computePheKey($userRecord, $oldPassword);
 
-        $privateKeyData = $this->pureCrypto->decryptSymmetricNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
+        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
 
-        $this->_changeUserPassword($userRecord, $privateKeyData, $newPassword);
+        $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
     // TODO!
@@ -257,7 +262,7 @@ class Pure
 
         $privateKeyData = $this->pureCrypto->exportPrivateKey($grant->getUkp()->getPrivateKey());
 
-        $this->_changeUserPassword($userRecord, $privateKeyData, $newPassword);
+        $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
     public function recoverUser(string $userId, string $newPassword): void
@@ -271,40 +276,43 @@ class Pure
 
         $oldPhek = $this->pheManager->computePheKey_($userRecord, $pwdHash);
 
-        $privateKeyData = $this->pureCrypto->decryptSymmetricNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
+        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
 
-        $this->_changeUserPassword($userRecord, $privateKeyData, $newPassword);
+        $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
-    public function resetUserPassword(string $userId, string $newPassword): void
+    public function resetUserPassword(string $userId, string $newPassword, bool $cascade): void
     {
-        // TODO: Add possibility to delete cell keys? -> ????
-        $this->_registerUser($userId, $newPassword, false);
+        $this->deleteUser($userId, $cascade);
+        $this->_registerUserInternal($userId, $newPassword, false);
     }
 
-    public function deleteUser(string $userId, bool $cascade): void
+    public function deleteUser(string $userId, bool $cascade = true): void
     {
         $this->storage->deleteUser($userId, $cascade);
-        // TODO: Should delete role assignments
     }
 
-    public function performRotation(): int
+    public function performRotation(): RotationResults
     {
         if ($this->currentVersion <= 1)
-            return 0;
+            return new RotationResults(0, 0);
 
-        $rotations = 0;
+        $usersRotated = 0;
+        $grantKeysRotated = 0;
 
         while (true) {
-            $userRecords = $this->storage->selectUsers($this->currentVersion - 1);
-            $newUserRecords = [];
+            $userRecords = $this->storage->selectUsers_($this->currentVersion - 1);
+            $newUserRecords = new UserRecordCollection();
 
             foreach ($userRecords as $userRecord) {
-                // TODO!
-                // $userRecord->getRecordVersion() == $this->currentVersion - 1;
+
+                // TODO! Need to be checked
+                if ($userRecord->getRecordVersion() != $this->currentVersion - 1) {
+                    throw new \Exception("Assertion err: userRecordVersion != currentVersion");
+                }
 
                 $newRecord = $this->pheManager - $this->performRotation($userRecord->getPheRecord());
-                $newWrap = $this->kmsManager->performRotation($userRecord->getPasswordRecoveryWrap());
+                $newWrap = $this->kmsManager->performPwdRotation($userRecord->getPasswordRecoveryWrap());
 
                 $newUserRecord = new UserRecord(
                     $userRecord->getUserId(),
@@ -326,11 +334,49 @@ class Pure
             if (empty($newUserRecords)) {
                 break;
             } else {
-                $rotations += count($newUserRecords);
+                $usersRotated += count($newUserRecords->getAsArray());
             }
         }
 
-        return $rotations;
+        while (true) {
+            $grantKeys = $this->getStorage()->selectGrantKeys($this->currentVersion - 1);
+
+            $newGrantKeys = new GrantKeyCollection();
+
+            foreach ($grantKeys->getAsArray() as $grantKey) {
+
+                // TODO! Need to be checked
+                if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
+                    throw new \Exception("Assertion err: grantKeyVersion != currentVersion");
+                }
+
+                $newWrap = $this->kmsManager->performGrantRotation($grantKey->getEncryptedGrantKeyWrap());
+
+                $newGrantKey = new GrantKey(
+                    $grantKey->getUserId(),
+                    $grantKey->getKeyId(),
+                    $this->currentVersion,
+                    $newWrap,
+                    $grantKey->getEncryptedGrantKeyBlob(),
+                    $grantKey->getCreationDate(),
+                    $grantKey->getExpirationDate()
+                );
+
+                $newGrantKeys->add($newGrantKey);
+            }
+
+            $this->getStorage()->updateGrantKeys($newGrantKeys);
+
+            if (empty($newGrantKeys)) {
+                break;
+            }
+
+            else {
+                $grantKeysRotated += count($newGrantKeys->getAsArray());
+            }
+        }
+
+        return new RotationResults($usersRotated, $grantKeysRotated);
     }
 
     public function encrypt(string $userId, string $dataId, array $otherUserIds, array $roleNames,
@@ -486,6 +532,27 @@ class Pure
         return $this->pureCrypto->decryptData($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
+    public function shareToRole(PureGrant $grant, string $dataId, RoleCollection $roleNames): void
+    {
+        ValidateUtil::checkNull($grant, "grant");
+        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidateUtil::checkNull($roleNames, "roleNames");
+
+        if (empty($roleNames->getAsArray())) {
+            throw new EmptyArgumentException("roleNames");
+        }
+
+        $roles = $this->getStorage()->selectRoles($roleNames->getAsArray());
+
+        $roleKeys = new VirgilPublicKeyCollection();
+
+        foreach ($roles->getAsArray() as $role) {
+            $roleKeys->add($this->pureCrypto->importPublicKey($role->getRpk()));
+        }
+
+        $this->share_($grant, $dataId, [], $roleKeys);
+    }
+
     public function share(PureGrant $grant, string $dataId, string $otherUserId): void
     {
         ValidateUtil::checkNull($grant, "grant");
@@ -562,14 +629,19 @@ class Pure
         $this->assignRole_($roleName, $rkp->getPublicKey()->getIdentifier(), $rskData, $userIds);
     }
 
-    public function assignRole(string $roleToAssign, PureGrant $grant, array $userIds): void
+    public function deleteRole(string $roleName, bool $cascade = true): void
     {
-        $roleAssignment = $this->storage->selectRoleAssignment($roleToAssign, $grant->getUserId());
+        $this->storage->deleteRole($roleName, $cascade);
+    }
+
+    public function assignRole(string $roleName, PureGrant $grant, array $userIds): void
+    {
+        $roleAssignment = $this->storage->selectRoleAssignment($roleName, $grant->getUserId());
 
         $rskData = $this->pureCrypto->decryptRolePrivateKey($roleAssignment->getEncryptedRsk(), $grant->getUkp()->getPrivateKey(),
             $this->oskp->getPublicKey());
 
-        $this->assignRole_($roleToAssign, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
+        $this->assignRole_($roleName, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
     }
 
     private function assignRole_(string $roleName, string $publicKeyId, string $rskData, array $userIds): void
@@ -595,7 +667,7 @@ class Pure
     }
 
 
-    private function _registerUser(string $userId, string $password, bool $isUserNew): void
+    private function _registerUserInternal(string $userId, string $password): void
     {
         ValidateUtil::checkNullOrEmpty($userId, "userId");
         ValidateUtil::checkNullOrEmpty($password, "password");
@@ -614,7 +686,7 @@ class Pure
 
         $uskData = $this->pureCrypto->exportPrivateKey($ukp->getPrivateKey());
 
-        $encryptedUsk = $this->pureCrypto->encryptSymmetricNewNonce($uskData, "", $pheResult[1]);
+        $encryptedUsk = $this->pureCrypto->encryptSymmetricWithNewNonce($uskData, "", $pheResult[1]);
 
         $encryptedUskBackup = $this->pureCrypto->encryptForBackup($uskData, $this->buppk, $this->oskp->getPrivateKey());
 
@@ -632,7 +704,52 @@ class Pure
             $pwdRecoveryData->getBlob()
         );
 
-        $isUserNew ? $this->storage->insertUser($userRecord) : $this->storage->updateUser($userRecord);
+        $this->getStorage()->insertUser($userRecord);
+    }
+
+    private function _authenticateUserInternal(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek, string
+$sessionId, int $ttl): AuthResult
+    {
+        $creationDate = new \DateTime("now");
+        $ts = $creationDate->getTimestamp() + ($ttl * 1000);
+        $expirationDate = new \DateTime("@$ts");
+
+        $grant = new PureGrant($ukp, $userRecord->getUserId(), $sessionId, $creationDate, $expirationDate);
+
+        $grantKeyRaw = $this->pureCrypto->generateSymmetricOneTimeKey();
+        $keyId = $this->pureCrypto->computeSymmetricKeyId($grantKeyRaw);
+
+        $headerBuilder = (new ProtoEncryptedGrantHeader)
+            ->setCreationDate($grant->getCreationDate()->getTimestamp() / 1000)
+            ->setExpirationDate($grant->getExpirationDate()->getTimestamp() / 1000)
+            ->setUserId($grant->getUserId())
+            ->setKeyId($keyId);
+
+        if (!is_null($sessionId))
+            $headerBuilder->setSessionId($sessionId);
+
+        $headerBytes = $headerBuilder->serializeToString();
+
+        $grantWrap = $this->kmsManager->generateGrantKeyEncryptionData($grantKeyRaw, $headerBytes);
+
+        $grantKey = new GrantKey($userRecord->getUserId(),
+        $keyId, $this->currentVersion,
+        $grantWrap->getWrap(),
+        $grantWrap->getBlob(),
+        $creationDate, $expirationDate);
+
+        $this->getStorage()->insertGrantKey($grantKey);
+
+        $encryptedPhek = $this->pureCrypto->encryptSymmetricWithOneTimeKey($phek, $headerBytes, $grantKeyRaw);
+
+        $encryptedGrantData = (new ProtoEncryptedGrant)
+            ->setVersion($this->currentGrantVersion)
+            ->setHeader($headerBytes)
+            ->setEncryptedPhek($encryptedPhek);
+
+        $encryptedGrant = base64_encode($encryptedGrantData);
+
+        return new AuthResult($grant, $encryptedGrant);
     }
 
     /**
@@ -641,7 +758,8 @@ class Pure
      * @param string $newPassword
      * @throws PureCryptoException
      */
-    private function _changeUserPassword(UserRecord $userRecord, string $privateKeyData, string $newPassword): void
+    private function _changeUserPasswordInternal(UserRecord $userRecord, string $privateKeyData, string $newPassword):
+    void
     {
         try {
             ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
@@ -653,7 +771,7 @@ class Pure
 
             $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($newPasswordHash);
 
-            $newEncryptedUsk = $this->pureCrypto->encryptSymmetricNewNonce($privateKeyData, "",
+            $newEncryptedUsk = $this->pureCrypto->encryptSymmetricWithNewNonce($privateKeyData, "",
                 $enrollResult[1]);
 
             $encryptedPwdHash = $this->pureCrypto->encryptForBackup($newPasswordHash, $this->buppk,
@@ -700,11 +818,6 @@ class Pure
         return $this->storage;
     }
 
-    public function getAk(): string
-    {
-        return $this->ak;
-    }
-
     public function getBuppk(): VirgilPublicKey
     {
         return $this->buppk;
@@ -715,7 +828,7 @@ class Pure
         return $this->oskp;
     }
 
-    public function getExternalPublicKeys(): VirgilPublicKeyCollection
+    public function getExternalPublicKeys(): VirgilPublicKeyMap
     {
         return $this->externalPublicKeys;
     }

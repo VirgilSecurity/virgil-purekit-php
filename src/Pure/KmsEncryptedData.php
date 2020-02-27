@@ -40,7 +40,7 @@ namespace Virgil\PureKit\Pure;
 
 use Virgil\PureKit\Pure\Util\ValidateUtil;
 
-class PwdRecoveryData
+class KmsEncryptedData
 {
     private $blob;
     private $wrap;

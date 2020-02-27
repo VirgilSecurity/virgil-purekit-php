@@ -289,7 +289,7 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function encryptSymmetricOneTimeKey(string $plainText, string $ad, string $key): string
+    public function encryptSymmetricWithOneTimeKey(string $plainText, string $ad, string $key): string
     {
         try {
             $aes256Gcm = new Aes256Gcm();
@@ -315,7 +315,7 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function decryptSymmetricOneTimeKey(string $cipherText, string $ad, string $key): string
+    public function decryptSymmetricWithOneTimeKey(string $cipherText, string $ad, string $key): string
     {
         try {
             $aes256Gcm = new Aes256Gcm();
@@ -336,7 +336,7 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function encryptSymmetricNewNonce(string $plainText, string $ad, string $key)
+    public function encryptSymmetricWithNewNonce(string $plainText, string $ad, string $key)
     {
         try {
             return $this->pheCipher->authEncrypt($plainText, $ad, $key);
@@ -353,7 +353,7 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function decryptSymmetricNewNonce(string $cipherText, string $ad, string $key)
+    public function decryptSymmetricWithNewNonce(string $cipherText, string $ad, string $key)
     {
         try {
             return $this->pheCipher->authDecrypt($cipherText, $ad, $key);
@@ -436,16 +436,16 @@ class PureCrypto
         }
     }
 
-    public function encryptForBackup(string $plainText, VirgilPublicKey $publicKey, VirgilPrivateKey $privateKey):
+    public function encryptForBackup(string $plainText, VirgilPublicKey $encryptKey, VirgilPrivateKey $signingKey):
     string
     {
         try {
 
             $data = new Data($plainText);
             $pkl = new PublicKeyList();
-            $pkl->addPublicKey($publicKey);
+            $pkl->addPublicKey($encryptKey);
 
-            return $this->crypto->authEncrypt($data, $privateKey, $pkl);
+            return $this->crypto->authEncrypt($data, $signingKey, $pkl);
         } catch (SigningException | EncryptionException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
@@ -454,14 +454,14 @@ class PureCrypto
         }
     }
 
-    public function decryptBackup(string $cipherText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
+    public function decryptBackup(string $cipherText, VirgilPrivateKey $decryptKey, VirgilPublicKey $verifyKey): string
     {
         try {
             $data = new Data($cipherText);
             $pkl = new PublicKeyList();
-            $pkl->addPublicKey($publicKey);
+            $pkl->addPublicKey($verifyKey);
 
-            return $this->crypto->authDecrypt($data, $privateKey, $pkl);
+            return $this->crypto->authDecrypt($data, $decryptKey, $pkl);
         } catch (VerificationException | DecryptionException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {

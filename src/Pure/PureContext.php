@@ -79,14 +79,22 @@ class PureContext
                                 array $externalPublicKeys,
                                 string $pheServiceAddress, string $kmsServiceAddress)
     {
+        ValidateUtil::checkNull($crypto, "crypto");
+        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
+        ValidateUtil::checkNullOrEmpty($nms, "nms");
+        ValidateUtil::checkNullOrEmpty($buppk, "bupkk");
+        ValidateUtil::checkNullOrEmpty($secretKey, "secretKey");
+        ValidateUtil::checkNullOrEmpty($publicKey, "publicKey");
         ValidateUtil::checkNull($storage, "storage");
+        ValidateUtil::checkNullOrEmpty($pheServiceAddress, "pheServiceAddress");
+        ValidateUtil::checkNullOrEmpty($kmsServiceAddress, "kmsServiceAddress");
 
         $this->crypto = $crypto;
 
-        $nmsCred = self::parseCredentials(self::NMS_PREFIX, $nms, false, false);
+        $nmsCred = self::parseCredentials(self::NMS_PREFIX, $nms, false, 1);
         $this->nonrotableSecrets = NonrotatableSecretsGenerator::generateSecrets($nmsCred->getPayload1());
 
-        $buppkData = self::parseCredentials(self::BUPPK_PREFIX, $buppk, false, false)->getPayload1();
+        $buppkData = self::parseCredentials(self::BUPPK_PREFIX, $buppk, false, 1)->getPayload1();
 
         try {
             $this->buppk = $crypto->importPublicKey($buppkData);
@@ -94,8 +102,8 @@ class PureContext
             throw new PureCryptoException($exception);
         }
 
-        $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true, true);
-        $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true, true);
+        $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true, 3);
+        $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true, 2);
         $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress, true);
         $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress, true);
 
@@ -131,7 +139,7 @@ class PureContext
     }
 
     public static function createCustomContext(string $at, string $nm, string $bu,
-                                               PureStorage $storage, string $sk, string $pk,
+                                               string $sk, string $pk, PureStorage $storage,
                                                array $externalPublicKeys = [],
                                                string $pheServiceAddress = HttpPheClient::SERVICE_ADDRESS,
                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
@@ -154,6 +162,9 @@ class PureContext
                                                string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS,
                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
+        ValidateUtil::checkNullOrEmpty($at, "at");
+        ValidateUtil::checkNullOrEmpty($pureServiceAddress, "pureServiceAddress");
+
         $crypto = new VirgilCrypto();
         $pureClient = new HttpPureClient($at, $pureServiceAddress);
 
@@ -175,7 +186,8 @@ class PureContext
         );
     }
 
-    private static function parseCredentials(string $prefix, string $credentials, bool $isVersioned, bool $isTwofold):
+    private static function parseCredentials(string $prefix, string $credentials, bool $isVersioned, int
+    $numberOfPayloads):
     Credentials
     {
         ValidateUtil::checkNullOrEmpty($prefix, "prefix");
@@ -184,7 +196,7 @@ class PureContext
         $parts = [];
         $parts = explode(".", $credentials);
 
-        $numberOfParts = 2 + ($isTwofold ? 1 : 0) + ($isVersioned ? 1 : 0);
+        $numberOfParts = 1 + $numberOfPayloads + ($isVersioned ? 1 : 0);
 
         if (count($parts) != $numberOfParts)
             throw new PureLogicException(ErrorStatus::CREDENTIALS_PARSING_ERROR());
@@ -204,15 +216,22 @@ class PureContext
         }
 
         $payload1 = base64_decode($parts[$index]);
+        $payload2 = null;
+        $payload3 = null;
 
-        if ($isTwofold) {
-            $index++;
+        $numberOfPayloads--;
+        $index++;
+
+        if ($numberOfPayloads > 0) {
             $payload2 = base64_decode($parts[$index]);
-        } else {
-            $payload2 = "";
+            $numberOfPayloads--;
+            $index++;
         }
 
-        return new Credentials($payload1, $payload2, $version);
+        if ($numberOfPayloads > 0)
+            $payload3 = base64_decode($parts[$index]);
+
+        return new Credentials($payload1, $payload2, $payload3, $version);
     }
 
     public function getStorage(): PureStorage
@@ -227,7 +246,7 @@ class PureContext
 
     public function setUpdateToken(string $updateToken): void
     {
-        $this->updateToken = self::parseCredentials(self::UPDATE_TOKEN_PREFIX, $updateToken, true, true);
+        $this->updateToken = self::parseCredentials(self::UPDATE_TOKEN_PREFIX, $updateToken, true, 3);
 
         if ($this->updateToken->getVersion() != $this->publicKey->getVersion() + 1)
             throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());

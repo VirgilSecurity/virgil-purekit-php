@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,48 +37,31 @@
 
 namespace Virgil\PureKit\Pure;
 
-/**
- * Class PureCryptoData
- * @package Virgil\PureKit\Pure
- */
-class PureCryptoData
+
+class RotationResults
 {
-    /**
-     * @var string
-     */
-    private $cms;
-    /**
-     * @var string
-     */
-    private $body;
+    private $usersRotated;
+    private $grantKeyRotated;
 
-    /**
-     * PureCryptoData constructor.
-     * @param string $cms
-     * @param string $body
-     */
-    public function __construct(string $cms, string $body)
+    public function __construct(int $usersRotated, int $grantKeyRotated)
     {
-        ValidateUtil::checkNullOrEmpty($cms, "cms");
-        ValidateUtil::checkNullOrEmpty($body, "body");
-
-        $this->cms = $cms;
-        $this->body = $body;
+        $this->usersRotated = $usersRotated;
+        $this->grantKeyRotated = $grantKeyRotated;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getCms(): string
+    public function getUsersRotated(): int
     {
-        return $this->cms;
+        return $this->usersRotated;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getBody(): string
+    public function getGrantKeyRotated(): int
     {
-        return $this->body;
+        return $this->grantKeyRotated;
     }
 }

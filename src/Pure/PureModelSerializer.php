@@ -133,6 +133,8 @@ class PureModelSerializer
 
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
+        ValidateUtis::checkNull($userRecord, "userRecord");
+
         try {
             $enrollmentRecord = new ProtoEnrollmentRecord();
             $enrollmentRecord->mergeFromString($userRecord->getPheRecord());
@@ -166,6 +168,8 @@ class PureModelSerializer
 
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
+        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getUserRecordSigned());
 
         try {
@@ -198,10 +202,14 @@ class PureModelSerializer
     /**
      * @param CellKey $cellKey
      * @return ProtoCellKey
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeCellKey(CellKey $cellKey): ProtoCellKey
     {
+        ValidateUtil::checkNull($cellKey, "cellKey");
+
         $cellKeySigned = (new ProtoCellKeySigned)
             ->setVersion(self::CURRENT_CELL_KEY_SIGNED_VERSION)
             ->setUserId($cellKey->getUserId())
@@ -221,6 +229,8 @@ class PureModelSerializer
 
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
+        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getCellKeySigned());
 
         try {
@@ -240,10 +250,14 @@ class PureModelSerializer
     /**
      * @param Role $role
      * @return ProtoRole
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRole(Role $role): ProtoRole
     {
+        ValidateUtil::checkNull($role, "role");
+
         $roleSigned = (new ProtoRoleSigned)
             ->setVersion(self::CURRENT_ROLE_SIGNED_VERSION)
             ->setName($role->getRoleName())
@@ -258,9 +272,19 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
-
+    /**
+     * @param ProtoRole $protobufRecord
+     * @return Role
+     * @throws Exception\EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws PureStorageInvalidProtobufException
+     */
     public function parseRole(ProtoRole $protobufRecord): Role
     {
+        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleSigned());
 
         try {
@@ -276,10 +300,14 @@ class PureModelSerializer
     /**
      * @param RoleAssignment $roleAssignment
      * @return ProtoRoleAssignment
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRoleAssignment(RoleAssignment $roleAssignment): ProtoRoleAssignment
     {
+        ValidateUtil::checkNull($roleAssignment, "roleAssignment");
+
         $roleAssignmentSigned = (new ProtoRoleAssignmentSigned)
             ->setVersion(self::CURRENT_ROLE_ASSIGNMENT_SIGNED_VERSION)
             ->setRoleName($roleAssignment->getRoleName())
@@ -296,8 +324,18 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
+    /**
+     * @param ProtoRoleAssignment $protobufRecord
+     * @return RoleAssignment
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws PureStorageInvalidProtobufException
+     */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
+        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleAssignmentSigned());
 
         try {
@@ -316,15 +354,19 @@ class PureModelSerializer
     /**
      * @param GrantKey $grantKey
      * @return ProtoGrantKey
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeGrantKey(GrantKey $grantKey): ProtoGrantKey
     {
+        ValidateUtil::checkNull($grantKey, "grantKey");
+
         $grantKeySigned = (new ProtoGrantKeySigned)
             ->setVersion(self::CURRENT_GRANT_KEY_SIGNED_VERSION)
             ->setUserId($grantKey->getUserId())
             ->setKeyId($grantKey->getKeyId())
-            ->setEncryptedGrantKey($grantKey->getEncryptedGrantKey())
+            ->setEncryptedGrantKeyBlob($grantKey->getEncryptedGrantKeyBlob())
             ->setCreationDate($grantKey->getCreationDate()->getTimestamp() / 1000)
             ->setExpirationDate($grantKey->getExpirationDate()->getTimestamp() / 1000)
             ->serializeToString();
@@ -334,11 +376,15 @@ class PureModelSerializer
         return (new ProtoGrantKey)
             ->setVersion(self::CURRENT_GRANT_KEY_VERSION)
             ->setGrantKeySigned($grantKeySigned)
+            ->setRecordVersion($grantKey->getRecordVersion())
+            ->setEncryptedGrantKeyWrap($grantKey->getEncryptedGrantKeyWrap())
             ->setSignature($signature);
     }
 
     public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
     {
+        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getGrantKeySigned());
 
         try {
@@ -351,8 +397,12 @@ class PureModelSerializer
         $cd = $grantKeySigned->getCreationDate() * 1000;
         $ed = $grantKeySigned->getExpirationDate() * 1000;
 
-        return new GrantKey($grantKeySigned->getUserId(), $grantKeySigned->getKeyId(),
-            $grantKeySigned->getEncryptedGrantKey(),
+        return new GrantKey(
+            $grantKeySigned->getUserId(),
+            $grantKeySigned->getKeyId(),
+            $protobufRecord->getRecordVersion(),
+            $protobufRecord->getEncryptedGrantKeyWrap(),
+            $grantKeySigned->getEncryptedGrantKeyBlob(),
             new \DateTime("@$cd"),
             new \DateTime("@$ed"));
     }
