@@ -41,12 +41,12 @@ namespace Virgil\PureKit\Pure;
 class RotationResults
 {
     private $usersRotated;
-    private $grantKeyRotated;
+    private $grantKeysRotated;
 
-    public function __construct(int $usersRotated, int $grantKeyRotated)
+    public function __construct(int $usersRotated, int $grantKeysRotated)
     {
         $this->usersRotated = $usersRotated;
-        $this->grantKeyRotated = $grantKeyRotated;
+        $this->grantKeysRotated = $grantKeysRotated;
     }
 
     /**
@@ -60,8 +60,8 @@ class RotationResults
     /**
      * @return int
      */
-    public function getGrantKeyRotated(): int
+    public function getGrantKeysRotated(): int
     {
-        return $this->grantKeyRotated;
+        return $this->grantKeysRotated;
     }
 }

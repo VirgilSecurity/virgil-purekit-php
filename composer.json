@@ -18,7 +18,8 @@
     "google/protobuf": "^3.6.1",
     "myclabs/php-enum": "^1.7",
     "ext-json": "*",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-ev": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^8"

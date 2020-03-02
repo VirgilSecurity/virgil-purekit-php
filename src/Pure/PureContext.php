@@ -62,6 +62,7 @@ class PureContext
     private const BUPPK_PREFIX = "BU";
     private const SECRET_KEY_PREFIX = "SK";
     private const PUBLIC_KEY_PREFIX = "PK";
+    private const UPDATE_TOKEN_PREFIX = "UT";
 
     private $crypto;
     private $buppk;

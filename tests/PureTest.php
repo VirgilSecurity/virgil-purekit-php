@@ -133,7 +133,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->publicKeyNew = $_ENV["TEST_PUBLIC_KEY_NEW"];
         $this->secretKeyNew = $_ENV["TEST_SECRET_KEY_NEW"];
         $this->publicKeyWrong = $_ENV["TEST_PUBLIC_KEY_WRONG"];
-        $this->updateToken = $_ENV["UPDATE_TOKEN"];
+        $this->updateToken = $_ENV["TEST_UPDATE_TOKEN"];
         $this->pheServerAddress = $_ENV["TEST_PHE_SERVER_ADDRESS"];
         $this->pureServerAddress = $_ENV["TEST_PURE_SERVER_ADDRESS"];
         $this->kmsServerAddress = $_ENV["TEST_KMS_SERVER_ADDRESS"];
@@ -183,13 +183,17 @@ class PureTest extends \PHPUnit\Framework\TestCase
         sleep($seconds);
     }
 
-    private function setupPure(string $nms = null, bool $updateToken = false,
-                               array $externalPublicKeys = [],
-                               StorageType $storageType, bool $skipClean = false): PureSetupResult
+    private function setupPure(bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array
+$externalPublicKeys = [],
+StorageType $storageType, bool $skipClean = false):
+    PureSetupResult
     {
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
 
         $nmsData = $nms;
+
+        $publicKey = $useOldKeys ? $this->publicKeyOld : $this->publicKeyNew;
+        $secretKey = $useOldKeys ? $this->secretKeyOld : $this->secretKeyNew;
 
         if (empty($nms))
             $nmsData = $this->crypto->generateRandomData(32);
@@ -201,13 +205,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
         switch ($storageType) {
             case StorageType::RAM():
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
-                    $this->secretKeyNew, $this->publicKeyNew, new RamPureStorage(), $externalPublicKeys,
+                    $secretKey, $publicKey, new RamPureStorage(), $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
             case StorageType::VIRGIL_CLOUD():
                 $context = PureContext::createVirgilContext($this->appToken, $nmsString, $bupkpString,
-                    $this->secretKeyNew, $this->publicKeyNew, $externalPublicKeys,
+                    $secretKey, $publicKey, $externalPublicKeys,
                     $this->pheServerAddress, $this->pureServerAddress, $this->kmsServerAddress);
                 break;
 
@@ -219,7 +223,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
-                    $this->secretKeyNew, $this->publicKeyNew, $mariaDbPureStorage, $externalPublicKeys,
+                    $secretKey, $publicKey, $mariaDbPureStorage, $externalPublicKeys,
                     $this->pheServerAddress, $this->kmsServerAddress);
                 break;
 
@@ -227,7 +231,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 throw new NullPointerException();
         }
 
-        if ($updateToken)
+        if ($useUpdateToken)
             $context->setUpdateToken($this->updateToken);
 
         return new PureSetupResult($context, $bupkp, $nmsData);
@@ -238,7 +242,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
      */
     private static function createStorages(): array
     {
-        // $storages[0] = StorageType::RAM();
+//         $storages[0] = StorageType::RAM();
          $storages[0] = StorageType::MARIADB();
 //        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
@@ -253,7 +257,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -278,7 +282,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -335,13 +339,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testSharing2UsersShouldDecrypt(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
+        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -382,7 +386,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -423,7 +427,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -464,7 +468,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -511,7 +515,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -542,7 +546,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -577,7 +581,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -631,7 +635,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -665,7 +669,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: ");
+        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {
@@ -677,7 +681,85 @@ class PureTest extends \PHPUnit\Framework\TestCase
                     continue;
                 }
 
-                // TODO!
+                $total = 20;
+
+                $firstUserId = null;
+                $firstUserPwd = null;
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+                $newPwd = self::generateRandomString();
+
+                {
+                    $pureResult = $this->setupPure(true, null, false, [], $storage);
+                    $pure = new Pure($pureResult->getContext());
+                    $pureStorage = $pure->getStorage();
+                    $nms = $pureResult->getNmsData();
+
+                    for ($i = 0; $i < $total; $i++) {
+                        $userId = self::generateRandomString();
+                        $password = self::generateRandomString();
+
+                        $pure->registerUser($userId, $password);
+
+                        if (0 == $i)
+                            list($firstUserId, $firstUserPwd) = [$userId, $password];
+                    }
+                }
+
+                {
+                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                    $results = $pure->performRotation();
+
+                    $this->assertEquals($total, $results->getUsersRotated());
+                    $this->assertEquals(0, $results->getGrantKeysRotated());
+                }
+
+                {
+                    $pureResult = $this->setupPure(false, $nms, false, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $authResult = $pure->authenticateUser($firstUserId, $firstUserPwd);
+
+                    $decrypted = $pure->decrypt($authResult->getGrant(), $firstUserId, $dataId, $blob);
+
+                    $this->assertEquals($text, $decrypted);
+
+                    $pure->recoverUser($firstUserId, $newPwd);
+
+                    $authResult2 = $pure->authenticateUser($firstUserId, $newPwd);
+
+                    $decrypted2 = $pure->decrypt($authResult2->getGrant(), $firstUserId, $dataId, $blob);
+
+                    $this->assertEquals($text, $decrypted2);
+                }
+
+                {
+                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $authResult = $pure->authenticateUser($firstUserId, $newPwd);
+
+                    $decrypted = $pure->decrypt($authResult->getGrant(), $firstUserId, $dataId, $blob);
+
+                    $this->assertEquals($text, $decrypted);
+
+                    $newPwd2 = self::generateRandomString();
+
+                    $pure->recoverUser($firstUserId, $newPwd2);
+
+                    $authResult2 = $pure->authenticateUser($firstUserId, $newPwd2);
+
+                    $decrypted2 = $pure->decrypt($authResult2->getGrant(), $firstUserId, $dataId, $blob);
+
+                    $this->assertEquals($text, $decrypted2);
+                }
             }
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
@@ -686,7 +768,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testRotationLocalStorageGrantWorks(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: ");
+        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {
@@ -698,7 +780,85 @@ class PureTest extends \PHPUnit\Framework\TestCase
                     continue;
                 }
 
-                // TODO!
+                $total = 20;
+
+                $firstUserId = null;
+                $firstUserPwd = null;
+                $dataId = self::generateRandomString();
+                $text = self::generateRandomString();
+
+                {
+                    $pureResult = $this->setupPure(true, null, false, [], $storage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $pureStorage = $pure->getStorage();
+                    $nms = $pureResult->getNmsData();
+
+                    for ($i = 0; $i < $total; $i++) {
+                        $userId = self::generateRandomString();
+                        $password = self::generateRandomString();
+
+                        $pure->registerUser($userId, $password);
+
+                        if ($i == 0) {
+                            $firstUserId = $userId;
+                            $firstUserPwd = $password;
+                        }
+                    }
+
+                    $encryptedGrant1 = $pure->authenticateUser($firstUserId, $firstUserPwd)->getEncryptedGrant();
+                }
+
+                {
+                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+
+                    $encryptedGrant2 = $pure->authenticateUser($firstUserId, $firstUserPwd)->getEncryptedGrant();
+
+                    $results = $pure->performRotation();
+
+                    $this->assertEquals($total, $results->getUsersRotated());
+                    $this->assertEquals(1, $results->getGrantKeysRotated());
+                }
+
+                {
+                    $pureResult = $this->setupPure(false, $nms, false, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $pureGrant1 = $pure->decryptGrantFromUser($encryptedGrant1);
+                    $this->assertNotNull($pureGrant1);
+
+                    $pureGrant2 = $pure->decryptGrantFromUser($encryptedGrant2);
+                    $this->assertNotNull($pureGrant2);
+
+                    $decrypted1 = $pure->decrypt($pureGrant1, $firstUserId, $dataId, $blob);
+                    $this->assertEquals($text, $decrypted1);
+
+                    $decrypted2 = $pure->decrypt($pureGrant2, $firstUserId, $dataId, $blob);
+                    $this->assertEquals($text, $decrypted2);
+                }
+
+                {
+                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult->getContext()->setStorage($pureStorage);
+                    $pure = new Pure($pureResult->getContext());
+
+                    $pureGrant1 = $pure->decryptGrantFromUser($encryptedGrant1);
+                    $this->assertNotNull($pureGrant1);
+
+                    $pureGrant2 = $pure->decryptGrantFromUser($encryptedGrant2);
+                    $this->assertNotNull($pureGrant2);
+
+                    $decrypted1 = $pure->decrypt($pureGrant1, $firstUserId, $dataId, $blob);
+                    $this->assertEquals($text, $decrypted1);
+
+                    $decrypted2 = $pure->decrypt($pureGrant2, $firstUserId, $dataId, $blob);
+                    $this->assertEquals($text, $decrypted2);
+                }
             }
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
@@ -707,14 +867,14 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionAdditionalKeysShouldDecrypt(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
+        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -773,7 +933,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $publicKeyBase64 = base64_encode($this->crypto->exportPublicKey($keyPair->getPublicKey()));
                 $externalPublicKeys = [$dataId => [$publicKeyBase64]];
 
-                $pureResult = $this->setupPure(null, false, $externalPublicKeys, $storage);
+                $pureResult = $this->setupPure(true, null, false, $externalPublicKeys, $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -804,7 +964,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -851,7 +1011,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 if (StorageType::MARIADB() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -892,7 +1052,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -928,7 +1088,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -955,13 +1115,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testEncryptionRolesShouldDecrypt(): void
     {
-        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: fail");
+        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -1031,7 +1191,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteRolesNewRoleShouldDelete(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: ");
+        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1043,7 +1203,49 @@ class PureTest extends \PHPUnit\Framework\TestCase
                     continue;
                 }
 
-                // TODO!
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pure = new Pure($pureResult->getContext());
+
+                $userId1 = self::generateRandomString();
+                $userId2 = self::generateRandomString();
+                $password1 = self::generateRandomString();
+                $password2 = self::generateRandomString();
+                $dataId1 = self::generateRandomString();
+                $dataId2 = self::generateRandomString();
+                $roleName1 = self::generateRandomString();
+                $roleName2 = self::generateRandomString();
+
+                $pure->registerUser($userId1, $password1);
+                $pure->registerUser($userId2, $password2);
+
+                $text1 = self::generateRandomString();
+                $text2 = self::generateRandomString();
+
+                $authResult1 = $pure->authenticateUser($userId1, $password1);
+                $authResult2 = $pure->authenticateUser($userId2, $password2);
+
+                $pure->createRole($roleName1, [$userId1]);
+                $pure->createRole($roleName2, [$userId2]);
+
+                $cipherText1 = $pure->encrypt($userId1, $dataId1, [], [$roleName2], new VirgilPublicKeyCollection(),
+                    $text1);
+                $cipherText2 = $pure->encrypt($userId2, $dataId2, [], [$roleName1], new VirgilPublicKeyCollection(),
+                    $text2);
+
+                $pure->deleteRole($roleName1, true);
+
+                try {
+                    $pure->decrypt($authResult1->getGrant(), $userId2, $dataId2, $cipherText2);
+                } catch (PureLogicException $exception) {
+                    $this->assertEquals(PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA(), $exception->getErrorStatus
+                        ());
+                }
+
+                if ($storage != StorageType::MARIADB()) {
+                    $pure->deleteRole($roleName2, false);
+                    $plainText = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId1, $cipherText1);
+                    $this->assertEquals($text1, $plainText);
+                }
             }
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
@@ -1060,7 +1262,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1097,14 +1299,14 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testShareRoleShouldDecrypt(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
+        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(null, false, [], $storage);
+                $pureResult = $this->setupPure(true,null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1122,7 +1324,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $blob = $pure->encrypt($userId1, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
 
                 $pure->createRole($roleName, [$userId2]);
-
                 $pure->shareToRole($authResult1->getGrant(), $dataId, [$roleName]);
 
                 $decrypted = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId, $blob);
@@ -1135,12 +1336,55 @@ class PureTest extends \PHPUnit\Framework\TestCase
 
     public function testCrossCompatibilityJsonShouldWork(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: ");
+        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {
+            $testData = json_decode(file_get_contents(__DIR__."/_resources/compatibility_data.json"));
 
-            // TODO!
+            $encryptedGrant = $testData->encrypted_grant;
+            $userId1 = $testData->user_id1;
+            $userId2 = $testData->user_id2;
+            $password1 = $testData->password1;
+            $password2 = $testData->password2;
+            $dataId1 = $testData->data_id1;
+            $dataId2 = $testData->data_id2;
+            $text1 = base64_decode($testData->text1);
+            $text2 = base64_decode($testData->text2);
+            $blob1 = base64_decode($testData->blob1);
+            $blob2 = base64_decode($testData->blob2);
+            $nms = base64_decode($testData->nms);
+
+            $pureResult = $this->setupPure(true, $nms, false, [], StorageType::MARIADB(), true);
+            $pure = new Pure($pureResult->getContext());
+
+            $mariaDbPureStorage = $pureResult->getContext()->getStorage();
+
+            $sqls = file_get_contents(__DIR__."/_resources/compatibility_tables.sql");
+
+            $mariaDbPureStorage->cleanDb();
+
+            $mariaDbPureStorage->executeSql($sqls);
+
+            $pureGrant = $pure->decryptGrantFromUser($encryptedGrant);
+
+            $this->assertNotNull($pureGrant);
+
+            $authResult1 = $pure->authenticateUser($userId1, $password1);
+            $authResult2 = $pure->authenticateUser($userId2, $password2);
+
+            $this->assertNotNull($authResult1);
+            $this->assertNotNull($authResult2);
+
+            $text11 = $pure->decrypt($authResult1->getGrant(), null, $dataId1, $blob1);
+            $text12 = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId1, $blob1);
+            $text21 = $pure->decrypt($authResult1->getGrant(), null, $dataId2, $blob2);
+            $text22 = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId2, $blob2);
+
+            $this->assertEquals($text1, $text11);
+            $this->assertEquals($text1, $text12);
+            $this->assertEquals($text2, $text21);
+            $this->assertEquals($text2, $text22);
 
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));

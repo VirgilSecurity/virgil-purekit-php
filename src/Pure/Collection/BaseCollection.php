@@ -42,9 +42,6 @@ class BaseCollection
 {
     protected $collection;
 
-    /**
-     * @return null|array
-     */
     public function getAsArray(): ?array
     {
         return $this->collection;

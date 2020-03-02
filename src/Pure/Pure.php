@@ -207,7 +207,6 @@ class Pure
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
         $header = $deserializedEncryptedGrant->getHeader()->serializeToString();
-
         $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $header);
 
         return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData, $header, $grantKeyRaw);
@@ -332,7 +331,7 @@ class Pure
 
             $this->storage->updateUsers($newUserRecords, $this->currentVersion - 1);
 
-            if (empty($newUserRecords)) {
+            if (empty($newUserRecords->getAsArray())) {
                 break;
             } else {
                 $usersRotated += count($newUserRecords->getAsArray());
@@ -344,34 +343,35 @@ class Pure
 
             $newGrantKeys = new GrantKeyCollection();
 
-            foreach ($grantKeys->getAsArray() as $grantKey) {
+            if (!empty($grantKeys->getAsArray())) {
+                foreach ($grantKeys->getAsArray() as $grantKey) {
 
-                // TODO! Need to be checked
-                if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
-                    throw new \Exception("Assertion err: grantKeyVersion != currentVersion");
+                    // TODO! Need to be checked
+                    if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
+                        throw new \Exception("Assertion err: grantKeyVersion != currentVersion");
+                    }
+
+                    $newWrap = $this->kmsManager->performGrantRotation($grantKey->getEncryptedGrantKeyWrap());
+
+                    $newGrantKey = new GrantKey(
+                        $grantKey->getUserId(),
+                        $grantKey->getKeyId(),
+                        $this->currentVersion,
+                        $newWrap,
+                        $grantKey->getEncryptedGrantKeyBlob(),
+                        $grantKey->getCreationDate(),
+                        $grantKey->getExpirationDate()
+                    );
+
+                    $newGrantKeys->add($newGrantKey);
                 }
-
-                $newWrap = $this->kmsManager->performGrantRotation($grantKey->getEncryptedGrantKeyWrap());
-
-                $newGrantKey = new GrantKey(
-                    $grantKey->getUserId(),
-                    $grantKey->getKeyId(),
-                    $this->currentVersion,
-                    $newWrap,
-                    $grantKey->getEncryptedGrantKeyBlob(),
-                    $grantKey->getCreationDate(),
-                    $grantKey->getExpirationDate()
-                );
-
-                $newGrantKeys->add($newGrantKey);
             }
 
             $this->getStorage()->updateGrantKeys($newGrantKeys);
 
-            if (empty($newGrantKeys)) {
+            if (empty($newGrantKeys->getAsArray())) {
                 break;
             }
-
             else {
                 $grantKeysRotated += count($newGrantKeys->getAsArray());
             }

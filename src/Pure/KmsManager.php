@@ -91,9 +91,10 @@ class KmsManager
                 $this->pwdPreviousClient->setKeys($context->getSecretKey()->getPayload2(),
                     $context->getPublicKey()->getPayload2());
 
+                // [new_client_private_key, new_server_public_key]
                 $rotateKeysResult = $this->pwdPreviousClient->rotateKeys($pwdUpdateToken);
-                $this->pwdCurrentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
-                    $rotateKeysResult->getNewServerPublicKey());
+                $this->pwdCurrentClient->setKeys($rotateKeysResult[0],
+                    $rotateKeysResult[1]);
 
             } else {
                 $this->currentVersion = $context->getPublicKey()->getVersion();
@@ -208,6 +209,7 @@ class KmsManager
     public function recoverPwd(UserRecord $userRecord): string
     {
         $derivedSecret = $this->recoverPwdSecret($userRecord);
+
         return $this->pureCrypto->decryptSymmetricWithOneTimeKey($userRecord->getPasswordRecoveryBlob(), "",
             $derivedSecret);
     }
@@ -215,7 +217,6 @@ class KmsManager
     public function recoverGrantKey(GrantKey $grantKey, string $header): string
     {
         $derivedSecret = $this->recoverGrantKeySecret($grantKey);
-
         return $this->pureCrypto->decryptSymmetricWithOneTimeKey($grantKey->getEncryptedGrantKeyBlob(), $header,
                 $derivedSecret);
     }

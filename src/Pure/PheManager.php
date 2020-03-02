@@ -80,9 +80,10 @@ class PheManager
                 $this->previousClient->setKeys($context->getSecretKey()->getPayload1(),
                     $context->getPublicKey()->getPayload1());
 
+                // [new_client_private_key, new_server_public_key]
                 $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload1());
-                $this->currentClient->setKeys($rotateKeysResult->getNewClientPrivateKey(),
-                    $rotateKeysResult->getNewServerPublicKey());
+                $this->currentClient->setKeys($rotateKeysResult[0],
+                    $rotateKeysResult[1]);
 
             } else {
                 $this->currentVersion = $context->getPublicKey()->getVersion();
