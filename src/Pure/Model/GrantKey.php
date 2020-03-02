@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
 /**
  * Class GrantKey
  * @package Virgil\PureKit\Pure\Model
@@ -81,6 +83,9 @@ class GrantKey
      * @param string $encryptedGrantKeyBlob
      * @param \DateTime $creationDate
      * @param \DateTime $expirationDate
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function __construct(string $userId, string $keyId, int $recordVersion, string $encryptedGrantKeyWrap, string
     $encryptedGrantKeyBlob, \DateTime $creationDate, \DateTime $expirationDate)

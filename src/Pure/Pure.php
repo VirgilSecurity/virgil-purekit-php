@@ -206,10 +206,11 @@ class Pure
         if ($grantKey->getExpirationDate() < new \DateTime("now"))
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
-        $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $deserializedEncryptedGrant->getHeader());
+        $header = $deserializedEncryptedGrant->getHeader()->serializeToString();
 
-        return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData,
-            $deserializedEncryptedGrant->getHeader(), $grantKeyRaw);
+        $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $header);
+
+        return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData, $header, $grantKeyRaw);
     }
 
     public function decryptGrantFromUser(string $encryptedGrantString): PureGrant
@@ -433,9 +434,6 @@ class Pure
                 $cellKey = new CellKey($userId, $dataId, $cpkData, $encryptedCskData->getCms(),
                     $encryptedCskData->getBody());
 
-                var_dump(88888);
-                die;
-
                 $this->storage->insertCellKey($cellKey);
 
                 $cpk = $ckp->getPublicKey();
@@ -469,6 +467,7 @@ class Pure
             $cellKey->getEncryptedCskBody());
 
         $csk = null;
+
         try {
             $csk = $this->pureCrypto->decryptCellKey(
                 $pureCryptoData,
@@ -484,6 +483,7 @@ class Pure
             }
 
             $roleAssignments = $this->storage->selectRoleAssignments($grant->getUserId());
+
             $publicKeysIds = $this->pureCrypto->extractPublicKeysIdsFromCellKey($cellKey->getEncryptedCskCms());
 
             if ($roleAssignments->getAsArray()) {
@@ -532,22 +532,24 @@ class Pure
         return $this->pureCrypto->decryptData($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
-    public function shareToRole(PureGrant $grant, string $dataId, RoleCollection $roleNames): void
+    public function shareToRole(PureGrant $grant, string $dataId, array $roleNames): void
     {
         ValidateUtil::checkNull($grant, "grant");
         ValidateUtil::checkNullOrEmpty($dataId, "dataId");
         ValidateUtil::checkNull($roleNames, "roleNames");
 
-        if (empty($roleNames->getAsArray())) {
+        if (empty($roleNames)) {
             throw new EmptyArgumentException("roleNames");
         }
 
-        $roles = $this->getStorage()->selectRoles($roleNames->getAsArray());
+        $roles = $this->getStorage()->selectRoles($roleNames);
 
         $roleKeys = new VirgilPublicKeyCollection();
 
-        foreach ($roles->getAsArray() as $role) {
-            $roleKeys->add($this->pureCrypto->importPublicKey($role->getRpk()));
+        if (!empty($roles->getAsArray())) {
+            foreach ($roles->getAsArray() as $role) {
+                $roleKeys->add($this->pureCrypto->importPublicKey($role->getRpk()));
+            }
         }
 
         $this->share_($grant, $dataId, [], $roleKeys);
@@ -667,7 +669,7 @@ class Pure
     }
 
 
-    private function _registerUserInternal(string $userId, string $password): void
+    private function _registerUserInternal(string $userId, string $password): RegisterResult
     {
         ValidateUtil::checkNullOrEmpty($userId, "userId");
         ValidateUtil::checkNullOrEmpty($password, "password");
@@ -705,10 +707,12 @@ class Pure
         );
 
         $this->getStorage()->insertUser($userRecord);
+
+        return new RegisterResult($userRecord, $ukp, $pheResult[1]);
     }
 
     private function _authenticateUserInternal(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek, string
-$sessionId, int $ttl): AuthResult
+$sessionId = null, int $ttl): AuthResult
     {
         $creationDate = new \DateTime("now");
         $ts = $creationDate->getTimestamp() + ($ttl * 1000);
@@ -747,7 +751,7 @@ $sessionId, int $ttl): AuthResult
             ->setHeader($headerBytes)
             ->setEncryptedPhek($encryptedPhek);
 
-        $encryptedGrant = base64_encode($encryptedGrantData);
+        $encryptedGrant = base64_encode($encryptedGrantData->serializeToString());
 
         return new AuthResult($grant, $encryptedGrant);
     }
@@ -800,9 +804,11 @@ $sessionId, int $ttl): AuthResult
     {
         $otherUserRecords = $this->storage->selectUsers($otherUserIds);
 
-        foreach ($otherUserRecords->getAsArray() as $record) {
-            $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
-            $publicKeys->add($otherUpk);
+        if (!empty($otherUserRecords->getAsArray())) {
+            foreach ($otherUserRecords->getAsArray() as $record) {
+                $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
+                $publicKeys->add($otherUpk);
+            }
         }
 
         return $publicKeys;

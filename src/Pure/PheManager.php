@@ -170,7 +170,8 @@ class PheManager
         } catch (ProtocolException | ProtocolHttpException $exception) {
             throw new PheClientException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception);
+            var_dump(111, get_class($exception), $exception->getMessage(), $exception->getCode(), $exception->getFile
+            (), $exception->getLine());
             die;
         }
 
@@ -183,7 +184,7 @@ class PheManager
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception);
+            var_dump(222, get_class($exception));
             die;
         }
     }

@@ -50,9 +50,9 @@ class PureSessionParams
     }
 
     /**
-     * @return string
+     * @return null|string
      */
-    public function getSessionId(): string
+    public function getSessionId(): ?string
     {
         return $this->sessionId;
     }

@@ -25,6 +25,14 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>bytes signature = 3;</code>
      */
     private $signature = '';
+    /**
+     * Generated from protobuf field <code>uint32 record_version = 4;</code>
+     */
+    private $record_version = 0;
+    /**
+     * Generated from protobuf field <code>bytes encrypted_grant_key_wrap = 5;</code>
+     */
+    private $encrypted_grant_key_wrap = '';
 
     /**
      * Constructor.
@@ -35,6 +43,8 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      *     @type int $version
      *     @type string $grant_key_signed
      *     @type string $signature
+     *     @type int $record_version
+     *     @type string $encrypted_grant_key_wrap
      * }
      */
     public function __construct($data = NULL) {
@@ -104,6 +114,50 @@ class GrantKey extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->signature = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 record_version = 4;</code>
+     * @return int
+     */
+    public function getRecordVersion()
+    {
+        return $this->record_version;
+    }
+
+    /**
+     * Generated from protobuf field <code>uint32 record_version = 4;</code>
+     * @param int $var
+     * @return $this
+     */
+    public function setRecordVersion($var)
+    {
+        GPBUtil::checkUint32($var);
+        $this->record_version = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes encrypted_grant_key_wrap = 5;</code>
+     * @return string
+     */
+    public function getEncryptedGrantKeyWrap()
+    {
+        return $this->encrypted_grant_key_wrap;
+    }
+
+    /**
+     * Generated from protobuf field <code>bytes encrypted_grant_key_wrap = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setEncryptedGrantKeyWrap($var)
+    {
+        GPBUtil::checkString($var, False);
+        $this->encrypted_grant_key_wrap = $var;
 
         return $this;
     }

@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Virgil\PureKit\Pure\Util\ValidateUtil;
+
 /**
  * Class PureCryptoData
  * @package Virgil\PureKit\Pure
@@ -56,6 +58,9 @@ class PureCryptoData
      * PureCryptoData constructor.
      * @param string $cms
      * @param string $body
+     * @throws Exception\EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
      */
     public function __construct(string $cms, string $body)
     {

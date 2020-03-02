@@ -61,10 +61,11 @@ class Credentials
     /**
      * Credentials constructor.
      * @param string $payload1
-     * @param string $payload2
+     * @param string|null $payload2
+     * @param string|null $payload3
      * @param int $version
      */
-    public function __construct(string $payload1, string $payload2, string $payload3, int $version)
+    public function __construct(string $payload1, string $payload2 = null, string $payload3 = null, int $version)
     {
         $this->payload1 = $payload1;
         $this->payload2 = $payload2;
@@ -80,15 +81,18 @@ class Credentials
         return $this->payload1;
     }
 
-    public function getPayload2(): string
+    /**
+     * @return null|string
+     */
+    public function getPayload2(): ?string
     {
         return $this->payload2;
     }
 
     /**
-     * @return string
+     * @return null|string
      */
-    public function getPayload3(): string
+    public function getPayload3(): ?string
     {
         return $this->payload3;
     }

@@ -198,13 +198,14 @@ class PureContext
 
         $numberOfParts = 1 + $numberOfPayloads + ($isVersioned ? 1 : 0);
 
-        if (count($parts) != $numberOfParts)
-            throw new PureLogicException(ErrorStatus::CREDENTIALS_PARSING_ERROR());
+        if (count($parts) != $numberOfParts) {
+            throw new PureLogicException(PureLogicErrorStatus::CREDENTIALS_PARSING_ERROR());
+        }
 
         $index = 0;
 
         if ($parts[$index] != $prefix)
-            throw new PureLogicException(ErrorStatus::CREDENTIALS_PARSING_ERROR());
+            throw new PureLogicException(PureLogicErrorStatus::CREDENTIALS_PARSING_ERROR());
 
         $index++;
 
@@ -216,6 +217,7 @@ class PureContext
         }
 
         $payload1 = base64_decode($parts[$index]);
+
         $payload2 = null;
         $payload3 = null;
 

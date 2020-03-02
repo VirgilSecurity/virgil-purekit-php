@@ -133,7 +133,7 @@ class PureModelSerializer
 
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
-        ValidateUtis::checkNull($userRecord, "userRecord");
+        ValidateUtil::checkNull($userRecord, "userRecord");
 
         try {
             $enrollmentRecord = new ProtoEnrollmentRecord();

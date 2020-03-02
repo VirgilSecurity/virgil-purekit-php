@@ -467,7 +467,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $protobufRecord = $this->client->getGrantKey($request);
         }
         catch (ProtocolException $e) {
-            if ($e->getErrorCode() == ServiceErrorCode::GRANT_KEY_NOT_FOUND()->getCode())
+            if ($e->getCode() == ServiceErrorCode::GRANT_KEY_NOT_FOUND()->getCode())
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND());
 
             throw new VirgilCloudStorageException($e);

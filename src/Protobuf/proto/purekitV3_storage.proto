@@ -126,4 +126,6 @@ message GrantKey {
     uint32 version = 1;
     bytes grant_key_signed = 2;
     bytes signature = 3;
+    uint32 record_version = 4;
+    bytes encrypted_grant_key_wrap = 5;
 }
