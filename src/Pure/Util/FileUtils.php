@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,18 +35,12 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Credentials;
+namespace Virgil\PureKit\Pure\Util;
 
-/**
- * Interface Credentials
- * @package Virgil\PureKit\Credentials
- */
-interface Credentials
+class FileUtils
 {
-    const ALL = [self::APP_TOKEN, self::SERVICE_PUBLIC_KEY, self::APP_SECRET_KEY, self::UPDATE_TOKEN];
+    public static function getPackageVersion()
+    {
 
-    const APP_TOKEN = 'appToken';
-    const SERVICE_PUBLIC_KEY = 'servicePublicKey';
-    const APP_SECRET_KEY = 'appSecretKey';
-    const UPDATE_TOKEN = 'updateToken';
+    }
 }
