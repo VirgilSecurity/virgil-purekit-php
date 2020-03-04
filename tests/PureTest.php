@@ -728,6 +728,7 @@ $externalPublicKeys = [],
 
     /**
      * @group mdbf
+     * @group f1
      */
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
@@ -867,7 +868,7 @@ $externalPublicKeys = [],
 
                         $pure->registerUser($userId, $password);
 
-                        if ($i == 0) {
+                        if (0 == $i) {
                             $firstUserId = $userId;
                             $firstUserPwd = $password;
                         }

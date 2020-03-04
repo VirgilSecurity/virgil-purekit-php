@@ -132,6 +132,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
     /**
      * @param UserRecord $userRecord
      * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function insertUser(UserRecord $userRecord): void
     {
@@ -170,6 +173,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
      * @throws MariaDbSqlException
      * @throws PureStorageGenericException
      * @throws PureStorageUserNotFoundException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function updateUser(UserRecord $userRecord): void
     {
@@ -400,6 +406,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+            var_dump($stmt->debugDumpParams());
+            die;
 
             $userRecords = new UserRecordCollection();
 
@@ -1311,38 +1320,35 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         try {
             $conn = $this->getConnection();
 
-            $conn->query(
-                "CREATE TABLE virgil_users (" .
+            $conn->query("CREATE TABLE virgil_users (" .
                 "user_id CHAR(36) NOT NULL PRIMARY KEY," .
-                "phe_record_version INTEGER NOT NULL," .
-                "    INDEX phe_record_version_index(phe_record_version)," .
-                "    UNIQUE INDEX user_id_phe_record_version_index(user_id, phe_record_version)," .
+                "record_version INTEGER NOT NULL," .
+                "    INDEX record_version_index(record_version)," .
+                "    UNIQUE INDEX user_id_record_version_index(user_id, record_version)," .
                 "protobuf VARBINARY(2048) NOT NULL" .
                 ");");
 
             $conn->query(
                 "CREATE TABLE virgil_keys (" .
-                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
                 "user_id CHAR(36) NOT NULL," .
                 "    FOREIGN KEY (user_id)" .
                 "        REFERENCES virgil_users(user_id)" .
                 "        ON DELETE CASCADE," .
                 "data_id VARCHAR(128) NOT NULL," .
-                "    UNIQUE INDEX user_id_data_id_index(user_id, data_id)," .
-                "protobuf VARBINARY(32768) NOT NULL /* FIXME Up to 128 recipients */" .
-                ");");
+                "protobuf VARBINARY(32768) NOT NULL, /* Up to 125 recipients */" .
+                "    PRIMARY KEY(user_id, data_id)" .
+                ");"
+            );
 
             $conn->query(
                 "CREATE TABLE virgil_roles (" .
-                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
-                "role_name VARCHAR(64) NOT NULL," .
-                "    INDEX role_name_index(role_name)," .
-                "protobuf VARBINARY(196) NOT NULL" .
-                ");");
+                "role_name VARCHAR(64) NOT NULL PRIMARY KEY," .
+                "protobuf VARBINARY(256) NOT NULL" .
+                ");"
+            );
 
             $conn->query(
                 "CREATE TABLE virgil_role_assignments (" .
-                "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY," .
                 "role_name VARCHAR(64) NOT NULL," .
                 "    FOREIGN KEY (role_name)" .
                 "        REFERENCES virgil_roles(role_name)" .
@@ -1352,29 +1358,33 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
                 "        REFERENCES virgil_users(user_id)" .
                 "        ON DELETE CASCADE," .
                 "    INDEX user_id_index(user_id)," .
-                "    UNIQUE INDEX user_id_role_name_index(user_id, role_name)," .
-                "protobuf VARBINARY(1024) NOT NULL" .
-                ");");
+                "protobuf VARBINARY(1024) NOT NULL," .
+                "    PRIMARY KEY(role_name, user_id)" .
+                ");"
+            );
 
             $conn->query(
                 "CREATE TABLE virgil_grant_keys (" .
+                "record_version INTEGER NOT NULL," .
+                "    INDEX record_version_index(record_version)," .
                 "user_id CHAR(36) NOT NULL," .
                 "    FOREIGN KEY (user_id)" .
                 "        REFERENCES virgil_users(user_id)" .
                 "        ON DELETE CASCADE," .
                 "key_id BINARY(64) NOT NULL," .
-                "expiration_date TIMESTAMP NOT NULL," .
+                "expiration_date BIGINT NOT NULL," .
                 "    INDEX expiration_date_index(expiration_date)," .
-                "protobuf VARBINARY(1024) NOT NULL," .
+                "protobuf VARBINARY(512) NOT NULL," .
                 "    PRIMARY KEY(user_id, key_id)" .
-                ");");
+                ");"
+            );
 
             $conn->query("SET @@global.event_scheduler = 1;");
 
             $conn->query(
                 "CREATE EVENT delete_expired_grant_keys ON SCHEDULE EVERY $cleanGrantKeysIntervalSeconds SECOND" .
                 "    DO" .
-                "        DELETE FROM virgil_grant_keys WHERE expiration_date < CURRENT_TIMESTAMP;");
+                "        DELETE FROM virgil_grant_keys WHERE expiration_date < UNIX_TIMESTAMP();");
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());

@@ -511,6 +511,8 @@ class Pure
             if (!empty($grantKeys->getAsArray())) {
                 foreach ($grantKeys->getAsArray() as $grantKey) {
 
+                    var_dump(222);
+
                     // TODO! Need to be checked
                     if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
                         throw new \Exception("Assertion err: grantKeyVersion != currentVersion");
@@ -541,6 +543,10 @@ class Pure
                 $grantKeysRotated += count($newGrantKeys->getAsArray());
             }
         }
+
+        var_dump(123);
+        die;
+
 
         return new RotationResults($usersRotated, $grantKeysRotated);
     }
