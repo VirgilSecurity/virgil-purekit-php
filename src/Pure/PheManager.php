@@ -53,15 +53,42 @@ use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class PheManager
+ * @package Virgil\PureKit\Pure
+ */
 class PheManager
 {
+    /**
+     * @var \Virgil\Crypto\VirgilCrypto
+     */
     private $crypto;
+    /**
+     * @var int
+     */
     private $currentVersion;
+    /**
+     * @var PheClient
+     */
     private $currentClient;
+    /**
+     * @var null
+     */
     private $updateToken;
+    /**
+     * @var null
+     */
     private $previousClient;
+    /**
+     * @var \Virgil\PureKit\Http\HttpPheClient
+     */
     private $httpClient;
 
+    /**
+     * PheManager constructor.
+     * @param PureContext $context
+     * @throws PureCryptoException
+     */
     public function __construct(PureContext $context)
     {
         try {
@@ -99,6 +126,11 @@ class PheManager
         }
     }
 
+    /**
+     * @param int $pheVersion
+     * @return PheClient
+     * @throws NullPointerException
+     */
     private function getPheClient(int $pheVersion): PheClient
     {
         if ($this->currentVersion == $pheVersion) {
@@ -110,6 +142,15 @@ class PheManager
         }
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @param string $password
+     * @return string
+     * @throws NullPointerException
+     * @throws PheClientException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     public function computePheKey(UserRecord $userRecord, string $password): string
     {
         $passwordHash = $this->crypto->computeHash($password, HashAlgorithms::SHA512());
@@ -117,6 +158,15 @@ class PheManager
         return $this->computePheKey_($userRecord, $passwordHash);
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @param string $passwordHash
+     * @return string
+     * @throws NullPointerException
+     * @throws PheClientException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     public function computePheKey_(UserRecord $userRecord, string $passwordHash): string
     {
         try {
@@ -150,6 +200,13 @@ class PheManager
         }
     }
 
+    /**
+     * @param string $enrollmentRecord
+     * @return string
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     */
     public function performRotation(string $enrollmentRecord): string {
 
         ValidationUtils::checkNull($this->updateToken, "pheUpdateToken");
@@ -162,6 +219,12 @@ class PheManager
 
     }
 
+    /**
+     * @param string $passwordHash
+     * @return array
+     * @throws PheClientException
+     * @throws PureCryptoException
+     */
     public function getEnrollment(string $passwordHash): array
     {
         $request = new EnrollRequest(AvailableRequest::ENROLL(), $this->currentVersion);

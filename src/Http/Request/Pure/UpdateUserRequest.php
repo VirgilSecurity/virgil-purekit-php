@@ -41,14 +41,27 @@ use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class UpdateUserRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class UpdateUserRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var ProtoUserRecord
+     */
     private $userRecord;
 
+    /**
+     * UpdateUserRequest constructor.
+     * @param AvailableRequest $request
+     * @param ProtoUserRecord $userRecord
+     * @param string $userId
+     */
     public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord, string $userId)
     {
         $this->request = $request;

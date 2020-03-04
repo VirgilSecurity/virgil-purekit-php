@@ -40,6 +40,10 @@ namespace Virgil\PureKit\Http\Request\Pure;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class DeleteCellKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class DeleteCellKeyRequest extends BaseRequest
 {
     /**
@@ -47,6 +51,12 @@ class DeleteCellKeyRequest extends BaseRequest
      */
     protected $request;
 
+    /**
+     * DeleteCellKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $userId
+     * @param string $dataId
+     */
     public function __construct(AvailableRequest $request, string $userId, string $dataId)
     {
         $this->request = $request;

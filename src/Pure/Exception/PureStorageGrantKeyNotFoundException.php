@@ -38,11 +38,26 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageGrantKeyNotFoundException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageGrantKeyNotFoundException extends PureStorageException
 {
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $keyId;
 
+    /**
+     * PureStorageGrantKeyNotFoundException constructor.
+     * @param string $userId
+     * @param string $keyId
+     */
     public function __construct(string $userId, string $keyId)
     {
         $this->userId = $userId;

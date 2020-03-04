@@ -39,22 +39,43 @@ namespace Virgil\PureKit\Pure\Collection;
 
 use Virgil\Crypto\Core\VirgilPublicKey;
 
+/**
+ * Class VirgilPublicKeyMap
+ * @package Virgil\PureKit\Pure\Collection
+ */
 class VirgilPublicKeyMap
 {
+    /**
+     * @var
+     */
     private $collection;
+    /**
+     * @var VirgilPublicKeyCollection
+     */
     private $virgilPublicKeyCollection;
 
+    /**
+     * VirgilPublicKeyMap constructor.
+     */
     public function __construct()
     {
         $this->virgilPublicKeyCollection = new VirgilPublicKeyCollection();
     }
 
+    /**
+     * @param string $key
+     * @param VirgilPublicKey $virgilPublicKey
+     */
     public function put(string $key, VirgilPublicKey $virgilPublicKey): void
     {
         $this->virgilPublicKeyCollection->add($virgilPublicKey);
         $this->collection[$key] = $this->virgilPublicKeyCollection;
     }
 
+    /**
+     * @param string $key
+     * @return null|VirgilPublicKeyCollection
+     */
     public function get(string $key): ?VirgilPublicKeyCollection {
         return $this->collection[$key];
     }

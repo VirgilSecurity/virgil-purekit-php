@@ -41,14 +41,28 @@ use PurekitV3Storage\CellKey as ProtoCellKey;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class UpdateCellKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class UpdateCellKeyRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var ProtoCellKey
+     */
     private $cellKey;
 
+    /**
+     * UpdateCellKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $userId
+     * @param string $dataId
+     * @param ProtoCellKey $cellKey
+     */
     public function __construct(AvailableRequest $request, string $userId, string $dataId, ProtoCellKey $cellKey)
     {
         $this->request = $request;

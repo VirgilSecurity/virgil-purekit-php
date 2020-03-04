@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageCellKeyNotFoundException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageCellKeyNotFoundException extends PureStorageException
 {
 

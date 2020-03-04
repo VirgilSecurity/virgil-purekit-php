@@ -41,20 +41,35 @@ use PurekitV3Storage\RoleAssignments;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class InsertRoleAssignmentsRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class InsertRoleAssignmentsRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var RoleAssignments
+     */
     private $protoRoleAssignments;
 
+    /**
+     * InsertRoleAssignmentsRequest constructor.
+     * @param AvailableRequest $request
+     * @param RoleAssignments $protoRoleAssignments
+     */
     public function __construct(AvailableRequest $request, RoleAssignments $protoRoleAssignments)
     {
         $this->request = $request;
         $this->protoRoleAssignments = $protoRoleAssignments;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return $this->protoRoleAssignments->serializeToString();

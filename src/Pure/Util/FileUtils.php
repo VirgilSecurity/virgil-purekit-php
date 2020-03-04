@@ -37,10 +37,25 @@
 
 namespace Virgil\PureKit\Pure\Util;
 
+/**
+ * Class FileUtils
+ * @package Virgil\PureKit\Pure\Util
+ */
 class FileUtils
 {
-    public static function getPackageVersion()
+    /**
+     * @return null|string
+     */
+    public static function getPackageVersion(): ?string
     {
+        $v = "undefined";
 
+        $path = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".."
+            . DIRECTORY_SEPARATOR . "VERSION";
+
+        if (is_file($path))
+            $v = file_get_contents($path);
+
+        return $v;
     }
 }

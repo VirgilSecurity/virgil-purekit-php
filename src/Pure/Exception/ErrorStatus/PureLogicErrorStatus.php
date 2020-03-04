@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
-
 class PureLogicErrorStatus extends BaseErrorStatus
 {
     private const KEYS_VERSION_MISMATCH = [1, "Keys version mismatch"];

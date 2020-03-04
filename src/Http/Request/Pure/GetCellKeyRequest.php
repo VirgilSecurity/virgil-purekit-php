@@ -40,6 +40,10 @@ namespace Virgil\PureKit\Http\Request\Pure;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class GetCellKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class GetCellKeyRequest extends BaseRequest
 {
     /**

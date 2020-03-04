@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class ProtocolHttpException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class ProtocolHttpException extends \Exception
 {
 

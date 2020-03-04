@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class UnsupportedOperationException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class UnsupportedOperationException extends \Exception
 {
 

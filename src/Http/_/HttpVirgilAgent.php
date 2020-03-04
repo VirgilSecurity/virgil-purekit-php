@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Http\_;
 
+use Virgil\PureKit\Pure\Util\FileUtils;
+
 /**
  * Class HttpVirgilAgent
  * @package Virgil\PureKit\Http
@@ -45,7 +47,6 @@ class HttpVirgilAgent
 {
     const PRODUCT = 'purekit';
     const FAMILY = 'php';
-    const VERSION = '3.0.0'; // TODO: Add composer.lock parser!
 
     /**
      * @return string
@@ -72,6 +73,6 @@ class HttpVirgilAgent
             self::PRODUCT . ";" .
             self::FAMILY . self::getPHPVersion() . ";" .
             self::getPlatform() . ";" .
-            self::VERSION;
+            FileUtils::getPackageVersion();
     }
 }

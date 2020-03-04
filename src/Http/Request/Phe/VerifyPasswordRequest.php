@@ -37,8 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Phe;
 
-use Purekit\VerifyPasswordRequest as ProtobufVerifyPasswordRequest;
-use Virgil\PureKit\Http\_\AvailableHttpMethod;
+use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -79,7 +78,7 @@ class VerifyPasswordRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = new ProtobufVerifyPasswordRequest();
+        $r = new ProtoVerifyPasswordRequest();
         $r->setVersion($this->version);
         $r->setRequest($this->verifyPasswordRequest);
         return $r->serializeToString();

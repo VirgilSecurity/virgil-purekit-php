@@ -38,13 +38,11 @@
 namespace Virgil\PureKit\Http;
 
 use GuzzleHttp\Client as GuzzleClient;
+use Purekit\HttpError as ProtoHttpError;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
-use Purekit\HttpError as ProtoHttpError;
 use Virgil\PureKit\Http\Request\BaseRequest;
-use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Pure\Exception\ProtocolException;
-use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 
 /**
  * Class HttpClient
@@ -84,6 +82,11 @@ class HttpBaseClient
         $this->httpClient = new GuzzleClient(['base_uri' => $this->_getServiceBaseUrl()]);
     }
 
+    /**
+     * @param BaseRequest $request
+     * @return ResponseInterface
+     * @throws ProtocolException
+     */
     protected function _send(BaseRequest $request): ResponseInterface
     {
         try {

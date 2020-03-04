@@ -82,6 +82,11 @@ class ValidationUtils
     }
 
     // TODO!
+
+    /**
+     * @param array $argument
+     * @return bool
+     */
     public static function checkStringInArray(array $argument): bool
     {
         return true;

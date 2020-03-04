@@ -41,20 +41,35 @@ use PurekitV3Storage\CellKey as ProtoCellKey;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class InsertCellKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class InsertCellKeyRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var ProtoCellKey
+     */
     private $protoCellKey;
 
+    /**
+     * InsertCellKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param ProtoCellKey $protoCellKey
+     */
     public function __construct(AvailableRequest $request, ProtoCellKey $protoCellKey)
     {
         $this->request = $request;
         $this->protoCellKey = $protoCellKey;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return $this->protoCellKey->serializeToString();

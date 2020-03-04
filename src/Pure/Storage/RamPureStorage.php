@@ -52,16 +52,38 @@ use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
 
+/**
+ * Class RamPureStorage
+ * @package Virgil\PureKit\Pure\Storage
+ */
 class RamPureStorage implements PureStorage
 {
+    /**
+     * @var array
+     */
     private $users;
+    /**
+     * @var array
+     */
     private $keys;
+    /**
+     * @var array
+     */
     private $roles;
+    /**
+     * @var array
+     */
     private $roleAssignments;
+    /**
+     * @var array
+     */
     private $grantKeys;
 
     public const GRANT_KEYS_CLEAN_INTERVAL = 20000;
 
+    /**
+     * RamPureStorage constructor.
+     */
     public function __construct()
     {
         $this->users = [];
@@ -77,6 +99,9 @@ class RamPureStorage implements PureStorage
         Ev::run();
     }
 
+    /**
+     *
+     */
     private function cleanGrantKeys() {
         $currentDate = new \DateTime();
 
@@ -87,16 +112,26 @@ class RamPureStorage implements PureStorage
         }
     }
 
+    /**
+     * @param UserRecord $userRecord
+     */
     public function insertUser(UserRecord $userRecord): void
     {
         $this->users = [$userRecord->getUserId() => $userRecord];
     }
 
+    /**
+     * @param UserRecord $userRecord
+     */
     public function updateUser(UserRecord $userRecord): void
     {
         $this->users = [$userRecord->getUserId() => $userRecord];
     }
 
+    /**
+     * @param UserRecordCollection $userRecords
+     * @param int $previousPheVersion
+     */
     public function updateUsers(UserRecordCollection $userRecords, int $previousPheVersion): void
     {
         foreach ($userRecords->getAsArray() as $userRecord) {
@@ -104,6 +139,11 @@ class RamPureStorage implements PureStorage
         }
     }
 
+    /**
+     * @param string $userId
+     * @return UserRecord
+     * @throws PureStorageGenericException
+     */
     public function selectUser(string $userId): UserRecord
     {
         $userRecord = $this->users[$userId];
@@ -114,6 +154,11 @@ class RamPureStorage implements PureStorage
         return $userRecord;
     }
 
+    /**
+     * @param array $userIds
+     * @return UserRecordCollection
+     * @throws PureStorageGenericException
+     */
     public function selectUsers(array $userIds): UserRecordCollection
     {
         $userRecords = new UserRecordCollection();
@@ -130,6 +175,10 @@ class RamPureStorage implements PureStorage
         return $userRecords;
     }
 
+    /**
+     * @param int $pheRecordVersion
+     * @return UserRecordCollection
+     */
     public function selectUsers_(int $pheRecordVersion): UserRecordCollection
     {
         $res = new UserRecordCollection();
@@ -151,6 +200,11 @@ class RamPureStorage implements PureStorage
         return $res;
     }
 
+    /**
+     * @param string $userId
+     * @param bool $cascade
+     * @throws PureStorageGenericException
+     */
     public function deleteUser(string $userId, bool $cascade): void
     {
         if(!array_key_exists($userId, $this->users))
@@ -162,6 +216,12 @@ class RamPureStorage implements PureStorage
             unset($this->keys[$userId]);
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     * @return CellKey
+     * @throws PureStorageCellKeyNotFoundException
+     */
     public function selectCellKey(string $userId, string $dataId): CellKey
     {
         $map = $this->keys['userId'];
@@ -177,11 +237,19 @@ class RamPureStorage implements PureStorage
         return $cellKey;
     }
 
+    /**
+     * @param CellKey $cellKey
+     */
     public function insertCellKey(CellKey $cellKey): void
     {
         var_dump("R1");
         die;
     }
+
+    /**
+     * @param CellKey $cellKey
+     * @throws PureStorageCellKeyNotFoundException
+     */
     public function updateCellKey(CellKey $cellKey): void
     {
         $map = $this->keys[$cellKey->getUserId()];
@@ -192,6 +260,11 @@ class RamPureStorage implements PureStorage
         $map[$cellKey->getDataId()] = $cellKey;
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     * @throws PureStorageCellKeyNotFoundException
+     */
     public function deleteCellKey(string $userId, string $dataId): void
     {
         $keys = $this->keys[$userId];
@@ -205,16 +278,27 @@ class RamPureStorage implements PureStorage
         unset($keys[$dataId]);
     }
 
+    /**
+     * @param Role $role
+     */
     public function insertRole(Role $role): void
     {
         $this->roles[$role->getRoleName()] = $role;
     }
 
+    /**
+     * @param array $roleNames
+     * @return RoleCollection
+     */
     public function selectRoles(array $roleNames): RoleCollection
     {
         // TODO: Implement selectRoles() method.
     }
 
+    /**
+     * @param string $roleName
+     * @param bool $cascade
+     */
     public function deleteRole(string $roleName, bool $cascade): void
     {
         unset($this->roles[$roleName]);
@@ -223,6 +307,9 @@ class RamPureStorage implements PureStorage
             unset($this->roleAssignments[$roleName]);
     }
 
+    /**
+     * @param RoleAssignmentCollection $roleAssignments
+     */
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
     {
         foreach ($roleAssignments->getAsArray() as $roleAssignment) {
@@ -234,48 +321,80 @@ class RamPureStorage implements PureStorage
         }
     }
 
+    /**
+     * @param string $roleName
+     * @param string $userId
+     * @return RoleAssignment
+     */
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
     {
         var_dump("R2");
         die;
     }
 
+    /**
+     * @param string $userId
+     * @return RoleAssignmentCollection
+     */
     public function selectRoleAssignments(string $userId): RoleAssignmentCollection
     {
         var_dump("R3");
         die;
     }
 
+    /**
+     * @param string $roleName
+     * @param array $userIds
+     */
     public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
         var_dump("R4");
         die;
     }
 
+    /**
+     * @param GrantKey $grantKey
+     */
     public function insertGrantKey(GrantKey $grantKey): void
     {
         var_dump("R5");
         die;
     }
 
+    /**
+     * @param string $userId
+     * @param string $keyId
+     * @return GrantKey
+     */
     public function selectGrantKey(string $userId, string $keyId): GrantKey
     {
         var_dump("R6");
         die;
     }
 
+    /**
+     * @param int $recordVersion
+     * @return GrantKeyCollection
+     */
     public function selectGrantKeys(int $recordVersion): GrantKeyCollection
     {
         var_dump("R7");
         die;
     }
 
+    /**
+     * @param GrantKeyCollection $grantKeys
+     */
     public function updateGrantKeys(GrantKeyCollection $grantKeys): void
     {
         var_dump("R8");
         die;
     }
 
+    /**
+     * @param string $userId
+     * @param string $keyId
+     */
     public function deleteGrantKey(string $userId, string $keyId): void
     {
         var_dump("R9");

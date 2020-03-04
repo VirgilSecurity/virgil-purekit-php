@@ -37,6 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+/**
+ * Class PheClientException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PheClientException extends ClientException
 {
     /**

@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class InvalidProtocolBufferException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class InvalidProtocolBufferException extends \Exception
 {
 

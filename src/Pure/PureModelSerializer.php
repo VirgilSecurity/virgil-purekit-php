@@ -50,10 +50,8 @@ use PurekitV3Storage\RoleSigned as ProtoRoleSigned;
 use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\Crypto\VirgilCrypto;
-use Virgil\PureKit\Pure\Exception\ErrorStatus\ErrorStatus;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 use Virgil\PureKit\Pure\Exception\InvalidProtocolBufferException;
-use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException;
 use Virgil\PureKit\Pure\Model\CellKey;
@@ -108,6 +106,7 @@ class PureModelSerializer
     /**
      * @param string $model
      * @return string
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     private function generateSignature(string $model): string
@@ -119,6 +118,12 @@ class PureModelSerializer
         }
     }
 
+    /**
+     * @param string $signature
+     * @param string $model
+     * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     private function verifySignature(string $signature, string $model): void
     {
         try {
@@ -131,6 +136,14 @@ class PureModelSerializer
             throw new PureStorageGenericException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @return ProtoUserRecord
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
         ValidationUtils::checkNull($userRecord, "userRecord");
@@ -166,6 +179,16 @@ class PureModelSerializer
             ->setPasswordRecoveryWrap($userRecord->getPasswordRecoveryWrap());
     }
 
+    /**
+     * @param ProtoUserRecord $protobufRecord
+     * @return UserRecord
+     * @throws Exception\EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws PureStorageInvalidProtobufException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
         ValidationUtils::checkNull($protobufRecord, "protobufRecord");
@@ -204,6 +227,7 @@ class PureModelSerializer
      * @return ProtoCellKey
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeCellKey(CellKey $cellKey): ProtoCellKey
@@ -227,6 +251,16 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
+    /**
+     * @param ProtoCellKey $protobufRecord
+     * @return CellKey
+     * @throws Exception\EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws PureStorageInvalidProtobufException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
         ValidationUtils::checkNull($protobufRecord, "protobufRecord");
@@ -252,6 +286,7 @@ class PureModelSerializer
      * @return ProtoRole
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRole(Role $role): ProtoRole
@@ -302,6 +337,7 @@ class PureModelSerializer
      * @return ProtoRoleAssignment
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeRoleAssignment(RoleAssignment $roleAssignment): ProtoRoleAssignment
@@ -327,10 +363,12 @@ class PureModelSerializer
     /**
      * @param ProtoRoleAssignment $protobufRecord
      * @return RoleAssignment
+     * @throws Exception\EmptyArgumentException
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      * @throws PureStorageGenericException
      * @throws PureStorageInvalidProtobufException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
@@ -356,6 +394,7 @@ class PureModelSerializer
      * @return ProtoGrantKey
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function serializeGrantKey(GrantKey $grantKey): ProtoGrantKey
@@ -381,6 +420,16 @@ class PureModelSerializer
             ->setSignature($signature);
     }
 
+    /**
+     * @param ProtoGrantKey $protobufRecord
+     * @return GrantKey
+     * @throws Exception\EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureStorageGenericException
+     * @throws PureStorageInvalidProtobufException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
     {
         ValidationUtils::checkNull($protobufRecord, "protobufRecord");

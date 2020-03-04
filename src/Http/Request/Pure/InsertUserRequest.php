@@ -41,17 +41,35 @@ use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class InsertUserRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class InsertUserRequest extends BaseRequest
 {
+    /**
+     * @var AvailableRequest
+     */
     protected $request;
+    /**
+     * @var ProtoUserRecord
+     */
     private $userRecord;
 
+    /**
+     * InsertUserRequest constructor.
+     * @param AvailableRequest $request
+     * @param ProtoUserRecord $userRecord
+     */
     public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord)
     {
         $this->request = $request;
         $this->userRecord = $userRecord;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return $this->userRecord->serializeToString();

@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class NullPointerException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class NullPointerException extends ValidateException
 {
 

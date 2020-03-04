@@ -37,22 +37,39 @@
 
 namespace Virgil\PureKit\Tests;
 
-
 use Virgil\PureKit\Pure\NonrotatableSecretsGenerator;
 
+/**
+ * Class NonrotatableSecretsGeneratorTest
+ * @package Virgil\PureKit\Tests
+ */
 class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @var
+     */
     private $nms;
+    /**
+     * @var
+     */
     private $ak;
+    /**
+     * @var
+     */
     private $oskpId;
+    /**
+     * @var
+     */
     private $vskpId;
 
+    /**
+     *
+     */
     protected function setUp(): void
     {
         $this->nms = "6PvWsrUn/U6ggoabbXCriBk7dtV3NfT+cvqbFGG3DGU=";
         $this->oskpId = "7QksLSjG56g=";
         $this->vskpId = "l3RDBZ9U6Cs=";
-
     }
 
     public function testGenerateSecretsFixedSeedShouldMatch()

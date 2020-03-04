@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageCellKEyAlreadyExistsException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageCellKEyAlreadyExistsException extends PureStorageException
 {
 

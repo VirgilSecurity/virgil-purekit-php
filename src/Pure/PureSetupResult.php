@@ -53,7 +53,6 @@ class PureSetupResult
      * @var VirgilKeyPair
      */
     private $bupkp;
-
     /**
      * @var
      */

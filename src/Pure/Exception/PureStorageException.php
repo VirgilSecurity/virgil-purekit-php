@@ -37,6 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+/**
+ * Class PureStorageException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageException extends PureException
 {
     /**

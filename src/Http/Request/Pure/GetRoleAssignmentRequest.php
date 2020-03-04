@@ -41,15 +41,31 @@ use PurekitV3Client\GetRoleAssignment as ProtoGetRoleAssignment;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class GetRoleAssignmentRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class GetRoleAssignmentRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var string
+     */
     private $roleName;
+    /**
+     * @var string
+     */
     private $userId;
 
+    /**
+     * GetRoleAssignmentRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $roleName
+     * @param string $userId
+     */
     public function __construct(AvailableRequest $request, string $roleName, string $userId)
     {
         $this->request = $request;

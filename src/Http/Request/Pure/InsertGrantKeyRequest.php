@@ -42,20 +42,35 @@ use PurekitV3Storage\GrantKey;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class InsertGrantKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class InsertGrantKeyRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var GrantKey
+     */
     private $grantKey;
 
+    /**
+     * InsertGrantKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param GrantKey $grantKey
+     */
     public function __construct(AvailableRequest $request, GrantKey $grantKey)
     {
         $this->grantKey = $grantKey;
         $this->request = $request;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         return $this->grantKey->serializeToString();

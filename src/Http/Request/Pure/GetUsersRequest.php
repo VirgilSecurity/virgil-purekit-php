@@ -41,20 +41,35 @@ use PurekitV3Client\GetUserRecords as ProtoGetUserRecords;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class GetUsersRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class GetUsersRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var array
+     */
     private $userIds;
 
+    /**
+     * GetUsersRequest constructor.
+     * @param AvailableRequest $request
+     * @param array $userIds
+     */
     public function __construct(AvailableRequest $request, array $userIds)
     {
         $this->request = $request;
         $this->userIds = $userIds;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         $r = new ProtoGetUserRecords();

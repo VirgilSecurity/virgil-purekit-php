@@ -50,6 +50,15 @@ class NonrotatableSecretsGenerator
 {
     private const NONROTATABLE_MASTER_SECRET_LENGTH = 32;
 
+    /**
+     * @param string $masterSecret
+     * @return NonrotableSecrets
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public static function generateSecrets(string $masterSecret): NonrotableSecrets
     {
         if (self::NONROTATABLE_MASTER_SECRET_LENGTH != strlen($masterSecret))

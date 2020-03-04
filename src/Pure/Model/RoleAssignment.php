@@ -39,13 +39,39 @@ namespace Virgil\PureKit\Pure\Model;
 
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class RoleAssignment
+ * @package Virgil\PureKit\Pure\Model
+ */
 class RoleAssignment
 {
+    /**
+     * @var string
+     */
     private $roleName;
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $publicKeyId;
+    /**
+     * @var string
+     */
     private $encryptedRsk;
 
+    /**
+     * RoleAssignment constructor.
+     * @param string $roleName
+     * @param string $userId
+     * @param string $publicKeyId
+     * @param string $encryptedRsk
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function __construct(string $roleName, string $userId, string $publicKeyId, string $encryptedRsk)
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
@@ -59,21 +85,33 @@ class RoleAssignment
         $this->encryptedRsk = $encryptedRsk;
     }
 
+    /**
+     * @return string
+     */
     public function getRoleName(): string
     {
         return $this->roleName;
     }
 
+    /**
+     * @return string
+     */
     public function getUserId(): string
     {
         return $this->userId;
     }
 
+    /**
+     * @return string
+     */
     public function getPublicKeyId(): string
     {
         return $this->publicKeyId;
     }
 
+    /**
+     * @return string
+     */
     public function getEncryptedRsk(): string
     {
         return $this->encryptedRsk;

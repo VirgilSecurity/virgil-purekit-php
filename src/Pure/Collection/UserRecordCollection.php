@@ -39,8 +39,15 @@ namespace Virgil\PureKit\Pure\Collection;
 
 use Virgil\PureKit\Pure\Model\UserRecord;
 
+/**
+ * Class UserRecordCollection
+ * @package Virgil\PureKit\Pure\Collection
+ */
 class UserRecordCollection extends BaseCollection
 {
+    /**
+     * @param UserRecord $userRecord
+     */
     public function add(UserRecord $userRecord): void
     {
         $this->collection[] = $userRecord;

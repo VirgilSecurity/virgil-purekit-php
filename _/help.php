@@ -5,7 +5,7 @@ const VSCE_PHE_PHP = "vsce_phe_php";
 
 const EXT_LIST = [VSCF_FOUNDATION_PHP, VSCE_PHE_PHP];
 
-function getScannedIniDir()
+function getScannedIniDir(): string
 {
 
     $res = null;
@@ -35,6 +35,6 @@ $config = [
     'PATH_TO_ADDITIONAL_INI_FILES' => getScannedIniDir(),
 ];
 
-echo '<pre>', var_dump($extArr, $config), '</pre>';
+var_dump($extArr, $config);
 
-exit(1);
+phpinfo(1);

@@ -40,11 +40,28 @@ namespace Virgil\PureKit\Pure;
 
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class KmsEncryptedData
+ * @package Virgil\PureKit\Pure
+ */
 class KmsEncryptedData
 {
+    /**
+     * @var string
+     */
     private $blob;
+    /**
+     * @var string
+     */
     private $wrap;
 
+    /**
+     * KmsEncryptedData constructor.
+     * @param string $wrap
+     * @param string $blob
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     */
     public function __construct(string $wrap, string $blob)
     {
         ValidationUtils::checkNull($wrap, "wrap");
@@ -54,11 +71,17 @@ class KmsEncryptedData
         $this->wrap = $wrap;
     }
 
+    /**
+     * @return string
+     */
     public function getBlob(): string
     {
         return $this->blob;
     }
 
+    /**
+     * @return string
+     */
     public function getWrap(): string
     {
         return $this->wrap;

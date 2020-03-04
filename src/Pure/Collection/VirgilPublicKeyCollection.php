@@ -39,20 +39,36 @@ namespace Virgil\PureKit\Pure\Collection;
 
 use Virgil\Crypto\Core\VirgilPublicKey;
 
+/**
+ * Class VirgilPublicKeyCollection
+ * @package Virgil\PureKit\Pure\Collection
+ */
 class VirgilPublicKeyCollection extends BaseCollection
 {
+    /**
+     * @var array
+     */
     protected $collection;
 
+    /**
+     * VirgilPublicKeyCollection constructor.
+     */
     public function __construct()
     {
         $this->collection = [];
     }
 
+    /**
+     * @param VirgilPublicKey $virgilPublicKey
+     */
     public function add(VirgilPublicKey $virgilPublicKey): void
     {
         $this->collection[] = $virgilPublicKey;
     }
 
+    /**
+     * @param VirgilPublicKeyCollection $virgilPublicKeyCollection
+     */
     public function addCollection(VirgilPublicKeyCollection $virgilPublicKeyCollection)
     {
         foreach ($virgilPublicKeyCollection->getAsArray() as $virgilPublicKey) {

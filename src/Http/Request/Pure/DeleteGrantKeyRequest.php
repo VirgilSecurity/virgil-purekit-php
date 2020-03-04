@@ -41,15 +41,31 @@ use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class DeleteGrantKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class DeleteGrantKeyRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $keyId;
 
+    /**
+     * DeleteGrantKeyRequest constructor.
+     * @param AvailableRequest $request
+     * @param string $userId
+     * @param string $keyId
+     */
     public function __construct(AvailableRequest $request, string $userId, string $keyId)
     {
         $this->request = $request;

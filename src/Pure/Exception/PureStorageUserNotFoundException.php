@@ -38,16 +38,30 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageUserNotFoundException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageUserNotFoundException extends PureStorageException
 {
+    /**
+     * @var array
+     */
     private $userIds;
 
+    /**
+     * PureStorageUserNotFoundException constructor.
+     * @param array $userIds
+     */
     public function __construct(array $userIds)
     {
         $this->userIds = $userIds;
         parent::__construct();
     }
 
+    /**
+     * @return array
+     */
     public function getUserIds(): array
     {
         return $this->userIds;

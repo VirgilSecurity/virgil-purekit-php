@@ -44,7 +44,6 @@ use Virgil\Crypto\Core\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilPublicKey;
 use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
-use Virgil\PureKit\Pure\Collection\RoleCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyMap;
@@ -63,19 +62,50 @@ use Virgil\PureKit\Pure\Storage\PureStorage;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 
+/**
+ * Class Pure
+ * @package Virgil\PureKit\Pure
+ */
 class Pure
 {
     public const DEFAULT_GRANT_TTL = 60 * 60;
 
+    /**
+     * @var int
+     */
     private $currentGrantVersion = 1;
 
+    /**
+     * @var int
+     */
     private $currentVersion;
+    /**
+     * @var PureCrypto
+     */
     private $pureCrypto;
+    /**
+     * @var PureStorage
+     */
     private $storage;
+    /**
+     * @var VirgilPublicKey
+     */
     private $buppk;
+    /**
+     * @var VirgilKeyPair
+     */
     private $oskp;
+    /**
+     * @var VirgilPublicKeyMap
+     */
     private $externalPublicKeys;
+    /**
+     * @var PheManager
+     */
     private $pheManager;
+    /**
+     * @var KmsManager
+     */
     private $kmsManager;
 
     /**
@@ -104,12 +134,33 @@ class Pure
         }
     }
 
+    /**
+     * @param string $userId
+     * @param string $password
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function registerUser(string $userId, string $password): void
     {
         $this->_registerUserInternal($userId, $password);
     }
 
-
+    /**
+     * @param string $userId
+     * @param string $password
+     * @param PureSessionParams $pureSessionParams
+     * @return AuthResult
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function registerUser_(string $userId, string $password, PureSessionParams $pureSessionParams):
     AuthResult
     {
@@ -123,6 +174,20 @@ class Pure
             $registrationResult->getPhek(), $pureSessionParams->getSessionId(), $pureSessionParams->getTtl());
     }
 
+    /**
+     * @param string $userId
+     * @param string $password
+     * @param PureSessionParams|null $pureSessionParams
+     * @return AuthResult
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\NullPointerException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function authenticateUser(string $userId, string $password, PureSessionParams $pureSessionParams = null):
     AuthResult
     {
@@ -144,6 +209,15 @@ class Pure
             $pureSessionParams->getTtl());
     }
 
+    /**
+     * @param string $encryptedGrantString
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\NullPointerException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     public function invalidateEncryptedUserGrant(string $encryptedGrantString): void
     {
         $deserializedEncryptedGrant = $this->deserializeEncryptedGrant($encryptedGrantString);
@@ -155,6 +229,17 @@ class Pure
         $deserializedEncryptedGrant->getHeader()->getKeyId());
     }
 
+    /**
+     * @param string $userId
+     * @param VirgilPrivateKey $bupsk
+     * @param int $ttl
+     * @return PureGrant
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function createUserGrantAsAdmin(string $userId, VirgilPrivateKey $bupsk, int $ttl = self::DEFAULT_GRANT_TTL): PureGrant
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -173,6 +258,14 @@ class Pure
         return new PureGrant($upk, $userId, null, $creationDate, $expirationDate);
     }
 
+    /**
+     * @param string $encryptedGrantString
+     * @return DeserializedEncryptedGrant
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureLogicException
+     */
     private function deserializeEncryptedGrant(string $encryptedGrantString): DeserializedEncryptedGrant
     {
         ValidationUtils::checkNullOrEmpty($encryptedGrantString, "encryptedGrantString");
@@ -196,6 +289,13 @@ class Pure
         return new DeserializedEncryptedGrant($encryptedGrant, $header);
     }
 
+    /**
+     * @param DeserializedEncryptedGrant $deserializedEncryptedGrant
+     * @return string
+     * @throws Exception\NullPointerException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     private function decryptPheKeyFromEncryptedGrant(DeserializedEncryptedGrant $deserializedEncryptedGrant): string
     {
         $encryptedData = $deserializedEncryptedGrant->getEncryptedGrant()->getEncryptedPhek();
@@ -212,6 +312,17 @@ class Pure
         return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData, $header, $grantKeyRaw);
     }
 
+    /**
+     * @param string $encryptedGrantString
+     * @return PureGrant
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\NullPointerException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function decryptGrantFromUser(string $encryptedGrantString): PureGrant
     {
         $deserializedEncryptedGrant = $this->deserializeEncryptedGrant($encryptedGrantString);
@@ -237,6 +348,18 @@ class Pure
             new \DateTime("@$ed"));
     }
 
+    /**
+     * @param string $userId
+     * @param string $oldPassword
+     * @param string $newPassword
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\NullPointerException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     public function changeUserPassword(string $userId, string $oldPassword, string $newPassword): void
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -252,7 +375,15 @@ class Pure
         $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
-    // TODO!
+    /**
+     * @param PureGrant $grant
+     * @param string $newPassword
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function changeUserPassword_(PureGrant $grant, string $newPassword): void
     {
         ValidationUtils::checkNull($grant, "grant");
@@ -265,6 +396,18 @@ class Pure
         $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
+    /**
+     * @param string $userId
+     * @param string $newPassword
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\KmsClientException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\NullPointerException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     */
     public function recoverUser(string $userId, string $newPassword): void
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -281,17 +424,39 @@ class Pure
         $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
 
+    /**
+     * @param string $userId
+     * @param string $newPassword
+     * @param bool $cascade
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function resetUserPassword(string $userId, string $newPassword, bool $cascade): void
     {
         $this->deleteUser($userId, $cascade);
         $this->_registerUserInternal($userId, $newPassword, false);
     }
 
+    /**
+     * @param string $userId
+     * @param bool $cascade
+     */
     public function deleteUser(string $userId, bool $cascade = true): void
     {
         $this->storage->deleteUser($userId, $cascade);
     }
 
+    /**
+     * @return RotationResults
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     */
     public function performRotation(): RotationResults
     {
         if ($this->currentVersion <= 1)
@@ -380,6 +545,20 @@ class Pure
         return new RotationResults($usersRotated, $grantKeysRotated);
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     * @param array $otherUserIds
+     * @param array $roleNames
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @param string $plainText
+     * @return string
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function encrypt(string $userId, string $dataId, array $otherUserIds, array $roleNames,
                             VirgilPublicKeyCollection $publicKeys, string $plainText): string
     {
@@ -450,6 +629,19 @@ class Pure
         return $this->pureCrypto->encryptData($plainText, $vpkc, $this->oskp->getPrivateKey());
     }
 
+    /**
+     * @param PureGrant $grant
+     * @param string|null $ownerUserId
+     * @param string $dataId
+     * @param string $cipherText
+     * @return string
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function decrypt(PureGrant $grant, string $ownerUserId = null, string $dataId, string $cipherText): string
     {
         ValidationUtils::checkNull($grant, "grant");
@@ -513,6 +705,18 @@ class Pure
         return $this->pureCrypto->decryptData($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
+    /**
+     * @param VirgilPrivateKey $privateKey
+     * @param string $ownerUserId
+     * @param string $dataId
+     * @param string $cipherText
+     * @return string
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function decrypt_(VirgilPrivateKey $privateKey, string $ownerUserId, string $dataId,
                              string $cipherText): string
     {
@@ -532,6 +736,16 @@ class Pure
         return $this->pureCrypto->decryptData($cipherText, $ckp->getPrivateKey(), $this->oskp->getPublicKey());
     }
 
+    /**
+     * @param PureGrant $grant
+     * @param string $dataId
+     * @param array $roleNames
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function shareToRole(PureGrant $grant, string $dataId, array $roleNames): void
     {
         ValidationUtils::checkNull($grant, "grant");
@@ -555,6 +769,16 @@ class Pure
         $this->share_($grant, $dataId, [], $roleKeys);
     }
 
+    /**
+     * @param PureGrant $grant
+     * @param string $dataId
+     * @param string $otherUserId
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function share(PureGrant $grant, string $dataId, string $otherUserId): void
     {
         ValidationUtils::checkNull($grant, "grant");
@@ -564,6 +788,17 @@ class Pure
         $this->share_($grant, $dataId, [$otherUserId], new VirgilPublicKeyCollection());
     }
 
+    /**
+     * @param PureGrant $grant
+     * @param string $dataId
+     * @param array $otherUserIds
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function share_(PureGrant $grant, string $dataId, array $otherUserIds,
                            VirgilPublicKeyCollection $publicKeys): void
     {
@@ -587,11 +822,32 @@ class Pure
         $this->storage->updateCellKey($cellKeyNew);
     }
 
+    /**
+     * @param string $ownerUserId
+     * @param string $dataId
+     * @param string $otherUserId
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function unshare(string $ownerUserId, string $dataId, string $otherUserId): void
     {
         $this->unshare_($ownerUserId, $dataId, [$otherUserId], new VirgilPublicKeyCollection());
     }
 
+    /**
+     * @param string $ownerUserId
+     * @param string $dataId
+     * @param array $otherUserIds
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function unshare_(string $ownerUserId, string $dataId, array $otherUserIds,
                              VirgilPublicKeyCollection $publicKeys): void
     {
@@ -613,11 +869,24 @@ class Pure
         $this->storage->updateCellKey($cellKeyNew);
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     */
     public function deleteKey(string $userId, string $dataId): void
     {
         $this->storage->deleteCellKey($userId, $dataId);
     }
 
+    /**
+     * @param string $roleName
+     * @param array $userIds
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function createRole(string $roleName, array $userIds): void
     {
         $rkp = $this->pureCrypto->generateRoleKey();
@@ -631,11 +900,25 @@ class Pure
         $this->assignRole_($roleName, $rkp->getPublicKey()->getIdentifier(), $rskData, $userIds);
     }
 
+    /**
+     * @param string $roleName
+     * @param bool $cascade
+     */
     public function deleteRole(string $roleName, bool $cascade = true): void
     {
         $this->storage->deleteRole($roleName, $cascade);
     }
 
+    /**
+     * @param string $roleName
+     * @param PureGrant $grant
+     * @param array $userIds
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function assignRole(string $roleName, PureGrant $grant, array $userIds): void
     {
         $roleAssignment = $this->storage->selectRoleAssignment($roleName, $grant->getUserId());
@@ -646,6 +929,17 @@ class Pure
         $this->assignRole_($roleName, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
     }
 
+    /**
+     * @param string $roleName
+     * @param string $publicKeyId
+     * @param string $rskData
+     * @param array $userIds
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     private function assignRole_(string $roleName, string $publicKeyId, string $rskData, array $userIds): void
     {
         $userRecords = $this->storage->selectUsers($userIds);
@@ -663,12 +957,26 @@ class Pure
         $this->storage->insertRoleAssignments($roleAssignments);
     }
 
+    /**
+     * @param string $roleName
+     * @param array $userIds
+     */
     public function unassignRole(string $roleName, array $userIds): void
     {
         $this->storage->deleteRoleAssignments($roleName, $userIds);
     }
 
-
+    /**
+     * @param string $userId
+     * @param string $password
+     * @return RegistrationResult
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws Exception\PheClientException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     private function _registerUserInternal(string $userId, string $password): RegistrationResult
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -711,6 +1019,19 @@ class Pure
         return new RegistrationResult($userRecord, $ukp, $pheResult[1]);
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @param VirgilKeyPair $ukp
+     * @param string $phek
+     * @param string|null $sessionId
+     * @param int $ttl
+     * @return AuthResult
+     * @throws EmptyArgumentException
+     * @throws Exception\IllegalStateException
+     * @throws Exception\NullArgumentException
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     private function _authenticateUserInternal(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek, string
 $sessionId = null, int $ttl): AuthResult
     {
@@ -799,6 +1120,13 @@ $sessionId = null, int $ttl): AuthResult
         }
     }
 
+    /**
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @param array $otherUserIds
+     * @return VirgilPublicKeyCollection
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     private function keysWithOthers(VirgilPublicKeyCollection $publicKeys,
                                     array $otherUserIds): VirgilPublicKeyCollection
     {
@@ -814,26 +1142,41 @@ $sessionId = null, int $ttl): AuthResult
         return $publicKeys;
     }
 
+    /**
+     * @return int
+     */
     public function getCurrentVersion(): int
     {
         return $this->currentVersion;
     }
 
+    /**
+     * @return PureStorage
+     */
     public function getStorage(): PureStorage
     {
         return $this->storage;
     }
 
+    /**
+     * @return VirgilPublicKey
+     */
     public function getBuppk(): VirgilPublicKey
     {
         return $this->buppk;
     }
 
+    /**
+     * @return VirgilKeyPair
+     */
     public function getOskp(): VirgilKeyPair
     {
         return $this->oskp;
     }
 
+    /**
+     * @return VirgilPublicKeyMap
+     */
     public function getExternalPublicKeys(): VirgilPublicKeyMap
     {
         return $this->externalPublicKeys;

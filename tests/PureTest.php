@@ -59,6 +59,10 @@ use Virgil\PureKit\Pure\Storage\_\StorageType;
 use Virgil\PureKit\Pure\Storage\MariaDBPureStorage;
 use Virgil\PureKit\Pure\Storage\RamPureStorage;
 
+/**
+ * Class PureTest
+ * @package Virgil\PureKit\Tests
+ */
 class PureTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -118,9 +122,6 @@ class PureTest extends \PHPUnit\Framework\TestCase
      */
     private $dbPassword;
 
-    /**
-     *
-     */
     protected function setUp(): void
     {
         $this->crypto = new VirgilCrypto();
@@ -158,6 +159,11 @@ class PureTest extends \PHPUnit\Framework\TestCase
         return $randomString;
     }
 
+    /**
+     * @param \Exception $exception
+     * @param bool $asString
+     * @return string
+     */
     private function debugException(\Exception $exception, bool $asString = true)
     {
         if ($asString) {
@@ -169,8 +175,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 "file: " . $exception->getFile() . "\n" .
                 "line: " . $exception->getLine();
         } else {
-            var_dump("DEBUG", get_class($exception), $exception->getMessage(), $exception->getCode(), $exception->getFile
-            (), $exception->getLine());
+            var_dump("DEBUG", get_class($exception), $exception->getMessage(), $exception->getCode(), $exception->getFile(), $exception->getLine());
             die;
         }
     }
@@ -183,9 +188,26 @@ class PureTest extends \PHPUnit\Framework\TestCase
         sleep($seconds);
     }
 
+    /**
+     * @param bool $useOldKeys
+     * @param string|null $nms
+     * @param bool $useUpdateToken
+     * @param array $externalPublicKeys
+     * @param StorageType $storageType
+     * @param bool $skipClean
+     * @return PureSetupResult
+     * @throws NullPointerException
+     * @throws PureCryptoException
+     * @throws PureLogicException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     private function setupPure(bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array
 $externalPublicKeys = [],
-StorageType $storageType, bool $skipClean = false):
+                               StorageType $storageType, bool $skipClean = false):
     PureSetupResult
     {
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
@@ -242,9 +264,9 @@ StorageType $storageType, bool $skipClean = false):
      */
     private static function createStorages(): array
     {
-//         $storages[0] = StorageType::RAM();
-         $storages[0] = StorageType::MARIADB();
-//        $storages[0] = StorageType::VIRGIL_CLOUD();
+        // $storages[0] = StorageType::RAM();
+        // $storages[0] = StorageType::MARIADB();
+         $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
@@ -375,7 +397,6 @@ StorageType $storageType, bool $skipClean = false):
             $this->fail($this->debugException($exception));
         }
     }
-
 
     public function testSharingRevokeAccessShouldNotDecrypt(): void
     {
@@ -536,7 +557,6 @@ StorageType $storageType, bool $skipClean = false):
             $this->fail($this->debugException($exception));
         }
     }
-
 
     public function testGrantAdminAccessShouldDecrypt(): void
     {
@@ -917,7 +937,6 @@ StorageType $storageType, bool $skipClean = false):
         }
     }
 
-
     public function testEncryptionExternalKeysShouldDecrypt(): void
     {
         $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
@@ -1251,7 +1270,6 @@ StorageType $storageType, bool $skipClean = false):
             $this->fail($this->debugException($exception));
         }
     }
-
 
     public function testRecoveryNewUserShouldRecover(): void
     {

@@ -37,7 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
+/**
+ * Class EmptyArgumentException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class EmptyArgumentException extends ValidateException
 {
 

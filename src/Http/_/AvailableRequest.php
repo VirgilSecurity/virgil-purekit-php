@@ -39,6 +39,10 @@ namespace Virgil\PureKit\Http\_;
 
 use MyCLabs\Enum\Enum;
 
+/**
+ * Class AvailableRequest
+ * @package Virgil\PureKit\Http\_
+ */
 class AvailableRequest extends Enum
 {
     private const GET = "GET";

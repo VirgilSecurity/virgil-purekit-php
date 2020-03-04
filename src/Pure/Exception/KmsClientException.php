@@ -37,6 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+/**
+ * Class KmsClientException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class KmsClientException extends ClientException
 {
     /**
@@ -48,7 +52,7 @@ class KmsClientException extends ClientException
         if (($exception instanceof ProtocolException) | ($exception instanceof ProtocolHttpException)) {
             parent::__construct($exception);
         } else {
-            var_dump("4444Invalid type of exception", $exception->getMessage(), $exception->getCode(), $exception->getFile());
+            var_dump("Invalid type of exception", $exception->getMessage(), $exception->getCode(), $exception->getFile());
             die;
         }
     }

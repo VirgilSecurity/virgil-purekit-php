@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class MariaDbOperationNotSupportedException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class MariaDbOperationNotSupportedException extends PureStorageException
 {
 

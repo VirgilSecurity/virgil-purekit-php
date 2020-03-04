@@ -52,7 +52,13 @@ class GetGrantKeyRequest extends BaseRequest
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $keyId;
 
     /**

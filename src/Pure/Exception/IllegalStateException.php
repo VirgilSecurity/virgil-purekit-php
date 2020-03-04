@@ -37,7 +37,10 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
+/**
+ * Class IllegalStateException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class IllegalStateException extends ValidateException
 {
 

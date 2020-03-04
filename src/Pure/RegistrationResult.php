@@ -40,12 +40,31 @@ namespace Virgil\PureKit\Pure;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\PureKit\Pure\Model\UserRecord;
 
+/**
+ * Class RegistrationResult
+ * @package Virgil\PureKit\Pure
+ */
 class RegistrationResult
 {
+    /**
+     * @var UserRecord
+     */
     private $userRecord;
+    /**
+     * @var VirgilKeyPair
+     */
     private $ukp;
+    /**
+     * @var string
+     */
     private $phek;
 
+    /**
+     * RegistrationResult constructor.
+     * @param UserRecord $userRecord
+     * @param VirgilKeyPair $ukp
+     * @param string $phek
+     */
     public function __construct(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek)
     {
         $this->userRecord = $userRecord;

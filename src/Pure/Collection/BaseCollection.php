@@ -37,11 +37,20 @@
 
 namespace Virgil\PureKit\Pure\Collection;
 
-
+/**
+ * Class BaseCollection
+ * @package Virgil\PureKit\Pure\Collection
+ */
 class BaseCollection
 {
+    /**
+     * @var
+     */
     protected $collection;
 
+    /**
+     * @return array|null
+     */
     public function getAsArray(): ?array
     {
         return $this->collection;

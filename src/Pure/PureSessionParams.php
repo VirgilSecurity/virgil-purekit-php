@@ -38,11 +38,26 @@
 namespace Virgil\PureKit\Pure;
 
 
+/**
+ * Class PureSessionParams
+ * @package Virgil\PureKit\Pure
+ */
 class PureSessionParams
 {
+    /**
+     * @var string
+     */
     private $sessionId;
+    /**
+     * @var int
+     */
     private $ttl;
 
+    /**
+     * PureSessionParams constructor.
+     * @param string|null $sessionId
+     * @param int $ttl
+     */
     public function __construct(string $sessionId = null, int $ttl = Pure::DEFAULT_GRANT_TTL)
     {
         $this->sessionId = $sessionId;

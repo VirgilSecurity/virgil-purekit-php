@@ -41,6 +41,10 @@ use PurekitV3Client\DecryptResponse as ProtoDecryptResponse;
 use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class HttpKmsClient
+ * @package Virgil\PureKit\Http
+ */
 class HttpKmsClient extends HttpBaseClient
 {
     public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
@@ -62,6 +66,11 @@ class HttpKmsClient extends HttpBaseClient
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }
 
+    /**
+     * @param DecryptRequest $request
+     * @return ProtoDecryptResponse
+     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     */
     public function decrypt(DecryptRequest $request): ProtoDecryptResponse
     {
         $r = $this->_send($request);

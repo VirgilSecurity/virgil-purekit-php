@@ -39,12 +39,31 @@ namespace Virgil\PureKit\Pure\Model;
 
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class CellKey
+ * @package Virgil\PureKit\Pure\Model
+ */
 class CellKey
 {
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $dataId;
+    /**
+     * @var string
+     */
     private $cpk;
+    /**
+     * @var string
+     */
     private $encryptedCskCms;
+    /**
+     * @var string
+     */
     private $encryptedCskBody;
 
     /**
@@ -73,26 +92,41 @@ class CellKey
         $this->encryptedCskBody = $encryptedCskBody;
     }
 
+    /**
+     * @return string
+     */
     public function getUserId(): string
     {
         return $this->userId;
     }
 
+    /**
+     * @return string
+     */
     public function getDataId(): string
     {
         return $this->dataId;
     }
 
+    /**
+     * @return string
+     */
     public function getCpk(): string
     {
         return $this->cpk;
     }
 
+    /**
+     * @return string
+     */
     public function getEncryptedCskCms(): string
     {
         return $this->encryptedCskCms;
     }
 
+    /**
+     * @return string
+     */
     public function getEncryptedCskBody(): string
     {
         return $this->encryptedCskBody;

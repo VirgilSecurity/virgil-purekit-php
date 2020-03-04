@@ -39,8 +39,16 @@ namespace Virgil\PureKit\Pure\Exception;
 
 use Throwable;
 
+/**
+ * Class PureException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureException extends \Exception
 {
+    /**
+     * PureException constructor.
+     * @param $e
+     */
     public function __construct($e)
     {
         switch ($e) {
@@ -51,7 +59,7 @@ class PureException extends \Exception
                 parent::__construct($e->getMessage(), $e->getCode());
                 break;
             default:
-                var_dump("2222Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
+                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
                 die;
         }
     }

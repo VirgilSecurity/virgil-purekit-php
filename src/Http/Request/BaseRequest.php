@@ -46,8 +46,14 @@ use Virgil\PureKit\Http\_\HttpVirgilAgent;
  */
 abstract class BaseRequest
 {
+    /**
+     * @var
+     */
     private $endpoint;
 
+    /**
+     * @var null
+     */
     protected $params = null;
 
     /**
@@ -89,11 +95,17 @@ abstract class BaseRequest
         $this->endpoint = sprintf($request->getEndpoint(), ...$args);
     }
 
+    /**
+     * @param array $params
+     */
     public function setParams(array $params)
     {
         $this->params = "?".http_build_query($params);
     }
 
+    /**
+     * @return null|string
+     */
     public function getParams(): ?string
     {
         return $this->params;

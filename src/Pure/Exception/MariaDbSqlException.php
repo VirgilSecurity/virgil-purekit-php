@@ -37,11 +37,26 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+/**
+ * Class MariaDbSqlException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class MariaDbSqlException extends PureStorageException
 {
+    /**
+     * @var string
+     */
     protected $message;
+    /**
+     * @var int
+     */
     protected $code;
 
+    /**
+     * MariaDbSqlException constructor.
+     * @param string $message
+     * @param int $code
+     */
     public function __construct(string $message, int $code)
     {
         $this->message = $message;

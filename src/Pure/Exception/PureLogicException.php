@@ -39,16 +39,30 @@ namespace Virgil\PureKit\Pure\Exception;
 
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 
+/**
+ * Class PureLogicException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureLogicException extends PureException
 {
+    /**
+     * @var PureLogicErrorStatus
+     */
     private $errorStatus;
 
+    /**
+     * PureLogicException constructor.
+     * @param PureLogicErrorStatus $errorStatus
+     */
     public function __construct(PureLogicErrorStatus $errorStatus)
     {
         $this->errorStatus = $errorStatus;
         parent::__construct($errorStatus->getMessage());
     }
 
+    /**
+     * @return PureLogicErrorStatus
+     */
     public function getErrorStatus(): PureLogicErrorStatus
     {
         return $this->errorStatus;

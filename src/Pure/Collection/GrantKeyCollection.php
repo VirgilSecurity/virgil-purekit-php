@@ -37,11 +37,17 @@
 
 namespace Virgil\PureKit\Pure\Collection;
 
-
 use Virgil\PureKit\Pure\Model\GrantKey;
 
+/**
+ * Class GrantKeyCollection
+ * @package Virgil\PureKit\Pure\Collection
+ */
 class GrantKeyCollection extends BaseCollection
 {
+    /**
+     * @param GrantKey $grantKey
+     */
     public function add(GrantKey $grantKey): void
     {
         $this->collection[] = $grantKey;

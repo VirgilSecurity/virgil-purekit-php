@@ -68,6 +68,9 @@ class PureCrypto
      */
     private $crypto;
 
+    /**
+     * @var PheCipher
+     */
     private $pheCipher;
 
     public const DERIVED_SECRET_LENGTH = 44;
@@ -374,6 +377,11 @@ class PureCrypto
         return $body1 . $body2;
     }
 
+    /**
+     * @return VirgilKeyPair
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function generateUserKey(): VirgilKeyPair
     {
         try {
@@ -383,6 +391,11 @@ class PureCrypto
         }
     }
 
+    /**
+     * @return VirgilKeyPair
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function generateRoleKey(): VirgilKeyPair
     {
         try {
@@ -392,6 +405,11 @@ class PureCrypto
         }
     }
 
+    /**
+     * @return VirgilKeyPair
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function generateCellKey(): VirgilKeyPair
     {
         try {
@@ -401,6 +419,12 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $privateKey
+     * @return VirgilKeyPair
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function importPrivateKey(string $privateKey): VirgilKeyPair
     {
         try {
@@ -410,6 +434,12 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $publicKey
+     * @return VirgilPublicKey
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function importPublicKey(string $publicKey): VirgilPublicKey
     {
         try {
@@ -419,6 +449,12 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param VirgilPublicKey $publicKey
+     * @return string
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function exportPublicKey(VirgilPublicKey $publicKey): string
     {
         try {
@@ -428,6 +464,12 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param VirgilPrivateKey $privateKey
+     * @return string
+     * @throws PureCryptoException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     */
     public function exportPrivateKey(VirgilPrivateKey $privateKey): string
     {
         try {
@@ -437,6 +479,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $plainText
+     * @param VirgilPublicKey $encryptKey
+     * @param VirgilPrivateKey $signingKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function encryptForBackup(string $plainText, VirgilPublicKey $encryptKey, VirgilPrivateKey $signingKey):
     string
     {
@@ -455,6 +504,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $cipherText
+     * @param VirgilPrivateKey $decryptKey
+     * @param VirgilPublicKey $verifyKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function decryptBackup(string $cipherText, VirgilPrivateKey $decryptKey, VirgilPublicKey $verifyKey): string
     {
         try {
@@ -471,6 +527,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $plainText
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @param VirgilPrivateKey $privateKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function encryptData(string $plainText, VirgilPublicKeyCollection $publicKeys, VirgilPrivateKey $privateKey): string
     {
         try {
@@ -486,6 +549,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $cipherText
+     * @param VirgilPrivateKey $privateKey
+     * @param VirgilPublicKey $publicKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function decryptData(string $cipherText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
     {
         try {
@@ -499,6 +569,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $plainText
+     * @param VirgilPublicKey $publicKey
+     * @param VirgilPrivateKey $privateKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function encryptRolePrivateKey(string $plainText, VirgilPublicKey $publicKey, VirgilPrivateKey $privateKey): string
     {
         try {
@@ -512,6 +589,13 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $plainText
+     * @param VirgilPrivateKey $privateKey
+     * @param VirgilPublicKey $publicKey
+     * @return string
+     * @throws PureCryptoException
+     */
     public function decryptRolePrivateKey(string $plainText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
     {
         try {
@@ -525,6 +609,10 @@ class PureCrypto
         }
     }
 
+    /**
+     * @param string $password
+     * @return null|string
+     */
     public function computePasswordHash(string $password)
     {
         return $this->crypto->computeHash($password, HashAlgorithms::SHA512());

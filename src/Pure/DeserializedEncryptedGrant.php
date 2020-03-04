@@ -40,11 +40,26 @@ namespace Virgil\PureKit\Pure;
 use PurekitV3Grant\EncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader;
 
+/**
+ * Class DeserializedEncryptedGrant
+ * @package Virgil\PureKit\Pure
+ */
 class DeserializedEncryptedGrant
 {
+    /**
+     * @var EncryptedGrant
+     */
     private $encryptedGrant;
+    /**
+     * @var EncryptedGrantHeader
+     */
     private $header;
 
+    /**
+     * DeserializedEncryptedGrant constructor.
+     * @param EncryptedGrant $encryptedGrant
+     * @param EncryptedGrantHeader $header
+     */
     public function __construct(EncryptedGrant $encryptedGrant, EncryptedGrantHeader $header)
     {
         $this->encryptedGrant = $encryptedGrant;

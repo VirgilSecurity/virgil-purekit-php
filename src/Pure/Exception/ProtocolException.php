@@ -39,8 +39,18 @@ namespace Virgil\PureKit\Pure\Exception;
 
 use Throwable;
 
+/**
+ * Class ProtocolException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class ProtocolException extends \Exception
 {
+    /**
+     * ProtocolException constructor.
+     * @param string $message
+     * @param int $code
+     * @param Throwable|null $previous
+     */
     public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

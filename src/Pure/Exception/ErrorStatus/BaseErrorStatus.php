@@ -39,13 +39,23 @@ namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
 use MyCLabs\Enum\Enum;
 
+/**
+ * Class BaseErrorStatus
+ * @package Virgil\PureKit\Pure\Exception\ErrorStatus
+ */
 class BaseErrorStatus extends Enum
 {
+    /**
+     * @return int
+     */
     public function getCode(): int
     {
         return $this->getValue()[0];
     }
 
+    /**
+     * @return string
+     */
     public function getMessage(): string
     {
         return $this->getValue()[1];

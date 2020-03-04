@@ -38,11 +38,26 @@
 namespace Virgil\PureKit\Pure;
 
 
+/**
+ * Class RotationResults
+ * @package Virgil\PureKit\Pure
+ */
 class RotationResults
 {
+    /**
+     * @var int
+     */
     private $usersRotated;
+    /**
+     * @var int
+     */
     private $grantKeysRotated;
 
+    /**
+     * RotationResults constructor.
+     * @param int $usersRotated
+     * @param int $grantKeysRotated
+     */
     public function __construct(int $usersRotated, int $grantKeysRotated)
     {
         $this->usersRotated = $usersRotated;

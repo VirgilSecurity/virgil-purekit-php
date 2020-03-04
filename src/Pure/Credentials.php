@@ -51,7 +51,9 @@ class Credentials
      * @var
      */
     private $payload2;
-
+    /**
+     * @var null|string
+     */
     private $payload3;
     /**
      * @var int

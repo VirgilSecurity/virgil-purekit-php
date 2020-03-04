@@ -37,11 +37,25 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+/**
+ * Class ClientException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class ClientException extends PureException
 {
+    /**
+     * @var ProtocolException
+     */
     private $protocolException;
+    /**
+     * @var ProtocolHttpException
+     */
     private $protocolHttpException;
 
+    /**
+     * ClientException constructor.
+     * @param $e
+     */
     public function __construct($e)
     {
         $this->protocolException = null;

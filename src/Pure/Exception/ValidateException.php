@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class ValidateException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class ValidateException extends \Exception
 {
 

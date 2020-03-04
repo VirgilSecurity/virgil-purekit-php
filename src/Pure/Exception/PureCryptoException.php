@@ -43,13 +43,33 @@ use Virgil\CryptoWrapper\Foundation\Exception\FoundationException;
 use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 
+/**
+ * Class PureCryptoException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureCryptoException extends PureException
 {
+    /**
+     * @var VirgilCryptoException
+     */
     private $cryptoException;
+    /**
+     * @var FoundationException
+     */
     private $foundationException;
+    /**
+     * @var PheException
+     */
     private $pheException;
+    /**
+     * @var
+     */
     private $errorStatus;
 
+    /**
+     * PureCryptoException constructor.
+     * @param $e
+     */
     public function __construct($e)
     {
         $this->errorStatus = null;
@@ -90,6 +110,9 @@ class PureCryptoException extends PureException
         }
     }
 
+    /**
+     * @return PureCryptoErrorStatus
+     */
     public function getErrorStatus(): PureCryptoErrorStatus
     {
         return $this->errorStatus;

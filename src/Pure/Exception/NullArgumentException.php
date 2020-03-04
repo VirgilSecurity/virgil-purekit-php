@@ -38,6 +38,10 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class NullArgumentException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class NullArgumentException extends ValidateException
 {
 

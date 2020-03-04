@@ -67,15 +67,37 @@ use Virgil\PureKit\Pure\PureModelSerializer;
 use Virgil\PureKit\Pure\PureModelSerializerDependent;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class MariaDbPureStorage
+ * @package Virgil\PureKit\Pure\Storage
+ */
 class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 {
+    /**
+     * @var string
+     */
     private $host;
+    /**
+     * @var string
+     */
     private $login;
+    /**
+     * @var string
+     */
     private $password;
+    /**
+     * @var PureModelSerializer
+     */
     private $pureModelSerializer;
 
     public const ER_DUP_ENTRY = 1062;
 
+    /**
+     * MariaDbPureStorage constructor.
+     * @param string $host
+     * @param string $login
+     * @param string $password
+     */
     public function __construct(string $host, string $login, string $password)
     {
         $this->host = $host;
@@ -83,21 +105,34 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         $this->password = $password;
     }
 
+    /**
+     * @return PureModelSerializer
+     */
     public function getPureModelSerializer(): PureModelSerializer
     {
         return $this->pureModelSerializer;
     }
 
+    /**
+     * @param PureModelSerializer $pureModelSerializer
+     */
     public function setPureModelSerializer(PureModelSerializer $pureModelSerializer): void
     {
         $this->pureModelSerializer = $pureModelSerializer;
     }
 
+    /**
+     * @return PDO
+     */
     private function getConnection()
     {
         return new PDO($this->host, $this->login, $this->password);
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @throws PureStorageGenericException
+     */
     public function insertUser(UserRecord $userRecord): void
     {
         $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
@@ -130,6 +165,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param UserRecord $userRecord
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageUserNotFoundException
+     */
     public function updateUser(UserRecord $userRecord): void
     {
         $protobuf = $this->getPureModelSerializer()->serializeUserRecord($userRecord);
@@ -161,6 +202,11 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param UserRecordCollection $userRecords
+     * @param int $previousPheVersion
+     * @throws MariaDbSqlException
+     */
     public function updateUsers(UserRecordCollection $userRecords, int $previousPheVersion): void
     {
         try {
@@ -203,6 +249,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $rs
+     * @return UserRecord
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     private function parseUserRecord(string $rs): UserRecord
     {
         try {
@@ -215,6 +267,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         return $this->getPureModelSerializer()->parseUserRecord($protobuf);
     }
 
+    /**
+     * @param string $userId
+     * @return UserRecord
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageUserNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectUser(string $userId): UserRecord
     {
         try {
@@ -248,6 +308,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param array $userIds
+     * @return UserRecordCollection
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageUserNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectUsers(array $userIds): UserRecordCollection
     {
         if (empty($userIds))
@@ -308,6 +376,13 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param int $recordVersion
+     * @return UserRecordCollection
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectUsers_(int $recordVersion): UserRecordCollection
     {
         try {
@@ -344,6 +419,16 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $userId
+     * @param bool $cascade
+     * @throws MariaDbOperationNotSupportedException
+     * @throws MariaDbSqlException
+     * @throws PureStorageUserNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function deleteUser(string $userId, bool $cascade): void
     {
         ValidationUtils::checkNullOrEmpty($userId, "roleName");
@@ -371,6 +456,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $rs
+     * @return CellKey
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     private function parseCellKey(string $rs): CellKey
     {
         try {
@@ -383,6 +474,15 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         return $this->getPureModelSerializer()->parseCellKey($protobuf);
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     * @return CellKey
+     * @throws MariaDbSqlException
+     * @throws PureStorageCellKeyNotFoundException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectCellKey(string $userId, string $dataId): CellKey
     {
         try {
@@ -418,6 +518,13 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param CellKey $cellKey
+     * @throws PureStorageCellKEyAlreadyExistsException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function insertCellKey(CellKey $cellKey): void
     {
         $protobuf = $this->getPureModelSerializer()->serializeCellKey($cellKey);
@@ -450,6 +557,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param CellKey $cellKey
+     * @throws MariaDbSqlException
+     * @throws PureStorageCellKeyNotFoundException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function updateCellKey(CellKey $cellKey): void
     {
         ValidationUtils::checkNull($cellKey, "cellKey");
@@ -485,12 +600,24 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     }
 
+    /**
+     * @param string $userId
+     * @param string $dataId
+     */
     public function deleteCellKey(string $userId, string $dataId): void
     {
         var_dump("M3");
         die;
     }
 
+    /**
+     * @param Role $role
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function insertRole(Role $role): void
     {
         ValidationUtils::checkNull($role, "role");
@@ -526,6 +653,16 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $rs
+     * @return Role
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     private function parseRole(string $rs): Role
     {
         try {
@@ -538,6 +675,17 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         return $this->getPureModelSerializer()->parseRole($protobuf);
     }
 
+    /**
+     * @param array $roleNames
+     * @return RoleCollection
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageRoleNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectRoles(array $roleNames): RoleCollection
     {
         $roleCollection = new RoleCollection();
@@ -600,6 +748,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param RoleAssignmentCollection $roleAssignments
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
     {
         ValidationUtils::checkNull($roleAssignments, "role");
@@ -651,6 +805,15 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $rs
+     * @return RoleAssignment
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     private function parseRoleAssignment(string $rs): RoleAssignment
     {
         try {
@@ -663,6 +826,15 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         return $this->getPureModelSerializer()->parseRoleAssignment($protobuf);
     }
 
+    /**
+     * @param string $userId
+     * @return RoleAssignmentCollection
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectRoleAssignments(string $userId): RoleAssignmentCollection
     {
         $roleAssignments = new RoleAssignmentCollection();
@@ -701,6 +873,18 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $roleName
+     * @param string $userId
+     * @return RoleAssignment
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageRoleAssignmentNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
@@ -740,6 +924,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $roleName
+     * @param array $userIds
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
@@ -784,6 +976,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param GrantKey $grantKey
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function insertGrantKey(GrantKey $grantKey): void
     {
         $protobuf = $this->getPureModelSerializer()->serializeGrantKey($grantKey);
@@ -823,6 +1023,17 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $userId
+     * @param string $keyId
+     * @return GrantKey
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws PureStorageGrantKeyNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function selectGrantKey(string $userId, string $keyId): GrantKey
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -863,6 +1074,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $rs
+     * @return GrantKey
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     private function parseGrantKey(string $rs): GrantKey
     {
         try {
@@ -875,6 +1092,15 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         return $this->getPureModelSerializer()->parseGrantKey($protobuf);
     }
 
+    /**
+     * @param string $userId
+     * @param string $keyId
+     * @throws MariaDbSqlException
+     * @throws PureStorageGrantKeyNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function deleteGrantKey(string $userId, string $keyId): void
     {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
@@ -900,6 +1126,16 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $roleName
+     * @param bool $cascade
+     * @throws MariaDbOperationNotSupportedException
+     * @throws MariaDbSqlException
+     * @throws PureStorageRoleNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function deleteRole(string $roleName, bool $cascade): void
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
@@ -927,6 +1163,13 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param int $recordVersion
+     * @return GrantKeyCollection
+     * @throws MariaDbSqlException
+     * @throws PureStorageGenericException
+     * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
+     */
     public function selectGrantKeys(int $recordVersion): GrantKeyCollection
     {
         try {
@@ -963,6 +1206,12 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param GrantKeyCollection $grantKeys
+     * @throws MariaDbSqlException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function updateGrantKeys(GrantKeyCollection $grantKeys): void
     {
         ValidationUtils::checkNull($grantKeys, "grantKeys");
@@ -1008,6 +1257,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @throws MariaDbSqlException
+     */
     public function cleanDb(): void
     {
         try {
@@ -1023,6 +1275,10 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param int $cleanGrantKeysIntervalSeconds
+     * @throws MariaDbSqlException
+     */
     public function initDb(int $cleanGrantKeysIntervalSeconds): void
     {
         try {
@@ -1098,6 +1354,10 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         }
     }
 
+    /**
+     * @param string $sql
+     * @throws MariaDbSqlException
+     */
     public function executeSql(string $sql): void
     {
         try {

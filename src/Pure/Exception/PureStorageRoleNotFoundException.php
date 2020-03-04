@@ -38,10 +38,21 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageRoleNotFoundException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageRoleNotFoundException extends PureStorageException
 {
+    /**
+     * @var array
+     */
     private $roleNames;
 
+    /**
+     * PureStorageRoleNotFoundException constructor.
+     * @param array $roleNames
+     */
     public function __construct(array $roleNames)
     {
         $this->roleNames = $roleNames;

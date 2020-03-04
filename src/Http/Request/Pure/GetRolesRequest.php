@@ -42,20 +42,35 @@ use PurekitV3Client\GetRoles as ProtoGetRoles;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
+/**
+ * Class GetRolesRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
 class GetRolesRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var array
+     */
     private $roleNames;
 
+    /**
+     * GetRolesRequest constructor.
+     * @param AvailableRequest $request
+     * @param array $roleNames
+     */
     public function __construct(AvailableRequest $request, array $roleNames)
     {
         $this->request = $request;
         $this->roleNames = $roleNames;
     }
 
+    /**
+     * @return string
+     */
     public function getOptionsBody(): string
     {
         $r = new ProtoGetRoles();

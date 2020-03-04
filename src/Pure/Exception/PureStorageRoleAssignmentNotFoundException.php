@@ -38,11 +38,26 @@
 namespace Virgil\PureKit\Pure\Exception;
 
 
+/**
+ * Class PureStorageRoleAssignmentNotFoundException
+ * @package Virgil\PureKit\Pure\Exception
+ */
 class PureStorageRoleAssignmentNotFoundException extends PureStorageException
 {
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $roleName;
 
+    /**
+     * PureStorageRoleAssignmentNotFoundException constructor.
+     * @param string $userId
+     * @param string $roleName
+     */
     public function __construct(string $userId, string $roleName)
     {
         $this->userId = $userId;

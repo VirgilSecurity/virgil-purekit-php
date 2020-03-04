@@ -40,14 +40,44 @@ namespace Virgil\PureKit\Pure\Model;
 use Virgil\Crypto\Core\VirgilKeyPair;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class PureGrant
+ * @package Virgil\PureKit\Pure\Model
+ */
 class PureGrant
 {
+    /**
+     * @var VirgilKeyPair
+     */
     private $ukp;
+    /**
+     * @var string
+     */
     private $userId;
+    /**
+     * @var string
+     */
     private $sessionId;
+    /**
+     * @var \DateTime
+     */
     private $creationDate;
+    /**
+     * @var \DateTime
+     */
     private $expirationDate;
 
+    /**
+     * PureGrant constructor.
+     * @param VirgilKeyPair $ukp
+     * @param string $userId
+     * @param string|null $sessionId
+     * @param \DateTime $creationDate
+     * @param \DateTime $expirationDate
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     */
     public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId = null, \DateTime $creationDate,
                                 \DateTime $expirationDate)
     {
@@ -63,21 +93,33 @@ class PureGrant
         $this->expirationDate = $expirationDate;
     }
 
+    /**
+     * @return VirgilKeyPair
+     */
     public function getUkp(): VirgilKeyPair
     {
         return $this->ukp;
     }
 
+    /**
+     * @return string
+     */
     public function getUserId(): string
     {
         return $this->userId;
     }
 
+    /**
+     * @return null|string
+     */
     public function getSessionId(): ?string
     {
         return $this->sessionId;
     }
 
+    /**
+     * @return \DateTime
+     */
     public function getCreationDate(): \DateTime
     {
         return $this->creationDate;

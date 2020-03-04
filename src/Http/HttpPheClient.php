@@ -43,6 +43,10 @@ use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
+/**
+ * Class HttpPheClient
+ * @package Virgil\PureKit\Http
+ */
 class HttpPheClient extends HttpBaseClient
 {
     public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1/";
