@@ -61,7 +61,7 @@ use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class PureModelSerializer
@@ -98,8 +98,8 @@ class PureModelSerializer
      */
     public function __construct(VirgilCrypto $crypto, VirgilKeyPair $signingKey)
     {
-        ValidateUtil::checkNull($crypto, "crypto");
-        ValidateUtil::checkNull($signingKey, "signingKey");
+        ValidationUtils::checkNull($crypto, "crypto");
+        ValidationUtils::checkNull($signingKey, "signingKey");
 
         $this->crypto = $crypto;
         $this->signingKey = $signingKey;
@@ -133,7 +133,7 @@ class PureModelSerializer
 
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
-        ValidateUtil::checkNull($userRecord, "userRecord");
+        ValidationUtils::checkNull($userRecord, "userRecord");
 
         try {
             $enrollmentRecord = new ProtoEnrollmentRecord();
@@ -168,7 +168,7 @@ class PureModelSerializer
 
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
-        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+        ValidationUtils::checkNull($protobufRecord, "protobufRecord");
 
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getUserRecordSigned());
 
@@ -208,7 +208,7 @@ class PureModelSerializer
      */
     public function serializeCellKey(CellKey $cellKey): ProtoCellKey
     {
-        ValidateUtil::checkNull($cellKey, "cellKey");
+        ValidationUtils::checkNull($cellKey, "cellKey");
 
         $cellKeySigned = (new ProtoCellKeySigned)
             ->setVersion(self::CURRENT_CELL_KEY_SIGNED_VERSION)
@@ -229,7 +229,7 @@ class PureModelSerializer
 
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
-        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+        ValidationUtils::checkNull($protobufRecord, "protobufRecord");
 
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getCellKeySigned());
 
@@ -256,7 +256,7 @@ class PureModelSerializer
      */
     public function serializeRole(Role $role): ProtoRole
     {
-        ValidateUtil::checkNull($role, "role");
+        ValidationUtils::checkNull($role, "role");
 
         $roleSigned = (new ProtoRoleSigned)
             ->setVersion(self::CURRENT_ROLE_SIGNED_VERSION)
@@ -283,7 +283,7 @@ class PureModelSerializer
      */
     public function parseRole(ProtoRole $protobufRecord): Role
     {
-        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+        ValidationUtils::checkNull($protobufRecord, "protobufRecord");
 
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleSigned());
 
@@ -306,7 +306,7 @@ class PureModelSerializer
      */
     public function serializeRoleAssignment(RoleAssignment $roleAssignment): ProtoRoleAssignment
     {
-        ValidateUtil::checkNull($roleAssignment, "roleAssignment");
+        ValidationUtils::checkNull($roleAssignment, "roleAssignment");
 
         $roleAssignmentSigned = (new ProtoRoleAssignmentSigned)
             ->setVersion(self::CURRENT_ROLE_ASSIGNMENT_SIGNED_VERSION)
@@ -334,7 +334,7 @@ class PureModelSerializer
      */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
-        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+        ValidationUtils::checkNull($protobufRecord, "protobufRecord");
 
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getRoleAssignmentSigned());
 
@@ -360,7 +360,7 @@ class PureModelSerializer
      */
     public function serializeGrantKey(GrantKey $grantKey): ProtoGrantKey
     {
-        ValidateUtil::checkNull($grantKey, "grantKey");
+        ValidationUtils::checkNull($grantKey, "grantKey");
 
         $grantKeySigned = (new ProtoGrantKeySigned)
             ->setVersion(self::CURRENT_GRANT_KEY_SIGNED_VERSION)
@@ -383,7 +383,7 @@ class PureModelSerializer
 
     public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
     {
-        ValidateUtil::checkNull($protobufRecord, "protobufRecord");
+        ValidationUtils::checkNull($protobufRecord, "protobufRecord");
 
         $this->verifySignature($protobufRecord->getSignature(), $protobufRecord->getGrantKeySigned());
 

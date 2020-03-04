@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2019 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,55 +35,34 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Util;
+namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
-use Virgil\PureKit\Pure\Exception\IllegalStateException;
-use Virgil\PureKit\Pure\Exception\NullArgumentException;
 
-/**
- * Class ValidateUtil
- * @package Virgil\PureKit\Pure\Util
- */
-class ValidateUtil
+class PureStorageGrantKeyNotFoundException extends PureStorageException
 {
-    /**
-     * @param mixed $argument
-     * @param string $name
-     * @throws EmptyArgumentException
-     * @throws IllegalStateException
-     * @throws NullArgumentException
-     */
-    public static function checkNullOrEmpty($argument, string $name)
+    private $userId;
+    private $keyId;
+
+    public function __construct(string $userId, string $keyId)
     {
-        if (is_null($name))
-            throw new IllegalStateException("\'name\' cannot be null");
-
-        if (is_null($argument))
-            throw new NullArgumentException($name);
-
-        if (empty($argument))
-            throw new EmptyArgumentException($name);
+        $this->userId = $userId;
+        $this->keyId = base64_encode($keyId);
+        parent::__construct();
+    }
+    
+    /**
+     * @return string
+     */
+    public function getUserId(): string
+    {
+        return $this->userId;
     }
 
     /**
-     * @param mixed $argument
-     * @param string $name
-     * @throws IllegalStateException
-     * @throws NullArgumentException
+     * @return string
      */
-    public static function checkNull($argument, string $name)
+    public function getKeyId(): string
     {
-        if (is_null($name))
-            throw new IllegalStateException("\'name\' cannot be null");
-
-        if (is_null($argument))
-            throw new NullArgumentException($name);
-    }
-
-    // TODO!
-    public static function checkStringInArray(array $argument): bool
-    {
-        return true;
+        return $this->keyId;
     }
 }

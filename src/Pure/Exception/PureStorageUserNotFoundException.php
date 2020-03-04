@@ -35,28 +35,21 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
+namespace Virgil\PureKit\Pure\Exception;
 
-use MyCLabs\Enum\Enum;
 
-/**
- * Class ServiceErrorCode
- * @package Virgil\PureKit\Pure\Exception
- */
-class ServiceErrorCode extends Enum
+class PureStorageUserNotFoundException extends PureStorageException
 {
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const GRANT_KEY_NOT_FOUND = 50023;
-    private const ROLE_ASSIGNMENT_NOT_FOUND = 50015;
-    private const UNDEFINED = 0;
+    private $userIds;
 
-    /**
-     * @return int
-     */
-    public function getCode(): int
+    public function __construct(array $userIds)
     {
-        return $this->getValue();
+        $this->userIds = $userIds;
+        parent::__construct();
+    }
+
+    public function getUserIds(): array
+    {
+        return $this->userIds;
     }
 }

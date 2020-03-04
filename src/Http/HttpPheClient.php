@@ -41,7 +41,7 @@ use Purekit\EnrollmentResponse as ProtoEnrollmentResponse;
 use Purekit\VerifyPasswordResponse as ProtoVerifyPasswordResponse;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class HttpPheClient extends HttpBaseClient
 {
@@ -58,8 +58,8 @@ class HttpPheClient extends HttpBaseClient
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
+        ValidationUtils::checkNullOrEmpty($appToken, "appToken");
+        ValidationUtils::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
 
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }
@@ -71,7 +71,7 @@ class HttpPheClient extends HttpBaseClient
      */
     public function enrollAccount(EnrollRequest $request): ProtoEnrollmentResponse
     {
-        ValidateUtil::checkNull($request, "request");
+        ValidationUtils::checkNull($request, "request");
 
         $r = $this->_send($request);
 
@@ -88,7 +88,7 @@ class HttpPheClient extends HttpBaseClient
      */
     public function verifyPassword(VerifyPasswordRequest $request): ProtoVerifyPasswordResponse
     {
-        ValidateUtil::checkNull($request, "request");
+        ValidationUtils::checkNull($request, "request");
 
         $r = $this->_send($request);
 

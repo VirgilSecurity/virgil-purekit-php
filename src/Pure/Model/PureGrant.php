@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure\Model;
 
 use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class PureGrant
 {
@@ -51,10 +51,10 @@ class PureGrant
     public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId = null, \DateTime $creationDate,
                                 \DateTime $expirationDate)
     {
-        ValidateUtil::checkNull($ukp, "ukp");
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNull($creationDate, "creationDate");
-        ValidateUtil::checkNull($expirationDate, "expirationDate");
+        ValidationUtils::checkNull($ukp, "ukp");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNull($creationDate, "creationDate");
+        ValidationUtils::checkNull($expirationDate, "expirationDate");
 
         $this->ukp = $ukp;
         $this->userId = $userId;

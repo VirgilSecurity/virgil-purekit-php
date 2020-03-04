@@ -39,7 +39,7 @@ namespace Virgil\PureKit\Http;
 
 use PurekitV3Client\DecryptResponse as ProtoDecryptResponse;
 use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class HttpKmsClient extends HttpBaseClient
 {
@@ -56,8 +56,8 @@ class HttpKmsClient extends HttpBaseClient
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
+        ValidationUtils::checkNullOrEmpty($appToken, "appToken");
+        ValidationUtils::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
 
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }

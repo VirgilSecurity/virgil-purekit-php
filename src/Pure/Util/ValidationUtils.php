@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2019 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,45 +35,55 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure;
+namespace Virgil\PureKit\Pure\Util;
 
-use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Model\UserRecord;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 
-class RegisterResult
+/**
+ * Class ValidationUtils
+ * @package Virgil\PureKit\Pure\Util
+ */
+class ValidationUtils
 {
-    private $userRecord;
-    private $ukp;
-    private $phek;
-
-    public function __construct(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek)
+    /**
+     * @param mixed $argument
+     * @param string $name
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
+     */
+    public static function checkNullOrEmpty($argument, string $name)
     {
-        $this->userRecord = $userRecord;
-        $this->ukp = $ukp;
-        $this->phek = $phek;
+        if (is_null($name))
+            throw new IllegalStateException("\'name\' cannot be null");
+
+        if (is_null($argument))
+            throw new NullArgumentException($name);
+
+        if (empty($argument))
+            throw new EmptyArgumentException($name);
     }
 
     /**
-     * @return UserRecord
+     * @param mixed $argument
+     * @param string $name
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      */
-    public function getUserRecord(): UserRecord
+    public static function checkNull($argument, string $name)
     {
-        return $this->userRecord;
+        if (is_null($name))
+            throw new IllegalStateException("\'name\' cannot be null");
+
+        if (is_null($argument))
+            throw new NullArgumentException($name);
     }
 
-    /**
-     * @return VirgilKeyPair
-     */
-    public function getUkp(): VirgilKeyPair
+    // TODO!
+    public static function checkStringInArray(array $argument): bool
     {
-        return $this->ukp;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPhek(): string
-    {
-        return $this->phek;
+        return true;
     }
 }

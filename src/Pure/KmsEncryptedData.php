@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class KmsEncryptedData
 {
@@ -47,8 +47,8 @@ class KmsEncryptedData
 
     public function __construct(string $wrap, string $blob)
     {
-        ValidateUtil::checkNull($wrap, "wrap");
-        ValidateUtil::checkNull($blob, "blob");
+        ValidationUtils::checkNull($wrap, "wrap");
+        ValidationUtils::checkNull($blob, "blob");
 
         $this->blob = $blob;
         $this->wrap = $wrap;

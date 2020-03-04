@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class UserRecord
@@ -101,14 +101,14 @@ class UserRecord
                                 string $encryptedUsk, string $encryptedUskBackup, string $backupPwdHash,
                                 string $passwordRecoveryWrap, string $passwordRecoveryBlob)
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($pheRecord, "pheRecord");
-        ValidateUtil::checkNullOrEmpty($upk, "upk");
-        ValidateUtil::checkNullOrEmpty($encryptedUsk, "encryptedUsk");
-        ValidateUtil::checkNullOrEmpty($encryptedUskBackup, "encryptedUskBackup");
-        ValidateUtil::checkNullOrEmpty($backupPwdHash, "backupPwdHash");
-        ValidateUtil::checkNullOrEmpty($passwordRecoveryWrap, "passwordRecoveryWrap");
-        ValidateUtil::checkNullOrEmpty($passwordRecoveryBlob, "passwordRecoveryBlob");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($pheRecord, "pheRecord");
+        ValidationUtils::checkNullOrEmpty($upk, "upk");
+        ValidationUtils::checkNullOrEmpty($encryptedUsk, "encryptedUsk");
+        ValidationUtils::checkNullOrEmpty($encryptedUskBackup, "encryptedUskBackup");
+        ValidationUtils::checkNullOrEmpty($backupPwdHash, "backupPwdHash");
+        ValidationUtils::checkNullOrEmpty($passwordRecoveryWrap, "passwordRecoveryWrap");
+        ValidationUtils::checkNullOrEmpty($passwordRecoveryBlob, "passwordRecoveryBlob");
 
         $this->userId = $userId;
         $this->pheRecord = $pheRecord;

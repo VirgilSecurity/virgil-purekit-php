@@ -60,7 +60,7 @@ use Virgil\PureKit\Pure\Model\Role;
 use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\Storage\PureStorage;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 
 class Pure
@@ -87,7 +87,7 @@ class Pure
      */
     public function __construct(PureContext $context)
     {
-        ValidateUtil::checkNull($context, "context");
+        ValidationUtils::checkNull($context, "context");
 
         $this->pureCrypto = new PureCrypto($context->getCrypto());
         $this->storage = $context->getStorage();
@@ -113,14 +113,14 @@ class Pure
     public function registerUser_(string $userId, string $password, PureSessionParams $pureSessionParams):
     AuthResult
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($password, "password");
-        ValidateUtil::checkNull($pureSessionParams, "pureSessionParams");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($password, "password");
+        ValidationUtils::checkNull($pureSessionParams, "pureSessionParams");
 
-        $registerResult = $this->_registerUserInternal($userId, $password);
+        $registrationResult = $this->_registerUserInternal($userId, $password);
 
-        return $this->_authenticateUserInternal($registerResult->getUserRecord(), $registerResult->getUkp(),
-            $registerResult->getPhek(), $pureSessionParams->getSessionId(), $pureSessionParams->getTtl());
+        return $this->_authenticateUserInternal($registrationResult->getUserRecord(), $registrationResult->getUkp(),
+            $registrationResult->getPhek(), $pureSessionParams->getSessionId(), $pureSessionParams->getTtl());
     }
 
     public function authenticateUser(string $userId, string $password, PureSessionParams $pureSessionParams = null):
@@ -129,8 +129,8 @@ class Pure
         if (is_null($pureSessionParams))
             $pureSessionParams = new PureSessionParams();
 
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($password, "password");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($password, "password");
 
         $userRecord = $this->storage->selectUser($userId);
 
@@ -157,8 +157,8 @@ class Pure
 
     public function createUserGrantAsAdmin(string $userId, VirgilPrivateKey $bupsk, int $ttl = self::DEFAULT_GRANT_TTL): PureGrant
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNull($bupsk, "bupsk");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNull($bupsk, "bupsk");
 
         $userRecord = $this->storage->selectUser($userId);
 
@@ -175,7 +175,7 @@ class Pure
 
     private function deserializeEncryptedGrant(string $encryptedGrantString): DeserializedEncryptedGrant
     {
-        ValidateUtil::checkNullOrEmpty($encryptedGrantString, "encryptedGrantString");
+        ValidationUtils::checkNullOrEmpty($encryptedGrantString, "encryptedGrantString");
 
         $encryptedGrantData = base64_decode($encryptedGrantString);
 
@@ -239,9 +239,9 @@ class Pure
 
     public function changeUserPassword(string $userId, string $oldPassword, string $newPassword): void
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($oldPassword, "oldPassword");
-        ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($oldPassword, "oldPassword");
+        ValidationUtils::checkNullOrEmpty($newPassword, "newPassword");
 
         $userRecord = $this->storage->selectUser($userId);
 
@@ -255,8 +255,8 @@ class Pure
     // TODO!
     public function changeUserPassword_(PureGrant $grant, string $newPassword): void
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNullOrEmpty($newPassword, "newPassword");
 
         $userRecord = $this->storage->selectUser($grant->getUserId());
 
@@ -267,8 +267,8 @@ class Pure
 
     public function recoverUser(string $userId, string $newPassword): void
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($newPassword, "newPassword");
 
         $userRecord = $this->storage->selectUser($userId);
 
@@ -383,12 +383,12 @@ class Pure
     public function encrypt(string $userId, string $dataId, array $otherUserIds, array $roleNames,
                             VirgilPublicKeyCollection $publicKeys, string $plainText): string
     {
-        ValidateUtil::checkNull($otherUserIds, "otherUserIds");
-        ValidateUtil::checkNull($publicKeys, "publicKeys");
-        ValidateUtil::checkNull($plainText, "plainText");
+        ValidationUtils::checkNull($otherUserIds, "otherUserIds");
+        ValidationUtils::checkNull($publicKeys, "publicKeys");
+        ValidationUtils::checkNull($plainText, "plainText");
 
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
 
         try {
             $cellKey = $this->storage->selectCellKey($userId, $dataId);
@@ -452,9 +452,9 @@ class Pure
 
     public function decrypt(PureGrant $grant, string $ownerUserId = null, string $dataId, string $cipherText): string
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNull($cipherText, "cipherText");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNull($cipherText, "cipherText");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
 
         $userId = $ownerUserId;
 
@@ -516,9 +516,9 @@ class Pure
     public function decrypt_(VirgilPrivateKey $privateKey, string $ownerUserId, string $dataId,
                              string $cipherText): string
     {
-        ValidateUtil::checkNull($privateKey, "privateKey");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
-        ValidateUtil::checkNullOrEmpty($ownerUserId, "ownerUserId");
+        ValidationUtils::checkNull($privateKey, "privateKey");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNullOrEmpty($ownerUserId, "ownerUserId");
 
         $cellKey = $this->storage->selectCellKey($ownerUserId, $dataId);
 
@@ -534,9 +534,9 @@ class Pure
 
     public function shareToRole(PureGrant $grant, string $dataId, array $roleNames): void
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
-        ValidateUtil::checkNull($roleNames, "roleNames");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNull($roleNames, "roleNames");
 
         if (empty($roleNames)) {
             throw new EmptyArgumentException("roleNames");
@@ -557,9 +557,9 @@ class Pure
 
     public function share(PureGrant $grant, string $dataId, string $otherUserId): void
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
-        ValidateUtil::checkNullOrEmpty($otherUserId, "otherUserId");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNullOrEmpty($otherUserId, "otherUserId");
 
         $this->share_($grant, $dataId, [$otherUserId], new VirgilPublicKeyCollection());
     }
@@ -567,11 +567,11 @@ class Pure
     public function share_(PureGrant $grant, string $dataId, array $otherUserIds,
                            VirgilPublicKeyCollection $publicKeys): void
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNull($otherUserIds, "otherUserIds");
-        ValidateUtil::checkNull($publicKeys, "publicKeys");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNull($otherUserIds, "otherUserIds");
+        ValidationUtils::checkNull($publicKeys, "publicKeys");
 
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
 
         $keys = $this->keysWithOthers($publicKeys, $otherUserIds);
         $cellKey = $this->storage->selectCellKey($grant->getUserId(), $dataId);
@@ -595,11 +595,11 @@ class Pure
     public function unshare_(string $ownerUserId, string $dataId, array $otherUserIds,
                              VirgilPublicKeyCollection $publicKeys): void
     {
-        ValidateUtil::checkNull($otherUserIds, "otherUserIds");
-        ValidateUtil::checkNull($publicKeys, "publicKeys");
+        ValidationUtils::checkNull($otherUserIds, "otherUserIds");
+        ValidationUtils::checkNull($publicKeys, "publicKeys");
 
-        ValidateUtil::checkNullOrEmpty($ownerUserId, "ownerUserId");
-        ValidateUtil::checkNullOrEmpty($dataId, "dataId");
+        ValidationUtils::checkNullOrEmpty($ownerUserId, "ownerUserId");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
 
         $keys = $this->keysWithOthers($publicKeys, $otherUserIds);
 
@@ -669,10 +669,10 @@ class Pure
     }
 
 
-    private function _registerUserInternal(string $userId, string $password): RegisterResult
+    private function _registerUserInternal(string $userId, string $password): RegistrationResult
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($password, "password");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($password, "password");
 
         $passwordHash = $this->pureCrypto->computePasswordHash($password);
 
@@ -708,7 +708,7 @@ class Pure
 
         $this->getStorage()->insertUser($userRecord);
 
-        return new RegisterResult($userRecord, $ukp, $pheResult[1]);
+        return new RegistrationResult($userRecord, $ukp, $pheResult[1]);
     }
 
     private function _authenticateUserInternal(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek, string
@@ -766,7 +766,7 @@ $sessionId = null, int $ttl): AuthResult
     void
     {
         try {
-            ValidateUtil::checkNullOrEmpty($newPassword, "newPassword");
+            ValidationUtils::checkNullOrEmpty($newPassword, "newPassword");
 
             $newPasswordHash = $this->pureCrypto->computePasswordHash($newPassword);
 

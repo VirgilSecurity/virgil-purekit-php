@@ -62,7 +62,7 @@ use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class HttpPureClient extends HttpBaseClient
 {
@@ -80,8 +80,8 @@ class HttpPureClient extends HttpBaseClient
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
     {
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
+        ValidationUtils::checkNullOrEmpty($appToken, "appToken");
+        ValidationUtils::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
 
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }

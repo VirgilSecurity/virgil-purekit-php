@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 use Virgil\PureKit\Pure\Model\PureGrant;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class AuthResult
@@ -65,8 +65,8 @@ class AuthResult
      */
     public function __construct(PureGrant $grant, string $encryptedGrant)
     {
-        ValidateUtil::checkNull($grant, "grant");
-        ValidateUtil::checkNullOrEmpty($encryptedGrant, "encryptedGrant");
+        ValidationUtils::checkNull($grant, "grant");
+        ValidationUtils::checkNullOrEmpty($encryptedGrant, "encryptedGrant");
 
         $this->grant = $grant;
         $this->encryptedGrant = $encryptedGrant;

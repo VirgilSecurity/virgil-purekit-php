@@ -35,28 +35,45 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
+namespace Virgil\PureKit\Pure;
 
-use MyCLabs\Enum\Enum;
+use Virgil\Crypto\Core\VirgilKeyPair;
+use Virgil\PureKit\Pure\Model\UserRecord;
 
-/**
- * Class ServiceErrorCode
- * @package Virgil\PureKit\Pure\Exception
- */
-class ServiceErrorCode extends Enum
+class RegistrationResult
 {
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const GRANT_KEY_NOT_FOUND = 50023;
-    private const ROLE_ASSIGNMENT_NOT_FOUND = 50015;
-    private const UNDEFINED = 0;
+    private $userRecord;
+    private $ukp;
+    private $phek;
+
+    public function __construct(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek)
+    {
+        $this->userRecord = $userRecord;
+        $this->ukp = $ukp;
+        $this->phek = $phek;
+    }
 
     /**
-     * @return int
+     * @return UserRecord
      */
-    public function getCode(): int
+    public function getUserRecord(): UserRecord
     {
-        return $this->getValue();
+        return $this->userRecord;
+    }
+
+    /**
+     * @return VirgilKeyPair
+     */
+    public function getUkp(): VirgilKeyPair
+    {
+        return $this->ukp;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPhek(): string
+    {
+        return $this->phek;
     }
 }

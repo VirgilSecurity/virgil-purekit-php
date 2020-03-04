@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class Role
@@ -64,8 +64,8 @@ class Role
      */
     public function __construct(string $roleName, string $rpk)
     {
-        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
-        ValidateUtil::checkNullOrEmpty($rpk, "rpk");
+        ValidationUtils::checkNullOrEmpty($roleName, "roleName");
+        ValidationUtils::checkNullOrEmpty($rpk, "rpk");
 
         $this->roleName = $roleName;
         $this->rpk = $rpk;

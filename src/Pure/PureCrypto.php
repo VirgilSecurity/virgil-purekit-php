@@ -101,6 +101,7 @@ class PureCrypto
         try {
             $aesGsm = new Aes256Gcm();
             $cipher = new RecipientCipher();
+            $sha512 = new Sha512();
 
             $cipher->useEncryptionCipher($aesGsm);
             $cipher->useRandom($this->crypto->getRng());
@@ -111,7 +112,7 @@ class PureCrypto
                 $cipher->addKeyRecipient($key->getIdentifier(), $key->getPublicKey());
             }
 
-            $cipher->useSignerHash(new Sha512());
+            $cipher->useSignerHash($sha512);
             $cipher->startSignedEncryption(strlen($plainTextData));
 
             $cms = $cipher->packMessageInfo();

@@ -51,7 +51,7 @@ use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Model\UserRecord;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class PheManager
 {
@@ -152,7 +152,7 @@ class PheManager
 
     public function performRotation(string $enrollmentRecord): string {
 
-        ValidateUtil::checkNull($this->updateToken, "pheUpdateToken");
+        ValidationUtils::checkNull($this->updateToken, "pheUpdateToken");
 
         try {
             return $this->previousClient->updateEnrollmentRecord($enrollmentRecord, $this->updateToken);

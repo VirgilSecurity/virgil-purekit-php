@@ -50,7 +50,7 @@ use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Storage\PureStorage;
 use Virgil\PureKit\Pure\Storage\VirgilCloudPureStorage;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class PureContext
@@ -80,15 +80,15 @@ class PureContext
                                 array $externalPublicKeys,
                                 string $pheServiceAddress, string $kmsServiceAddress)
     {
-        ValidateUtil::checkNull($crypto, "crypto");
-        ValidateUtil::checkNullOrEmpty($appToken, "appToken");
-        ValidateUtil::checkNullOrEmpty($nms, "nms");
-        ValidateUtil::checkNullOrEmpty($buppk, "bupkk");
-        ValidateUtil::checkNullOrEmpty($secretKey, "secretKey");
-        ValidateUtil::checkNullOrEmpty($publicKey, "publicKey");
-        ValidateUtil::checkNull($storage, "storage");
-        ValidateUtil::checkNullOrEmpty($pheServiceAddress, "pheServiceAddress");
-        ValidateUtil::checkNullOrEmpty($kmsServiceAddress, "kmsServiceAddress");
+        ValidationUtils::checkNull($crypto, "crypto");
+        ValidationUtils::checkNullOrEmpty($appToken, "appToken");
+        ValidationUtils::checkNullOrEmpty($nms, "nms");
+        ValidationUtils::checkNullOrEmpty($buppk, "bupkk");
+        ValidationUtils::checkNullOrEmpty($secretKey, "secretKey");
+        ValidationUtils::checkNullOrEmpty($publicKey, "publicKey");
+        ValidationUtils::checkNull($storage, "storage");
+        ValidationUtils::checkNullOrEmpty($pheServiceAddress, "pheServiceAddress");
+        ValidationUtils::checkNullOrEmpty($kmsServiceAddress, "kmsServiceAddress");
 
         $this->crypto = $crypto;
 
@@ -163,8 +163,8 @@ class PureContext
                                                string $pureServiceAddress = HttpPureClient::SERVICE_ADDRESS,
                                                string $kmsServiceAddress = HttpKmsClient::SERVICE_ADDRESS): PureContext
     {
-        ValidateUtil::checkNullOrEmpty($at, "at");
-        ValidateUtil::checkNullOrEmpty($pureServiceAddress, "pureServiceAddress");
+        ValidationUtils::checkNullOrEmpty($at, "at");
+        ValidationUtils::checkNullOrEmpty($pureServiceAddress, "pureServiceAddress");
 
         $crypto = new VirgilCrypto();
         $pureClient = new HttpPureClient($at, $pureServiceAddress);
@@ -191,8 +191,8 @@ class PureContext
     $numberOfPayloads):
     Credentials
     {
-        ValidateUtil::checkNullOrEmpty($prefix, "prefix");
-        ValidateUtil::checkNullOrEmpty($credentials, "credentials");
+        ValidationUtils::checkNullOrEmpty($prefix, "prefix");
+        ValidationUtils::checkNullOrEmpty($credentials, "credentials");
 
         $parts = [];
         $parts = explode(".", $credentials);

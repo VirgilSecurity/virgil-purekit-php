@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class PureCryptoData
@@ -64,8 +64,8 @@ class PureCryptoData
      */
     public function __construct(string $cms, string $body)
     {
-        ValidateUtil::checkNullOrEmpty($cms, "cms");
-        ValidateUtil::checkNullOrEmpty($body, "body");
+        ValidationUtils::checkNullOrEmpty($cms, "cms");
+        ValidationUtils::checkNullOrEmpty($body, "body");
 
         $this->cms = $cms;
         $this->body = $body;

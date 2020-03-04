@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class GrantKey
@@ -90,12 +90,12 @@ class GrantKey
     public function __construct(string $userId, string $keyId, int $recordVersion, string $encryptedGrantKeyWrap, string
     $encryptedGrantKeyBlob, \DateTime $creationDate, \DateTime $expirationDate)
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
-        ValidateUtil::checkNullOrEmpty($encryptedGrantKeyWrap, "encryptedGrantKeyWrap");
-        ValidateUtil::checkNullOrEmpty($encryptedGrantKeyBlob, "encryptedGrantKeyBlob");
-        ValidateUtil::checkNull($creationDate, "creationDate");
-        ValidateUtil::checkNull($expirationDate, "expirationDate");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($keyId, "keyId");
+        ValidationUtils::checkNullOrEmpty($encryptedGrantKeyWrap, "encryptedGrantKeyWrap");
+        ValidationUtils::checkNullOrEmpty($encryptedGrantKeyBlob, "encryptedGrantKeyBlob");
+        ValidationUtils::checkNull($creationDate, "creationDate");
+        ValidationUtils::checkNull($expirationDate, "expirationDate");
 
         $this->userId = $userId;
         $this->keyId = $keyId;

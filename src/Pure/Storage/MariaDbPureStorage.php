@@ -54,6 +54,10 @@ use Virgil\PureKit\Pure\Exception\MariaDbSqlException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
+use Virgil\PureKit\Pure\Exception\PureStorageGrantKeyNotFoundException;
+use Virgil\PureKit\Pure\Exception\PureStorageRoleAssignmentNotFoundException;
+use Virgil\PureKit\Pure\Exception\PureStorageRoleNotFoundException;
+use Virgil\PureKit\Pure\Exception\PureStorageUserNotFoundException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\Role;
@@ -61,7 +65,7 @@ use Virgil\PureKit\Pure\Model\RoleAssignment;
 use Virgil\PureKit\Pure\Model\UserRecord;
 use Virgil\PureKit\Pure\PureModelSerializer;
 use Virgil\PureKit\Pure\PureModelSerializerDependent;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 {
@@ -69,6 +73,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
     private $login;
     private $password;
     private $pureModelSerializer;
+
+    public const ER_DUP_ENTRY = 1062;
 
     public function __construct(string $host, string $login, string $password)
     {
@@ -117,7 +123,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $stmt->execute();
 
         } catch (PDOException $exception) {
-            if ($exception->getCode() != 1062)
+            if ($exception->getCode() != self::ER_DUP_ENTRY)
                 throw $exception;
 
             throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_ALREADY_EXISTS());
@@ -148,7 +154,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $rows = $stmt->execute();
 
             if ($rows != 1)
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+                throw new PureStorageUserNotFoundException([$userRecord->getUserId()]);
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
@@ -189,7 +195,11 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $conn->commit();
 
         } catch (PDOException $exception) {
+            $conn->rollBack();
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        } catch (\Exception $exception) {
+            $conn->rollBack();
+            throw $exception;
         }
     }
 
@@ -224,7 +234,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $result = $stmt->fetchAll();
 
             if (empty($result))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+                throw new PureStorageUserNotFoundException([$userId]);
 
             $userRecord = $this->parseUserRecord($result[0]['protobuf']);
 
@@ -247,8 +257,6 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $conn = $this->getConnection();
 
             $idsSet = $userIds;
-
-            // TODO: Add userIds size limit and compute StringBuilder size properly
 
             $sbSql = "SELECT protobuf FROM virgil_users WHERE user_id in (";
 
@@ -291,7 +299,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             }
 
             if (!empty($idsSet))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+                throw new PureStorageUserNotFoundException([$idsSet]);
 
             return $userRecords;
 
@@ -338,7 +346,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function deleteUser(string $userId, bool $cascade): void
     {
-        ValidateUtil::checkNullOrEmpty($userId, "roleName");
+        ValidationUtils::checkNullOrEmpty($userId, "roleName");
 
         if (!$cascade) {
             throw new MariaDbOperationNotSupportedException();
@@ -356,7 +364,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $rows = $stmt->execute();
 
             if ($rows != 1)
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::USER_NOT_FOUND());
+                throw new PureStorageUserNotFoundException([$userId]);
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
@@ -435,7 +443,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $stmt->execute();
 
         } catch (PDOException $exception) {
-            if ($exception->getCode() != 1062)
+            if ($exception->getCode() != self::ER_DUP_ENTRY)
                 throw $exception;
 
             throw new PureStorageCellKEyAlreadyExistsException();
@@ -444,7 +452,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function updateCellKey(CellKey $cellKey): void
     {
-        ValidateUtil::checkNull($cellKey, "cellKey");
+        ValidationUtils::checkNull($cellKey, "cellKey");
 
         $protobuf = $this->getPureModelSerializer()->serializeCellKey($cellKey);
 
@@ -485,7 +493,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function insertRole(Role $role): void
     {
-        ValidateUtil::checkNull($role, "role");
+        ValidationUtils::checkNull($role, "role");
         $protobuf = $this->getPureModelSerializer()->serializeRole($role);
 
         try {
@@ -507,7 +515,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             try {
                 $stmt->execute();
             } catch (PDOException $exception) {
-                if (1062 != $exception->getCode())
+                if ($exception->getCode() != self::ER_DUP_ENTRY)
                     throw $exception;
 
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_ALREADY_EXISTS());
@@ -576,14 +584,14 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
                 if (($key = array_search($role->getRoleName(), $namesSet)) !== false) {
                     unset($namesSet[$key]);
-                    $idsSet = array_values($namesSet);
+                    $namesSet = array_values($namesSet);
                 }
 
                 $roleCollection->add($role);
             }
 
-            if (!empty($idsSet))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_NOT_FOUND());
+            if (!empty($namesSet))
+                throw new PureStorageRoleNotFoundException($namesSet);
 
             return $roleCollection;
 
@@ -594,7 +602,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function insertRoleAssignments(RoleAssignmentCollection $roleAssignments): void
     {
-        ValidateUtil::checkNull($roleAssignments, "role");
+        ValidationUtils::checkNull($roleAssignments, "role");
 
         if (empty($roleAssignments->getAsArray()))
             return;
@@ -625,7 +633,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
                 try {
                     $stmt->execute();
                 } catch (PDOException $exception) {
-                    if (1062 != $exception->getCode())
+                    if ($exception->getCode() != self::ER_DUP_ENTRY)
                         throw $exception;
 
                     throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_ASSIGNMENT_ALREADY_EXISTS());
@@ -635,7 +643,11 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $conn->commit();
 
         } catch (PDOException $exception) {
+            $conn->rollBack();
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        } catch (\Exception $exception) {
+            $conn->rollBack();
+            throw $exception;
         }
     }
 
@@ -691,8 +703,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function selectRoleAssignment(string $roleName, string $userId): RoleAssignment
     {
-        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($roleName, "roleName");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
 
         try {
             $conn = $this->getConnection();
@@ -712,7 +724,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $result = $stmt->fetchAll();
 
             if (empty($result))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_ASSIGNMENT_NOT_FOUND());
+                throw new PureStorageRoleAssignmentNotFoundException($userId, $roleName);
 
             foreach ($result as $rs) {
                 $roleAssignment = $this->parseRoleAssignment($rs['protobuf']);
@@ -730,44 +742,45 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function deleteRoleAssignments(string $roleName, array $userIds): void
     {
-        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
-        ValidateUtil::checkNull($userIds, "userIds");
+        ValidationUtils::checkNullOrEmpty($roleName, "roleName");
+        ValidationUtils::checkNull($userIds, "userIds");
 
         if (empty($userIds))
             return;
 
+        $userIdsArray = [];
+
         try {
             $conn = $this->getConnection();
 
-            $idsSet = $userIds;
+            $conn->beginTransaction();
 
-            $sbSql = "DELETE FROM virgil_role_assignments WHERE role_name=? AND user_id in (";
+            $stmt = $conn->prepare("
+                DELETE FROM virgil_role_assignments WHERE role_name=? AND user_id=?
+            ");
 
-            for ($i = 0; $i < count($userIds); $i++) {
-                if ($i > 0)
-                    $sbSql .= ",";
+            $j = 0;
 
-                $sbSql .= "?";
+            foreach ($userIds as $userId) {
+                $stmt->bindParam(1, $roleName);
+                $stmt->bindParam(2, $userId);
+                $userIdsArray[$j++] = $userId;
+
+                $stmt->execute();
             }
 
-            $sbSql .= ");";
+            if ($j != count($userIds))
+                throw new MariaDbOperationNotSupportedException();
 
-            $stmt = $conn->prepare($sbSql);
-
-            $stmt->bindParam(1, $roleName);
-
-            $j = 2;
-            foreach ($userIds as &$userId) {
-                $stmt->bindParam($j++, $userId);
-            }
-
-            $rows = $stmt->execute();
-
-            if ($rows != count($userIds))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_ASSIGNMENT_NOT_FOUND());
+            // TODO! Add throwable
+            // PureStorageRoleAssignmentNotFoundException($userIdsArray[$i], $roleName);
 
         } catch (PDOException $exception) {
+            $conn->rollBack();
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        } catch (\Exception $exception) {
+            $conn->rollBack();
+            throw $exception;
         }
     }
 
@@ -800,7 +813,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             try {
                 $stmt->execute();
             } catch (PDOException $exception) {
-                if ($exception->getCode() != 1062)
+                if ($exception->getCode() != self::ER_DUP_ENTRY)
                     throw $exception;
 
                 throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_ALREADY_EXISTS());
@@ -812,8 +825,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function selectGrantKey(string $userId, string $keyId): GrantKey
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($keyId, "keyId");
 
         try {
             $conn = $this->getConnection();
@@ -833,7 +846,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $result = $stmt->fetchAll();
 
             if (empty($result))
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND());
+                throw new PureStorageGrantKeyNotFoundException($userId, $keyId);
 
             $grantKey = $this->parseGrantKey($result[0]['protobuf']);
 
@@ -864,8 +877,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function deleteGrantKey(string $userId, string $keyId): void
     {
-        ValidateUtil::checkNullOrEmpty($userId, "userId");
-        ValidateUtil::checkNullOrEmpty($keyId, "keyId");
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($keyId, "keyId");
 
         try {
             $conn = $this->getConnection();
@@ -880,7 +893,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $rows = $stmt->execute();
 
             if ($rows != 1)
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND());
+                throw new PureStorageGrantKeyNotFoundException($userId, $keyId);
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
@@ -889,7 +902,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function deleteRole(string $roleName, bool $cascade): void
     {
-        ValidateUtil::checkNullOrEmpty($roleName, "roleName");
+        ValidationUtils::checkNullOrEmpty($roleName, "roleName");
 
         if (!$cascade) {
             throw new MariaDbOperationNotSupportedException();
@@ -907,7 +920,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $rows = $stmt->execute();
 
             if ($rows != 1)
-                throw new PureStorageGenericException(PureStorageGenericErrorStatus::ROLE_NOT_FOUND());
+                throw new PureStorageRoleNotFoundException([$roleName]);
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
@@ -952,7 +965,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     public function updateGrantKeys(GrantKeyCollection $grantKeys): void
     {
-        ValidateUtil::checkNull($grantKeys, "grantKeys");
+        ValidationUtils::checkNull($grantKeys, "grantKeys");
 
         try {
             $conn = $this->getConnection();
@@ -987,7 +1000,11 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $conn->commit();
 
         } catch (PDOException $exception) {
+            $conn->rollBack();
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        } catch (\Exception $exception) {
+            $conn->rollBack();
+            throw $exception;
         }
     }
 

@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Pure;
 
 use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class NonrotableSecrets
@@ -64,8 +64,8 @@ class NonrotableSecrets
      */
     public function __construct(VirgilKeyPair $vskp, VirgilKeyPair $oskp)
     {
-        ValidateUtil::checkNull($vskp, "vskp");
-        ValidateUtil::checkNull($oskp, "oskp");
+        ValidationUtils::checkNull($vskp, "vskp");
+        ValidationUtils::checkNull($oskp, "oskp");
 
         $this->vskp = $vskp;
         $this->oskp = $oskp;

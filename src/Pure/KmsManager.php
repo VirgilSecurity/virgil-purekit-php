@@ -51,7 +51,7 @@ use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Model\GrantKey;
 use Virgil\PureKit\Pure\Model\UserRecord;
-use Virgil\PureKit\Pure\Util\ValidateUtil;
+use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 class KmsManager
 {
@@ -184,8 +184,8 @@ class KmsManager
     public function performPwdRotation(string $wrap): string
     {
         try {
-            ValidateUtil::checkNull($this->pwdKmsRotation, "kmsUpdateToken");
-            ValidateUtil::checkNull($wrap, "wrap");
+            ValidationUtils::checkNull($this->pwdKmsRotation, "kmsUpdateToken");
+            ValidationUtils::checkNull($wrap, "wrap");
 
             return $this->pwdKmsRotation->updateWrap($wrap);
         } catch (PheException $exception) {
@@ -196,8 +196,8 @@ class KmsManager
     public function performGrantRotation(string $wrap): string
     {
         try {
-            ValidateUtil::checkNull($this->grantKmsRotation, "grantUpdateToken");
-            ValidateUtil::checkNull($wrap, "wrap");
+            ValidationUtils::checkNull($this->grantKmsRotation, "grantUpdateToken");
+            ValidationUtils::checkNull($wrap, "wrap");
 
             return $this->grantKmsRotation->updateWrap($wrap);
         }

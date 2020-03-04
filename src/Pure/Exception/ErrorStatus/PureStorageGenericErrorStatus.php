@@ -39,7 +39,6 @@ namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
 class PureStorageGenericErrorStatus extends BaseErrorStatus
 {
-    private const USER_NOT_FOUND = [1, "User has not been found in the storage"];
     private const STORAGE_SIGNATURE_VERIFICATION_FAILED = [2, "Storage signature verification has been failed"];
     private const USER_ID_MISMATCH = [3, "User Id mismatch"];
     private const CELL_KEY_ID_MISMATCH = [4, "Cell key id mismatch"];
@@ -49,14 +48,11 @@ class PureStorageGenericErrorStatus extends BaseErrorStatus
     private const ROLE_NAME_USER_ID_MISMATCH = [8, "Role name and user id mismatch"];
     private const USER_COUNT_MISMATCH = [9, "User count mismatch"];
     private const DUPLICATE_ROLE_NAME = [10, "Duplicate role name"];
-    private const GRANT_KEY_NOT_FOUND = [11, "Grant key has not been found in the storage"];
     private const GRANT_KEY_ID_MISMATCH = [12, "Grant key id mismatch"];
     private const INVALID_PROTOBUF = [13, "Invalid protobuf"];
     private const SIGNING_EXCEPTION = [14, "Signing exception"];
     private const VERIFICATION_EXCEPTION = [15, "Verification exception"];
     private const KEY_ID_MISMATCH = [16, "Key id mismatch"];
-    private const ROLE_NOT_FOUND = [17, "Role not found"];
-    private const ROLE_ASSIGNMENT_NOT_FOUND = [18, "Role assignment not found"];
     private const USER_ALREADY_EXISTS = [19, "User already exists"];
     private const ROLE_ALREADY_EXISTS = [20, "Role already exists"];
     private const ROLE_ASSIGNMENT_ALREADY_EXISTS = [21, "Role assignment already exists"];
