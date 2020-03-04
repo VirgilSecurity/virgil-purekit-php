@@ -561,6 +561,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
      * @param CellKey $cellKey
      * @throws MariaDbSqlException
      * @throws PureStorageCellKeyNotFoundException
+     * @throws PureStorageGenericException
      * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
@@ -596,18 +597,40 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
         }
-
-
     }
 
     /**
      * @param string $userId
      * @param string $dataId
+     * @throws MariaDbSqlException
+     * @throws PureStorageCellKeyNotFoundException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
     public function deleteCellKey(string $userId, string $dataId): void
     {
-        var_dump("M3");
-        die;
+        ValidationUtils::checkNullOrEmpty($userId, "userId");
+        ValidationUtils::checkNullOrEmpty($dataId, "dataId");
+
+        try {
+            $conn = $this->getConnection();
+
+            $stmt = $conn->prepare(
+                "DELETE FROM virgil_keys WHERE user_id = ? AND data_id = ?;"
+            );
+
+            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(2, $dataId);
+
+            $rows = $stmt->execute();
+
+            if ($rows != 1)
+                throw new PureStorageCellKeyNotFoundException();
+
+        } catch (PDOException $exception) {
+            throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());
+        }
     }
 
     /**
@@ -810,6 +833,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
      * @return RoleAssignment
      * @throws MariaDbSqlException
      * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
      * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException
@@ -831,6 +856,8 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
      * @return RoleAssignmentCollection
      * @throws MariaDbSqlException
      * @throws PureStorageGenericException
+     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
      * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      * @throws \Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException

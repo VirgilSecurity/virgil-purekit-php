@@ -44,13 +44,12 @@ use Virgil\Crypto\Core\KeyPairType;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
-use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
-use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
+use Virgil\PureKit\Pure\Exception\PureStorageGrantKeyNotFoundException;
 use Virgil\PureKit\Pure\Exception\PureStorageUserNotFoundException;
 use Virgil\PureKit\Pure\Pure;
 use Virgil\PureKit\Pure\PureContext;
@@ -58,7 +57,6 @@ use Virgil\PureKit\Pure\PureSessionParams;
 use Virgil\PureKit\Pure\PureSetupResult;
 use Virgil\PureKit\Pure\Storage\_\StorageType;
 use Virgil\PureKit\Pure\Storage\MariaDBPureStorage;
-use Virgil\PureKit\Pure\Storage\RamPureStorage;
 
 /**
  * Class PureTest
@@ -252,12 +250,6 @@ $externalPublicKeys = [],
         $bupkpString = "BU." . base64_encode($this->crypto->exportPublicKey($bupkp->getPublicKey()));
 
         switch ($storageType) {
-            case StorageType::RAM():
-                $context = PureContext::createCustomContext($this->appToken, $nmsString, $bupkpString,
-                    $secretKey, $publicKey, new RamPureStorage(), $externalPublicKeys,
-                    $this->pheServerAddress, $this->kmsServerAddress);
-                break;
-
             case StorageType::VIRGIL_CLOUD():
                 $context = PureContext::createVirgilContext($this->appToken, $nmsString, $bupkpString,
                     $secretKey, $publicKey, $externalPublicKeys,
@@ -291,15 +283,16 @@ $externalPublicKeys = [],
      */
     private static function createStorages(): array
     {
-        // $storages[0] = StorageType::RAM();
-        // $storages[0] = StorageType::MARIADB();
-         $storages[0] = StorageType::VIRGIL_CLOUD();
+        $storages[0] = StorageType::MARIADB();
+        //$storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
+    /**
+     * @group
+     */
     public function testRegistrationNewUserShouldSucceed(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -322,9 +315,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testAuthenticationNewUserShouldSucceed(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIA_DB: ok");
         $this->sleep();
 
         try {
@@ -356,9 +351,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testEncryptionRandomDataShouldMatch(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -386,9 +383,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testSharing2UsersShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
         try {
             $storages = self::createStorages();
@@ -425,9 +424,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testSharingRevokeAccessShouldNotDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -466,9 +467,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testGrantChangePasswordShouldNotDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -507,9 +510,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testGrantExpireShouldNotDecrypt(): void
     {
-        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -542,9 +547,8 @@ $externalPublicKeys = [],
                 } catch (PureException $exception) {
                     if ($exception instanceof PureLogicException) {
                         $this->assertEquals(PureLogicErrorStatus::GRANT_IS_EXPIRED(), $exception->getErrorStatus());
-                    } elseif ($exception instanceof PureStorageGenericException) {
-                        $this->assertEquals(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND(),
-                            $exception->getErrorStatus());
+                    } elseif ($exception instanceof PureStorageGrantKeyNotFoundException) {
+                        $this->assertTrue(true);
                     } else {
                         $this->assertEquals(0, 1);
                     }
@@ -555,9 +559,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testGrantInvalidateShouldNotDecrypt(): void
     {
-        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -576,8 +582,8 @@ $externalPublicKeys = [],
 
                 try {
                     $pure->decryptGrantFromUser($authResult->getEncryptedGrant());
-                } catch (PureStorageGenericException $exception) {
-                    $this->assertEquals(PureStorageGenericErrorStatus::GRANT_KEY_NOT_FOUND(), $exception->getErrorStatus());
+                } catch (\Exception $exception) {
+                    $this->assertTrue($exception instanceof PureStorageGrantKeyNotFoundException);
                 }
             }
         } catch (\Exception $exception) {
@@ -585,9 +591,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testGrantAdminAccessShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -619,9 +627,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testResetPwdNewUserShouldNotDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -673,9 +683,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testRestorePwdNewUserShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -714,9 +726,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group mdbf
+     */
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
-        //$this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {
@@ -816,9 +830,12 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group mdbf
+     * @group f
+     */
     public function testRotationLocalStorageGrantWorks(): void
     {
-        //$this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {
@@ -918,9 +935,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testEncryptionAdditionalKeysShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -970,9 +989,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testEncryptionExternalKeysShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1007,9 +1028,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
     {
-        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1034,14 +1057,13 @@ $externalPublicKeys = [],
 
                 try {
                     $pure->authenticateUser($userId, $password);
-                } catch (PureStorageGenericException $exception) {
-                    $this->assertEquals(PureStorageGenericErrorStatus::USER_NOT_FOUND(), $exception->getErrorStatus());
+                } catch (PureStorageUserNotFoundException $exception) {
+                    $this->assertTrue(in_array($userId, $exception->getUserIds()));
                 }
 
                 try {
                     $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
                 } catch (\Exception $exception) {
-                    // TODO!
                     $this->assertTrue($exception instanceof PureStorageCellKeyNotFoundException);
                 }
             }
@@ -1050,9 +1072,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testDeleteUserNoCascadeShouldDeleteUser(): void
     {
-        $this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1090,16 +1114,20 @@ $externalPublicKeys = [],
                 $plainText = $pure->decrypt($authResult1->getGrant(), null, $dataId, $cipherText);
 
                 $this->assertEquals($text, $plainText);
-
             }
+
+            $this->assertTrue(true);
+
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
         }
     }
 
+    /**
+     * @group
+     */
     public function testDeleteKeyNewKeyShouldDelete(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1133,9 +1161,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testRegistrationNewUserBackupsPwdHash(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1167,9 +1197,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testEncryptionRolesShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1243,9 +1275,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testDeleteRolesNewRoleShouldDelete(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1309,9 +1343,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testRecoveryNewUserShouldRecover(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1353,9 +1389,11 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group
+     */
     public function testShareRoleShouldDecrypt(): void
     {
-        //$this->markTestSkipped("VIRGIL_CLOUD: ok | MARIADB: ok");
         $this->sleep();
 
         try {
@@ -1390,9 +1428,12 @@ $externalPublicKeys = [],
         }
     }
 
+    /**
+     * @group vcf
+     * @group mdbf
+     */
     public function testCrossCompatibilityJsonShouldWork(): void
     {
-        $this->markTestIncomplete("VIRGIL_CLOUD: ok | MARIADB: fail");
         $this->sleep();
 
         try {

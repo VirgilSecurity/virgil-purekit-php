@@ -230,7 +230,6 @@ class KmsManager
     {
         try {
             $kmsClient = $this->getGrantClient($grantKey->getRecordVersion());
-
             return $kmsClient->decryptOneparty($grantKey->getEncryptedGrantKeyWrap(),
                 PureCrypto::DERIVED_SECRET_LENGTH);
         }
@@ -338,7 +337,7 @@ class KmsManager
     private function generateEncryptionData(string $data, string $header, bool $isPwd): KmsEncryptedData
     {
         try {
-            // @return [wrap, encryptionKey]
+            // [wrap, encryptionKey]
             $kmsResult = ($isPwd ? $this->pwdCurrentClient : $this->grantCurrentClient)->generateEncryptWrap
             (PureCrypto::DERIVED_SECRET_LENGTH);
 
