@@ -1,72 +1,93 @@
-# Virgil PureKit PHP SDK
-[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-purekit-php.png?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-purekit-php)
+
+# Virgil PureKit PHP
+
+[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-purekit-go.png?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-purekit-go)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
-[![Total Downloads](https://img.shields.io/packagist/dt/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
 
-
-[Introduction](#introduction) | [Features](#features) | [Register Your Account](#register-your-account) | [Install and configure SDK](#install-and-configure-sdk) | [Prepare Your Database](#prepare-your-database) | [Usage Examples](#usage-examples) | [Docs](#docs) | [Support](#support)
+<a href="https://developer.virgilsecurity.com"><img width="230px" src="https://cdn.virgilsecurity.com/assets/images/github/logos/purekit/PureKit.png" align="left" hspace="1" vspace="3"></a>
 
 ## Introduction
-<img src="https://cdn.virgilsecurity.com/assets/images/github/logos/pure_grey_logo.png" align="left" hspace="0" vspace="0"></a>[Virgil Security](https://virgilsecurity.com) introduces an implementation of the [Password-Hardened Encryption (PHE) protocol](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) – a powerful and revolutionary cryptographic technology that provides stronger and more modern security, that secures users' data and reduces the security risks associated with weak passwords.
+[Virgil Security](https://virgilsecurity.com) introduces an implementation of the [Password-Hardened Encryption (PHE) protocol](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) – a powerful and revolutionary cryptographic technology that provides stronger and more modern security, that secures users' data and lessens the security risks associated with weak passwords.
 
-Virgil PureKit allows developers to interact with the Virgil PHE Service to protect user passwords and sensitive personal identifiable information (PII data) in a database from offline/online attacks and makes stolen passwords/data useless if your database has been compromised. Neither Virgil nor attackers know anything about user passwords/data.
+Virgil PureKit allows developers interacts with Virgil PHE Service to protect users' passwords and sensitive personal identifiable information (PII data) in a database from offline/online attacks and makes stolen passwords/data useless if your database has been compromised. Neither Virgil nor attackers know anything about users' passwords/data.
 
-This technology can be used within any database or login system that uses a password, so it’s applicable for a company of any industry or size.
+This technology can be used within any database or login system that uses a password, so it’s accessible for a company of any industry or size.
 
 **Authors of the PHE protocol**: Russell W. F. Lai, Christoph Egger, Manuel Reinert, Sherman S. M. Chow, Matteo Maffei and Dominique Schroder.
 
 ## Features
-- Zero knowledge of user passwords
+- Zero knowledge of users' passwords
 - Passwords & data protection from online attacks
 - Passwords & data protection from offline attacks
-- Instant invalidation of a stolen database
+- Instant invalidation of stolen database
 - User data encryption with a personal key
 
+## Content
+- [Introduction](#introduction)
+- [Features](#features)
+- [Install and configure PureKit](#install-and-configure-purekit)
+- [Usage Examples](#usage-examples)
+  - [Generate user's Pure Record](#generate-users-pure-record)
+  - [Verify user's password](#verify-users-password)
+  - [Change user's password](#change-users-password)
+  - [Data encryption & decryption](#data-encryption--decryption)
+  - [Re-encrypt data when password is changed](#re-encrypt-data-when-password-is-changed)
+  - [Rotate Keys and Records](#rotate-keys-and-records)
+  - [Uninstall PureKit](#uninstall-purekit)
+- [Docs](#docs)
+- [License](#license)
+- [Support](#support)
 
-## Register Your Account
-Before working with the SDK and usage examples, make sure that:
-- you have a registered Virgil Account at [Virgil Dashboard](https://dashboard.virgilsecurity.com/)
-- you've created a PURE Application
-- you've obtained your PureKit application's credentials such as: `APP_TOKEN`, `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY`
+## Install and configure PureKit
 
+This guide is the first step to adding password-hardened encryption to your database. Here you can learn how to set up PureKit at your backend to protect your users's passwords and data.
 
-## Install and Configure PureKit
-The PureKit is provided as a package named `virgil/purekit`. The package is distributed via Composer and is available
- for PHP versions 7.2 and 7.3.
+For more details about password-hardened encryption (PHE), take a look at our overview [here](https://developer.virgilsecurity.com/docs/purekit/fundamentals/password-hardened-encryption/).
 
+### Install PureKit package
 
-### Install the PureKit Package
+Use your package manager to download PureKit into your backend.
 
--  **Step #1.** Add the [crypto extensions](https://github.com/VirgilSecurity/virgil-purekit-php/releases) into your 
-server before using the PureKit. Read more [here](#add-the-crypto-extensions-into-your-server-before-using-the-purekit).
+The Passw0rd PHP SDK is provided as a package named virgil/purekit. The package is distributed via Composer. The package is available for PHP 7.2 or newer.
 
-- **Step #2.** Install the PureKit library with the following code:
-    ```bash
-    composer require virgil/purekit
-    ```
-    
-To uninstall Pure, see the [Recover Password Hashes](#recover-password-hashes) section.
-    
-### Configure PureKit
+Add the "vsce_phe_php" extension before using the SDK:
 
-Configure the PureKit .env file:
+1. Download the virgil-crypto-c-{latest version} archive from the CDN: https://cdn.virgilsecurity.com/virgil-crypto-c/php/.
 
-```dotenv
-APP_TOKEN=
-SERVICE_PUBLIC_KEY=
-APP_SECRET_KEY=
-UPDATE_TOKEN= //must be empty
+2. Place the "vsce_phe_php.so" file from the archive (/lib folder) into the directory with extensions
+
+3. Add the "extension=vsce_phe_php" string in to the php.ini file
+
+4. Restart your web-service (apache or nginx): sudo service {apache2 / nginx} restart
+
+Tips: PHP version: phpversion() / php --version OS Version: PHP_OS php.ini and extensions directory: phpinfo() / php -i / php-config --extension_dir
+
+Also, you can launch the "extension/helper.php" file to get information about a version and extensions.
+
+Now, install PureKit SDK library with the following code:
+
+```PHP
+composer require virgil/purekit
 ```
 
-Here is an example of how to specify your credentials Protocol class instance:
 
-```php
+
+### Configure PureKit
+Navigate to [Virgil Dashboard](https://dashboard.virgilsecurity.com), create a new Pure application and configure PureKit framework with your application credentials:
+
+```PHP
+
 use Dotenv\Dotenv;
 use Virgil\PureKit\Protocol\Protocol;
 use Virgil\PureKit\Protocol\ProtocolContext;
 
-// Add the correct path to .env file!
+// setup SDK configuration .env file with the following variables:
+// APP_TOKEN=
+// SERVICE_PUBLIC_KEY=
+// APP_SECRET_KEY=
+// UPDATE_TOKEN= //must be empty
+
+// Add correct path to .env file!
 (new Dotenv("{PATH_TO_FILE}"))->load();
 
 try {
@@ -80,52 +101,34 @@ try {
     $protocol = new Protocol($context);
 }
 catch(\Exception $e) {
-    // Add your custom logic here
+    // add your custom logic here
     var_dump($e);
     die;
 }
 ```
 
-## Prepare Your Database
-PureKit allows you to easily perform all the necessary operations to create, verify, and rotate (update) a user's `PureRecord`.
 
-**Pure Record** - a user's password that is protected with our PureKit technology. Pure `record` contains a version, client & server random salts, and two values obtained during the execution of the PHE protocol.
+#### Prepare your database
 
-In order to create and work with a user's Pure `record` you have to set up your database with an additional column.
+A **Pure record** is a user password that is protected with our PureKit technology. A Pure Record contains the version, client & server random salts, and two values obtained during the execution of the PHE protocol.
+
+In order to create and work with a user's `record`, you need to add an additional column to your database table.
 
 The column must have the following parameters:
-<table class="params">
-<thead>
-		<tr>
-			<th>Parameters</th>
-			<th>Type</th>
-			<th>Size (bytes)</th>
-			<th>Description</th>
-		</tr>
-</thead>
 
-<tbody>
-<tr>
-	<td>record</td>
-	<td>bytearray</td>
-	<td>210</td>
-	<td> A unique record, namely a user's protected Pure Record.</td>
-</tr>
+|Parameters|Type|Size (bytes)|Description|
+|--- |--- |--- |--- |
+|record|bytearray|210|A unique Pure record, namely a user's protected password.|
 
-</tbody>
-</table>
+#### Generate a recovery key pair (optional)
 
-### Generate a recovery keypair
+To be able to move away from Pure without having to put your users through registering again, or just to be able to recover data that your users may lose, you need to make a backup of your database, generate a recovery key pair and encrypt your backup with the recovery public key. The public key will be used to encrypt the database at the enrollment step.
 
-This step is __optional__. Use this step if you will need to move away from Pure without having to reregistering your users.
+To generate a recovery keypair, [install Virgil Crypto Library](https://github.com/VirgilSecurity/virgil-crypto) and use the code snippet below. Store the public key in your database and save the private key securely on another external device.
 
-To be able to move away from Pure without having to reregistering your users, you need to generate a recovery keypair (public and private key). The public key will be used to encrypt password hashes at the enrollment step. You will need to store the encrypted hashes in your database.
+> **Warning!** You won’t be able to restore your recovery private key, so it is crucial not to lose it.
 
-To generate a recovery keypair, [install the Virgil Crypto Library](https://developer.virgilsecurity.com/docs/how-to/virgil-crypto/install-virgil-crypto) and use the code snippet below. Store the public key in your database and save the private key securely on another external device.
-
-> You won’t be able to restore your recovery private key, so it is crucial not to lose it.
-
-```php
+```PHP
 use Virgil\CryptoImpl\VirgilCrypto;
 // generate keypair:
 $virgilCrypto = new VirgilCrypto();
@@ -138,51 +141,20 @@ $publicKey = $keyPair->getPublicKey();
 $privateKeyExported = $virgilCrypto->exportPrivateKey($privateKey);
 $publicKeyExported = $virgilCrypto->exportPublicKey($publicKey);
 ```
-
-### Prepare your database for storing encrypted password hashes
-
-Now you need to prepare your database for the future password hash recovery. Create a column in your users table or a separate table for storing encrypted user password hashes.
-
-<table class="params">
-<thead>
-		<tr>
-			<th>Parameters</th>
-			<th>Type</th>
-			<th>Size (bytes)</th>
-			<th>Description</th>
-		</tr>
-</thead>
-
-<tbody>
-<tr>
-	<td>encrypted_password_hashes</td>
-	<td>bytearray</td>
-	<td>512</td>
-	<td>User password hash, encrypted with the recovery key.</td>
-</tr>
-</tbody>
-</table>
-
-Further, at the [enrollment step](#enroll-user-record) you'll need to encrypt user password hashes with the generated recovery public key and save them to the `encrypted_password_hashes` column.
-
-
 ## Usage Examples
 
-> You can find a working example for the following commands in [this directory](/samples)
+### Generate user's Pure Record
 
-### Enroll a User Record
+To create a Pure `record` for a database:
+- Take the user's **password** (or hash) and pass it into the `EnrollAccount` function.
+- Store this user's unique `record` in your database.
 
-Use this flow to create a `PureRecord` in your DB for a user.
+The enrollment snippet below also provides an example on how to protect user personal data with `encryptionKey` and encrypt user password hashes with `recoveryPublicKey`.
 
-> Remember, if you already have a database with user passwords, you don't have to wait until a user logs into your system to implement PHE technology. You can go through your database and enroll (create) a user's Pure `Record` at any time.
+> Warning! If you need to update your user's Pure Records, for instance, if your database is COMPROMISED, take the immediate steps according to [this guide](#rotate-keys-and-records).
 
-So, in order to create a Pure `Record` for a new or existing database, go through the following operations:
-- Take a user's **password** (or its hash or whatever you use) and pass it into the `EnrollAccount` function in the PureKit on your Server side.
-- PureKit will send a request to the PureKit service to get enrollment.
-- Then, PureKit will create a user's Pure `Record`. You need to store this unique user's Pure `Record` in your database in the associated column.
-- (optional) Encrypt your user password hashes with the recovery key generated in [Generate a recovery keypair](#generate-a-recovery-keypair) and save them to your database.
 
-```php
+```PHP
 try {
     $enroll = $protocol->enrollAccount($password); // [record, encryption key]
     $record = $enroll[0]; //save Pure Record to database
@@ -203,40 +175,46 @@ catch(\Exception $e) {
 }
 ```
 
-When you've created a Pure `record` for all users in your DB, you can delete the unnecessary column where user passwords were previously stored.
+> **Note!** If you have a database with user passwords, you don't have to wait until they log in. You can go through your database and enroll (create) a user's Pure Record at any time.
 
+### Verify user's password
 
-### Verify User Record
+After a user has their Pure Record, you can authenticate the user by verifying their password using the `VerifyPassword` function:
 
-Use this flow when a user already has his or her own Pure `record` in your database. This function allows you to
-verify a user's password with the Pure `record` from your DB every time the user signs in. You have to pass his or her Pure `record` from your DB through the `VerifyPassword` function:
+```PHP
 
-```php
 try {
     $encryptionKey = $protocol->verifyPassword($password, $record)); //use encryption key for decrypting user data
 }
 catch(\Exception $e) {
-    // Login error (incorrect password)
+    // login error (incorrect password)
 }
 if($encryptionKey)
-    // Login success
+    // login success
 ```
 
-### Encrypt user data in your database
+### Change user's password
 
-Not only a user's password is sensitive data. In this flow we will help you protect any personally identifiable information (PII) in your database.
+Use this flow when a user wants to change their password.
 
-PII is data that could potentially identify a specific individual, and PII is sensitive.
-Sensitive PII is information, when disclosed, could result in harm to the individual whose privacy has been breached. Sensitive PII should, therefore, be encrypted in transit and when data is at rest. Such information includes biometric information, medical information, personally identifiable financial information (PIFI), and unique identifiers such as passport or Social Security numbers.
+> **Warning!** If you use PureKit not only for hardening passwords, but also for encrypting user's data, you'll have to re-encrypt user's data with the new key so that the user doesn't lose access to it. Navigate to [this guide](#re-encrypt-data-when-password-is-changed) and follow the instructions there.
 
-PureKit service allows you to protect a user's PII (personal data) with a user's `encryptionKey` that is obtained from the `EnrollAccount` or `VerifyPassword` functions. The `encryptionKey` will be the same for both functions.
+If you're using PureKit only for encrypting passwords, then you have to simply create a new Pure Record using the new password for the user, and replace the old Pure Record with the new one.
 
-In addition, this key is unique to a particular user and won't be changed even after rotating (updating) the user's
-`PureRecord`. The `encryptionKey` will be updated after a user changes their own password.
+
+### Data encryption & decryption
+
+The PHE service allows you to protect user's PII (personal data) with a user's `encryptionKey` that is obtained from the `enrollAccount` or `verifyPassword` functions. The `encryptionKey` will be the same for both functions.
+
+In addition, this key is unique to a particular user and won't be changed even after rotating (updating) a user's Pure Record. The `encryptionKey` will be updated after a user changes their own password.
+
+> Virgil Security has zero knowledge about a user's `encryptionKey`, because the key is calculated every time you execute the `enrollAccount` or `verifyPassword` functions on your server side.
+
+> Encryption is performed using AES256-GCM with key & nonce derived from the user's encryptionKey using HKDF and the random 256-bit salt.
 
 Here is an example of data encryption/decryption with an `encryptionKey`:
 
-```php
+```PHP
 use Virgil\PureKit\Core\PHE;
 
 try {
@@ -250,44 +228,65 @@ try {
     // var_dump($decrypted);
 }
 catch(\Exception $e) {
-    // Add your custom logic here
+    // add your custom logic here
     var_dump($e);
     die;
 }
 ```
-Encryption is performed using AES256-GCM with a key & nonce derived from the user's encryptionKey using HKDF and random 256-bit salt.
 
-Virgil Security has zero knowledge about a user's `encryptionKey`, because the key is calculated every time you execute `EnrollAccount` or `VerifyPassword` functions on your server side.
+### Re-encrypt data when password is changed
 
-### Rotate app keys and user PureRecord
-There can never be enough security, so you should rotate your sensitive data regularly (about once a week). Use this
-flow to get an `UPDATE_TOKEN` for updating a user's `PureRecord` in your database and to get a new `APP_SECRET_KEY`
-and `SERVICE_PUBLIC_KEY` of a specific application.
+Use this flow when a user wants to change their password and maintain access to their data.
 
-Also, use this flow in the event your database has been COMPROMISED!
+When Pure Record for the user is created for the very first time, generate a new key (let's call it `User Key`) and store it in your database.
 
-> This action doesn't require creating an additional table or to modify the scheme of existing tables. When a user needs to change his or her own password, use the EnrollAccount function to replace a user's oldRecord in your DB with a newRecord.
+**1. Prepare database**. Create a new column in your database for storing `User Keys`.
 
-Here is how it works:
+|Parameters|Type|Size (bytes)|Description|
+|--- |--- |--- |--- |
+|Ecnrypted User Key|bytearray|210|A unique key for user's data encryption.|
 
-**Step 1.** Get your `UPDATE_TOKEN`
+**2. Obtain Pure Record key**. When the Pure Record is created for the very first time, you need to obtain the `encryptionKey` from the `enrollAccount` function (see the [Generate User's Pure Record](#generate-users-pure-record) section).
 
-Navigate to the [Virgil Dashboard](https://dashboard.virgilsecurity.com/login), open your pure application panel, and press the "Show update token" button to get the `UPDATE_TOKEN`.
+**3. Generate User key**. To generate a `User Key`, [install Virgil Crypto Library](https://github.com/VirgilSecurity/virgil-crypto) and use the code snippet below. Store the public key in your database and save the private key securely on another external device.
 
-**Step 2.** Initialize PureKit with the `UPDATE_TOKEN`
-Move to the PureKit configuration .env file and specify your `UPDATE_TOKEN`:
+**4. Encrypt and store User key**. Encrypt the `User Key` with the `encryptionKey` and save the `Encrypted User Key` at your database.
 
-```dotenv
+**5. Encrypt data with User key**. Whenever the user needs to encrypt their data, decrypt the `Encrypted User Key` with the `encryptionKey` and use the decrypted `User Key` instead of the `encryptionKey` for encrypting user's data.
+
+**6. Change user's password**. To change the password, user enters their old password to authenticate at backend, and the new password. Use their new password to create a new Pure Record for the user.
+
+During the password change, decrypt the `Encrypted User Key` with the old `encryptionKey` and encrypt the `User Key` with the new `encryptionKey` you get from `enrollAccount` using the new password. This will allow the user to access their data without re-encrypting all of it.
+
+After that, you can delete the old Pure Record from your database and save the new one instead.
+
+### Rotate Keys and Records
+
+This guide shows how to rotate PureKit-related keys and update Pure Records. There can never be enough security, so you should rotate your sensitive data regularly (about once a week).
+
+**Also, use this flow in case your database has been COMPROMISED!**
+
+Use this workflow to get an `update_token` for updating user's Pure Record in your database and to get a new `app_secret_key` and `service_public_key` for your application.
+
+> **Note!** When a user just needs to change their password, use the `EnrollAccount` function (see the *Password Encryption* step) to replace the user's old `record` value in your DB with a new `record`.
+
+Learn more about Pure Records and keys rotation as a part of Post-Compromise Security in [this guide](https://developer.virgilsecurity.com/docs/purekit/fundamentals/post-compromise-security/).
+
+**1. Get your update token**. Navigate to your Application panel at [Virgil Dashboard](https://dashboard.virgilsecurity.com/) and, after pressing "BEGIN ROTATION PROCESS" press “SHOW UPDATE TOKEN” button to get the `update_token`.
+
+**2. Initialize PureKit with the update token**. Move to PureKit configuration file and specify your `update_token`:
+
+```PHP
+// setup configuration .env file
 APP_TOKEN=
 SERVICE_PUBLIC_KEY=
 APP_SECRET_KEY=
 UPDATE_TOKEN= //need to be filled
 ```
 
-**Step 3.** Start migration. Use the `RecordUpdater::update()` PureKit method to create a user's new Pure `record`
-(you don't need to ask your users to create a new password). The `RecordUpdater::update()` method requires the `UPDATE_TOKEN` and user's old Pure `record` from your DB:
+**3. Start migration**. Run the `update` method of the `RecordUpdater` class to create a new user `record` and save user's new `record` into your database.
 
-```php
+```PHP
 use Virgil\PureKit\Protocol\RecordUpdater;
 
 try {
@@ -300,51 +299,45 @@ try {
         // Save new record to the database
 }
 catch(\Exception $e) {
-    // Add your custom logic here
+    // add your custom logic here
     var_dump($e);
     die;
 }
 ```
 
-Run the `RecordUpdater::update()` method and save the user's new Pure `record` into your database.
+> **Note!** You don't need to ask your users for a new password.
 
-Since the PureKit is able to work simultaneously with two versions of user PureRecords (new Pure `record` and old Pure `record`),
-this will not affect the backend or users. This means, if a user logs into your system when you do the migration,
-the Virgil PureKit will verify the user's password without any problems because PureKit can work with both user Pure Records (new and old).
+> **Note!** The SDK is able to work with two versions of a user's `record` (old and new). This means, if a user logs into your system when you do the migration, the PureKit SDK will verify their password without any problems.
 
+**4. Download Virgil CLI**. After you updated your database records, it's required to update (rotate) your application credentials. For security reasons, you need to use the [Virgil CLI utility](https://github.com/VirgilSecurity/virgil-cli).
 
-**Step 4.** Get a new `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY` of a specific application
+**5. Rotate App Secret key**. Use Virgil CLI `update-keys` command and your `update_token` to update the `app_secret_key` and `service_public_key`:
 
-Use the Virgil CLI `update-keys` command and your `UPDATE_TOKEN` to update the `APP_SECRET_KEY` and `SERVICE_PUBLIC_KEY`:
-
-```bash
-// FreeBSD / Linux / Mac OS
-./virgil pure update-keys <service_public_key> <app_secret_key> <update_token>
-
-// Windows OS
+```go
 virgil pure update-keys <service_public_key> <app_secret_key> <update_token>
 ```
 
-**Step 5.** Move to the PureKit configuration .env file and replace your previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` with a new one (`APP_TOKEN` will be the same). Delete the previous `APP_SECRET_KEY`, `SERVICE_PUBLIC_KEY` and `UPDATE_TOKEN`.
+**6. Configure PureKit SDK with new credentials**. Move to PureKit SDK configuration and replace your previous `app_secret_key`, `service_public_key` with a new one (same for the `app_token`). Delete `update_token` and previous `app_secret_key`, `service_public_key`.
 
-```dotenv
+```PHP
+// setup configuration .env file with new values
 APP_TOKEN=
 SERVICE_PUBLIC_KEY=
 APP_SECRET_KEY=
 UPDATE_TOKEN= //must be empty
 ```
 
-### Recover password hashes
+### Uninstall PureKit
 
-Use this step if you're uninstalling Pure. 
+Use this workflow to move away from Pure without having to put your users through registering again. This can be carried out by decrypting the encrypted database backup (users password hashes included) and replacing the encrypted data with it.
 
-Password hash recovery is carried out by decrypting the encrypted users password hashes in your database and replacing the Pure records with them.
+**1. Prepare your recovery key**. In order to recover the original password hashes, you need to prepare your recovery private key.
 
-In order to recover the original password hashes, you need to prepare your recovery private key. If you don't have a recovery key, then you have to ask your users to go through the registration process again to restore their passwords.
+> If you don't have a recovery key, then you have to ask your users to go through the registration process again to restore their passwords.
 
-Use your recovery private key to get original password hashes:
+**2. Decrypt encrypted password hashes**. Now use your recovery private key to get original password hashes:
 
-```php
+```PHP
 $virgilCrypto = new VirgilCrypto();
 //iImport key
 $privateKeyImported = $virgilCrypto->importPrivateKey($privateKeyExported, $privateKeyPassword);
@@ -353,66 +346,25 @@ $privateKeyImported = $virgilCrypto->importPrivateKey($privateKeyExported, $priv
 $decrypted = $virgilCrypto->decrypt($encryptedPasswordHash, $privateKeyImported);
 ```
 
-Save the decrypted user password hashes into your database. After the recovery process is done, you can delete all the Pure data and the recovery keypair.
+Save the decrypted users password hashes into your database.
+After the recovery process is done, you can delete all the Pure data and the recovery keypair.
 
-## Additional information
 
-### Add the crypto extensions into your server before using the PureKit
-
-- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) *virgil-test.zip*, unzip it and execute it on your server's [virgil-test.php](/_help/virgil-test.php) file.
-
-- [Download](https://github.com/VirgilSecurity/virgil-purekit-php/releases) and unzip *%YOUR_OS%_extensions.zip* archive according to your server operating system and PHP version.
-
-- Make sure you have access to edit the php.ini file (for example, use *root* for Linux/Darwin or run *cmd* as administrator for Windows).
-- Copy extension files to the extensions directory.
-    - For Linux/Darwin:
-    ```
-     $ path="%PATH_TO_EXTENSIONS_DIR%" && cp vsce_phe_php.so $path && cp virgil_crypto_php.so $path
-    ```
-    - For Windows:
-    ```
-     $ set path=%PATH_TO_EXTENSIONS_DIR% && copy vsce_phe_php.dll %path% && copy virgil_crypto_php.dll %path%
-    ```
-- Add the extensions into the php.ini file 
-    ```
-    $ echo -e "extension=vsce_phe_php\nextension=virgil_crypto_php” >> %PATH_TO_PHP.INI%
-    ```
-    
-- Restart your server or php-fpm service
-
-#### Extensions installation example
-
-Our web stack is: *Linux, nginx, php7.2-fpm*
-
-- Execute [virgil-test.php](/_help/virgil-test.php) to find your path to the extensions directory and the path to the php.ini file:
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-1.png" 
-    width="60%"></p> 
-
-- Then, go to the command line interface (CLI) to specify the paths you've identified in the previous step:
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-2.png" 
-    width="60%"></p>
-
-- Reload the page in your browser to see that the extension is loaded (`IS_VSCE_PHE_PHP_EXTENSION_LOADED => true` and 
-`IS_VIRGIL_CRYPTO_PHP_EXTENSION_LOADED => true`):
-    <p><img src="https://raw.githubusercontent.com/VirgilSecurity/virgil-pure-wordpress/master/_help/s-3.png" 
-    width="60%"></p>
-    
-
-        
 ## Docs
-* [Virgil Dashboard](https://dashboard.virgilsecurity.com)
+
+* [Virgil Dashboard](https://dashboard.virgilsecurity.com/)
 * [The PHE WhitePaper](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) - foundation principles of the protocol
-* [PHP Sample](/samples) - explore our PHP PURE samples to easily run the SDK
-* [PURE use-case](https://developer.virgilsecurity.com/docs/use-cases/v1/passwords-and-data-protection) - explore our
- use-case to protect user passwords and data in your database from data breaches
+* [Go Samples](/samples) - explore our Go PURE samples to easily run the SDK
+* [PURE use-case](https://developer.virgilsecurity.com/docs/use-cases/v1/passwords-and-data-protection) - explore our use-case to protect user passwords and data in your database from data breaches
 
 ## License
 
-This library is released under the [3-clause BSD License](LICENSE.md).
+This library is released under the [3-clause BSD License](https://github.com/VirgilSecurity/virgil-purekit-go/blob/v2/LICENSE).
 
 ## Support
+
 Our developer support team is here to help you. Find out more information on our [Help Center](https://help.virgilsecurity.com/).
 
-You can find us on [Twitter](https://twitter.com/VirgilSecurity) or send us an email: support@VirgilSecurity.com.
+You can find us on [Twitter](https://twitter.com/VirgilSecurity) or send us email support@VirgilSecurity.com.
 
 Also, get extra help from our support team on [Slack](https://virgilsecurity.com/join-community).
