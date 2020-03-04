@@ -37,8 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-use Virgil\PureKit\Phe\Exceptions\ProtocolException;
-
 class ClientException extends PureException
 {
     private $protocolException;

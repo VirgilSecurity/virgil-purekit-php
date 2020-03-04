@@ -62,11 +62,6 @@ class HttpKmsClient extends HttpBaseClient
         parent::__construct($serviceBaseUrl, $appToken, $debug);
     }
 
-    /**
-     * @param DecryptRequest $request
-     * @return ProtoDecryptResponse
-     * @throws \Virgil\PureKit\Phe\Exceptions\ProtocolException
-     */
     public function decrypt(DecryptRequest $request): ProtoDecryptResponse
     {
         $r = $this->_send($request);
