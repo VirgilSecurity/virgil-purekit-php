@@ -358,6 +358,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $result = $stmt->fetchAll();
 
+            var_dump($stmt->debugDumpParams(), $userIds, $result);
+            die;
+
             foreach ($result as $rs) {
                 $userRecord = $this->parseUserRecord($rs['protobuf']);
 

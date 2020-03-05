@@ -284,7 +284,7 @@ $externalPublicKeys = [],
     private static function createStorages(): array
     {
         $storages[0] = StorageType::MARIADB();
-        //$storages[0] = StorageType::VIRGIL_CLOUD();
+        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
@@ -316,7 +316,7 @@ $externalPublicKeys = [],
     }
 
     /**
-     * @group
+     * @group t
      */
     public function testAuthenticationNewUserShouldSucceed(): void
     {
@@ -728,7 +728,6 @@ $externalPublicKeys = [],
 
     /**
      * @group mdbf
-     * @group f1
      */
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
@@ -768,13 +767,18 @@ $externalPublicKeys = [],
                     }
                 }
 
+                var_dump(12345678);
+                die;
+
                 {
                     $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
-                    $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
+                    var_dump(123);
+                    die;
 
+                    $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
                     $results = $pure->performRotation();
 
                     $this->assertEquals($total, $results->getUsersRotated());
@@ -833,7 +837,6 @@ $externalPublicKeys = [],
 
     /**
      * @group mdbf
-     * @group f
      */
     public function testRotationLocalStorageGrantWorks(): void
     {
