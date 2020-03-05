@@ -373,7 +373,7 @@ class PureContext
         $this->updateToken = self::parseCredentials(self::UPDATE_TOKEN_PREFIX, $updateToken, true, 3);
 
         if ($this->updateToken->getVersion() != $this->publicKey->getVersion() + 1)
-            throw new PureLogicException(ErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
+            throw new PureLogicException(PureLogicErrorStatus::UPDATE_TOKEN_VERSION_MISMATCH());
     }
 
     /**

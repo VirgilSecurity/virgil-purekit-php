@@ -609,15 +609,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $this->client->insertGrantKey($request);
-        } catch (ProtocolException $e) {
+        } catch (ProtocolException | ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
-        } catch (ProtocolHttpException $e) {
-            var_dump($e->getMessage(), $e->getCode());
-            die;
-            throw new VirgilCloudStorageException($e);
-        } catch (\Exception $e) {
-            var_dump(777, $e->getMessage(), $e->getCode());
-            die;
         }
     }
 

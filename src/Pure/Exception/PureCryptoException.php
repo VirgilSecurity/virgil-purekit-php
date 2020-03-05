@@ -70,43 +70,39 @@ class PureCryptoException extends PureException
      * PureCryptoException constructor.
      * @param $e
      */
-    public function __construct($e)
+    public function __construct(\Exception $exception)
     {
         $this->errorStatus = null;
         $this->cryptoException = null;
         $this->foundationException = null;
         $this->pheException = null;
 
-        switch ($e) {
-            case ($e instanceof PureCryptoErrorStatus):
-                parent::__construct($e->getMessage());
+        switch ($exception) {
+            case ($exception instanceof PureCryptoErrorStatus):
+                parent::__construct($exception->getMessage());
 
-                if ($e == PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION()
-                    || $e == PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION()) {
+                if ($exception == PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION()
+                    || $exception == PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION()) {
                     throw new RuntimeException("Underlying foundation/phe exception");
                 }
 
-                $this->errorStatus = $e;
+                $this->errorStatus = $exception;
                 break;
-            case ($e instanceof VirgilCryptoException):
-                parent::__construct($e);
+            case ($exception instanceof VirgilCryptoException):
+                parent::__construct($exception);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_CRYPTO_EXCEPTION();
-                $this->cryptoException = $e;
+                $this->cryptoException = $exception;
                 break;
-            case ($e instanceof FoundationException):
-                parent::__construct($e);
+            case ($exception instanceof FoundationException):
+                parent::__construct($exception);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION();
-                $this->foundationException = $e;
+                $this->foundationException = $exception;
                 break;
-            case ($e instanceof PheException):
-                parent::__construct($e);
+            case ($exception instanceof PheException):
+                parent::__construct($exception);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION();
-                $this->pheException = $e;
+                $this->pheException = $exception;
                 break;
-            default:
-                var_dump("_1: Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile(), get_class
-                ($e), $e->getLine());
-                die;
         }
     }
 

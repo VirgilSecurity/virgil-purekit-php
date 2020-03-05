@@ -54,23 +54,23 @@ class ClientException extends PureException
 
     /**
      * ClientException constructor.
-     * @param $e
+     * @param \Exception $exception
+     * @throws \Exception
      */
-    public function __construct($e)
+    public function __construct(\Exception $exception)
     {
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
-        switch ($e) {
-            case ($e instanceof ProtocolException):
-                $this->protocolException = $e;
+        switch ($exception) {
+            case ($exception instanceof ProtocolException):
+                $this->protocolException = $exception;
                 break;
-            case ($e instanceof ProtocolHttpException):
-                $this->protocolHttpException = $e;
+            case ($exception instanceof ProtocolHttpException):
+                $this->protocolHttpException = $exception;
                 break;
             default:
-                var_dump("3333Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
-                die;
+                throw $exception;
         }
     }
 

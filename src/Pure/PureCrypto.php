@@ -306,9 +306,6 @@ class PureCrypto
             return $this->concat($authEncryptAuthEncryptResult[0], $authEncryptAuthEncryptResult[1]);
         } catch (FoundationException $exception) {
             throw new PureCryptoException($exception);
-        } catch (\Exception $exception) {
-            var_dump(7777, $exception);
-            die;
         }
     }
 
@@ -499,8 +496,7 @@ class PureCrypto
         } catch (SigningException | EncryptionException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception, get_class($exception));
-            die;
+            throw $exception;
         }
     }
 
@@ -522,8 +518,7 @@ class PureCrypto
         } catch (VerificationException | DecryptionException $exception) {
             throw new PureCryptoException($exception);
         } catch (\Exception $exception) {
-            var_dump($exception, get_class($exception));
-            die;
+            throw $exception;
         }
     }
 

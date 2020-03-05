@@ -146,7 +146,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $stmt = $conn->prepare(
                 "INSERT INTO virgil_users (" .
                 "user_id," .
-                "phe_record_version," .
+                "record_version," .
                 "protobuf) " .
                 "VALUES (?, ?, ?);"
             );
@@ -186,7 +186,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $stmt = $conn->prepare(
                 "UPDATE virgil_users " .
-                "SET phe_record_version=?, protobuf=? " .
+                "SET record_version=?, protobuf=? " .
                 "WHERE user_id=?;"
             );
 
@@ -222,9 +222,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $stmt = $conn->prepare(
                 "UPDATE virgil_users " .
-                "SET phe_record_version=?," .
+                "SET record_version=?," .
                 "protobuf=? " .
-                "WHERE user_id=? AND phe_record_version=?;"
+                "WHERE user_id=? AND record_version=?;"
             );
 
             if (!empty($userRecords->getAsArray())) {
@@ -358,9 +358,6 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $result = $stmt->fetchAll();
 
-            var_dump($stmt->debugDumpParams(), $userIds, $result);
-            die;
-
             foreach ($result as $rs) {
                 $userRecord = $this->parseUserRecord($rs['protobuf']);
 
@@ -409,9 +406,6 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
             $stmt->execute();
 
             $stmt->setFetchMode(PDO::FETCH_ASSOC);
-
-            var_dump($stmt->debugDumpParams());
-            die;
 
             $userRecords = new UserRecordCollection();
 
@@ -1034,20 +1028,23 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
                 "INSERT INTO virgil_grant_keys (" .
                 "user_id," .
                 "key_id," .
+                "record_version," .
                 "expiration_date," .
                 "protobuf) " .
-                "VALUES (?, ?, ?, ?);"
+                "VALUES (?, ?, ?, ?, ?);"
             );
 
             $userId = $grantKey->getUserId();
             $keyId = $grantKey->getKeyId();
-            $expirationDate = date("Y-m-d H:i:s", $grantKey->getExpirationDate()->getTimestamp());
+            $recordVersion = $grantKey->getRecordVersion();
+            $expirationDate = $grantKey->getExpirationDate()->getTimestamp();
             $protobufString = $protobuf->serializeToString();
 
             $stmt->bindParam(1, $userId);
             $stmt->bindParam(2, $keyId);
-            $stmt->bindParam(3, $expirationDate);
-            $stmt->bindParam(4, $protobufString);
+            $stmt->bindParam(3, $recordVersion);
+            $stmt->bindParam(4, $expirationDate);
+            $stmt->bindParam(5, $protobufString);
 
             try {
                 $stmt->execute();
@@ -1402,8 +1399,7 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
     {
         try {
             $conn = $this->getConnection();
-
-            $conn->query($sql);
+            $stmt = $conn->query($sql);
 
         } catch (PDOException $exception) {
             throw new MariaDbSqlException($exception->getMessage(), $exception->getCode());

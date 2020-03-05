@@ -233,10 +233,6 @@ class PheManager
             $response = $this->httpClient->enrollAccount($request);
         } catch (ProtocolException | ProtocolHttpException $exception) {
             throw new PheClientException($exception);
-        } catch (\Exception $exception) {
-            var_dump(111, get_class($exception), $exception->getMessage(), $exception->getCode(), $exception->getFile
-            (), $exception->getLine());
-            die;
         }
 
         try {
@@ -247,9 +243,6 @@ class PheManager
             );
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
-        } catch (\Exception $exception) {
-            var_dump(222, get_class($exception));
-            die;
         }
     }
 }

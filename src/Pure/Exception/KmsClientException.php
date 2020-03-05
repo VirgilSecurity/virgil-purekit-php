@@ -46,14 +46,14 @@ class KmsClientException extends ClientException
     /**
      * KmsClientException constructor.
      * @param \Exception $exception
+     * @throws \Exception
      */
     public function __construct(\Exception $exception)
     {
         if (($exception instanceof ProtocolException) | ($exception instanceof ProtocolHttpException)) {
             parent::__construct($exception);
         } else {
-            var_dump("Invalid type of exception", $exception->getMessage(), $exception->getCode(), $exception->getFile());
-            die;
+            throw $exception;
         }
     }
 }

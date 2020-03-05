@@ -58,9 +58,6 @@ class PureException extends \Exception
             case ($e instanceof Throwable):
                 parent::__construct($e->getMessage(), $e->getCode());
                 break;
-            default:
-                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile());
-                die;
         }
     }
 }

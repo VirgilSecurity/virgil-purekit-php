@@ -469,29 +469,31 @@ class Pure
             $userRecords = $this->storage->selectUsers_($this->currentVersion - 1);
             $newUserRecords = new UserRecordCollection();
 
-            foreach ($userRecords as $userRecord) {
+            if (!empty($userRecords->getAsArray())) {
+                foreach ($userRecords->getAsArray() as $userRecord) {
 
-                // TODO! Need to be checked
-                if ($userRecord->getRecordVersion() != $this->currentVersion - 1) {
-                    throw new \Exception("Assertion err: userRecordVersion != currentVersion");
+                    // TODO! Need to be checked
+                    if ($userRecord->getRecordVersion() != $this->currentVersion - 1) {
+                        throw new \Exception("Assertion err: userRecordVersion != currentVersion");
+                    }
+
+                    $newRecord = $this->pheManager->performRotation($userRecord->getPheRecord());
+                    $newWrap = $this->kmsManager->performPwdRotation($userRecord->getPasswordRecoveryWrap());
+
+                    $newUserRecord = new UserRecord(
+                        $userRecord->getUserId(),
+                        $newRecord,
+                        $this->currentVersion,
+                        $userRecord->getUpk(),
+                        $userRecord->getEncryptedUsk(),
+                        $userRecord->getEncryptedUskBackup(),
+                        $userRecord->getBackupPwdHash(),
+                        $newWrap,
+                        $userRecord->getPasswordRecoveryBlob()
+                    );
+
+                    $newUserRecords->add($newUserRecord);
                 }
-
-                $newRecord = $this->pheManager - $this->performRotation($userRecord->getPheRecord());
-                $newWrap = $this->kmsManager->performPwdRotation($userRecord->getPasswordRecoveryWrap());
-
-                $newUserRecord = new UserRecord(
-                    $userRecord->getUserId(),
-                    $newRecord,
-                    $this->currentVersion,
-                    $userRecord->getUpk(),
-                    $userRecord->getEncryptedUsk(),
-                    $userRecord->getEncryptedUskBackup(),
-                    $userRecord->getBackupPwdHash(),
-                    $newWrap,
-                    $userRecord->getPasswordResetBlob()
-                );
-
-                $newUserRecords->add($newUserRecord);
             }
 
             $this->storage->updateUsers($newUserRecords, $this->currentVersion - 1);
@@ -510,8 +512,6 @@ class Pure
 
             if (!empty($grantKeys->getAsArray())) {
                 foreach ($grantKeys->getAsArray() as $grantKey) {
-
-                    var_dump(222);
 
                     // TODO! Need to be checked
                     if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
@@ -543,10 +543,6 @@ class Pure
                 $grantKeysRotated += count($newGrantKeys->getAsArray());
             }
         }
-
-        var_dump(123);
-        die;
-
 
         return new RotationResults($usersRotated, $grantKeysRotated);
     }

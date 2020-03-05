@@ -10,9 +10,7 @@
     </testsuites>
     <groups>
         <exclude>
-            <group>f</group>
-            <group>vcf</group>
-            <group>mdbf</group>
+            <group>fail</group>
         </exclude>
     </groups>
 </phpunit>

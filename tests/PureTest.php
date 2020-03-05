@@ -284,7 +284,7 @@ $externalPublicKeys = [],
     private static function createStorages(): array
     {
         $storages[0] = StorageType::MARIADB();
-        $storages[0] = StorageType::VIRGIL_CLOUD();
+        $storages[1] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
@@ -316,7 +316,7 @@ $externalPublicKeys = [],
     }
 
     /**
-     * @group t
+     * @group
      */
     public function testAuthenticationNewUserShouldSucceed(): void
     {
@@ -727,7 +727,7 @@ $externalPublicKeys = [],
     }
 
     /**
-     * @group mdbf
+     * @group
      */
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
@@ -752,6 +752,7 @@ $externalPublicKeys = [],
 
                 {
                     $pureResult = $this->setupPure(true, null, false, [], $storage);
+
                     $pure = new Pure($pureResult->getContext());
                     $pureStorage = $pure->getStorage();
                     $nms = $pureResult->getNmsData();
@@ -767,16 +768,11 @@ $externalPublicKeys = [],
                     }
                 }
 
-                var_dump(12345678);
-                die;
-
                 {
                     $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
                     $pureResult->getContext()->setStorage($pureStorage);
-                    $pure = new Pure($pureResult->getContext());
 
-                    var_dump(123);
-                    die;
+                    $pure = new Pure($pureResult->getContext(), true);
 
                     $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
                     $results = $pure->performRotation();
@@ -799,7 +795,6 @@ $externalPublicKeys = [],
                     $pure->recoverUser($firstUserId, $newPwd);
 
                     $authResult2 = $pure->authenticateUser($firstUserId, $newPwd);
-
                     $decrypted2 = $pure->decrypt($authResult2->getGrant(), $firstUserId, $dataId, $blob);
 
                     $this->assertEquals($text, $decrypted2);
@@ -810,7 +805,7 @@ $externalPublicKeys = [],
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
-                    $authResult = $pure->authenticateUser($firstUserId, $newPwd);
+                    $authResult = $pure->authenticateUser($firstUserId, $newPwd, null, true);
 
                     $decrypted = $pure->decrypt($authResult->getGrant(), $firstUserId, $dataId, $blob);
 
@@ -836,7 +831,7 @@ $externalPublicKeys = [],
     }
 
     /**
-     * @group mdbf
+     * @group
      */
     public function testRotationLocalStorageGrantWorks(): void
     {
@@ -871,13 +866,12 @@ $externalPublicKeys = [],
 
                         $pure->registerUser($userId, $password);
 
-                        if (0 == $i) {
-                            $firstUserId = $userId;
-                            $firstUserPwd = $password;
-                        }
+                        if (0 == $i)
+                            list($firstUserId, $firstUserPwd) = [$userId, $password];
                     }
 
-                    $encryptedGrant1 = $pure->authenticateUser($firstUserId, $firstUserPwd)->getEncryptedGrant();
+                    $encryptedGrant1 = $pure->authenticateUser($firstUserId, $firstUserPwd, null)
+                        ->getEncryptedGrant();
                 }
 
                 {
@@ -887,9 +881,10 @@ $externalPublicKeys = [],
 
                     $blob = $pure->encrypt($firstUserId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
 
-                    $encryptedGrant2 = $pure->authenticateUser($firstUserId, $firstUserPwd)->getEncryptedGrant();
+                    $encryptedGrant2 = $pure->authenticateUser($firstUserId, $firstUserPwd, null)
+                        ->getEncryptedGrant();
 
-                    $results = $pure->performRotation();
+                    $results = $pure->performRotation(true);
 
                     $this->assertEquals($total, $results->getUsersRotated());
                     $this->assertEquals(1, $results->getGrantKeysRotated());
@@ -1433,8 +1428,7 @@ $externalPublicKeys = [],
     }
 
     /**
-     * @group vcf
-     * @group mdbf
+     * @group
      */
     public function testCrossCompatibilityJsonShouldWork(): void
     {
@@ -1454,13 +1448,12 @@ $externalPublicKeys = [],
             $blob2 = base64_decode($this->testData->blob2);
             $nms = base64_decode($this->testData->nms);
 
-            $pureResult = $this->setupPure(true, $nms, false, [], StorageType::MARIADB(), true);
+            $pureResult = $this->setupPure(false, $nms, false, [], StorageType::MARIADB(), true);
             $pure = new Pure($pureResult->getContext());
 
             $mariaDbPureStorage = $pureResult->getContext()->getStorage();
 
             $mariaDbPureStorage->cleanDb();
-
             $mariaDbPureStorage->executeSql($this->sqls);
 
             $pureGrant = $pure->decryptGrantFromUser($encryptedGrant);

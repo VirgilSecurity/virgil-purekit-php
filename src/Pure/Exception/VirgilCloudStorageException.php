@@ -69,9 +69,7 @@ class VirgilCloudStorageException extends PureStorageException
                 $this->protocolHttpException = $e;
                 break;
             default:
-                var_dump("Invalid type of exception", $e->getMessage(), $e->getCode(), $e->getFile(), $e->getLine
-            (), get_class($e));
-                die;
+                throw $e;
         }
     }
 
