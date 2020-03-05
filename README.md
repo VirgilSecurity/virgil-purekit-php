@@ -1,8 +1,10 @@
 
 # Virgil PureKit PHP
 
-[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-purekit-go.png?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-purekit-go)
+[![Build Status](https://travis-ci.com/VirgilSecurity/virgil-purekit-php.png?branch=master)](https://travis-ci.com/VirgilSecurity/virgil-purekit-php)
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
+[![Total Downloads](https://img.shields.io/packagist/dt/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
 
 <a href="https://developer.virgilsecurity.com"><img width="230px" src="https://cdn.virgilsecurity.com/assets/images/github/logos/purekit/PureKit.png" align="left" hspace="1" vspace="3"></a>
 
