@@ -47,4 +47,5 @@ class PureLogicErrorStatus extends BaseErrorStatus
     private const USER_HAS_NO_ACCESS_TO_DATA = [6, "User has no access to data"];
     private const GRANT_INVALID_PROTOBUF = [7, "Grant invalid protobuf"];
     private const GRANT_IS_EXPIRED = [8, "Grant is expired"];
+    private const PASSWORD_RECOVER_REQUEST_THROTTLED = [9, "Password recover request was throttled"];
 }

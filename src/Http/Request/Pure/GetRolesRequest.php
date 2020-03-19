@@ -38,7 +38,7 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 
-use PurekitV3Client\GetRoles as ProtoGetRoles;
+use PurekitV3Client\GetRolesRequest as ProtoGetRolesRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -73,8 +73,9 @@ class GetRolesRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = new ProtoGetRoles();
+        $r = new ProtoGetRolesRequest();
         $r = $r->setRoleNames($this->roleNames);
+
         return $r->serializeToString();
     }
 }

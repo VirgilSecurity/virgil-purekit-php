@@ -129,9 +129,8 @@ interface PureStorage
 
     /**
      * @param string $roleName
-     * @param bool $cascade
      */
-    public function deleteRole(string $roleName, bool $cascade): void;
+    public function deleteRole(string $roleName): void;
 
     /**
      * @param RoleAssignmentCollection $roleAssignments

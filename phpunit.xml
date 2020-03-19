@@ -10,7 +10,7 @@
     </testsuites>
     <groups>
         <exclude>
-            <group>fail</group>
+            <group>f</group>
         </exclude>
     </groups>
 </phpunit>

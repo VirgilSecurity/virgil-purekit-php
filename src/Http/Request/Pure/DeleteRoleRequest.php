@@ -41,25 +41,33 @@ namespace Virgil\PureKit\Http\Request\Pure;
 
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
-use PurekitV3Client\GetUserRequest as ProtoGetUserRequest;
+use PurekitV3Client\DeleteRoleRequest as ProtoDeleteRoleRequest;
 
-class GetUserRequest extends BaseRequest
+/**
+ * Class DeleteCellKeyRequest
+ * @package Virgil\PureKit\Http\Request\Pure
+ */
+class DeleteRoleRequest extends BaseRequest
 {
     /**
      * @var AvailableRequest
      */
     protected $request;
-    private $userId;
+    /**
+     * @var string
+     */
+    private $roleName;
 
     /**
-     * GetUserRequest constructor.
+     * DeleteCellKeyRequest constructor.
      * @param AvailableRequest $request
-     * @param string $userId
+     * @param string $roleName
      */
-    public function __construct(AvailableRequest $request, string $userId)
+    public function __construct(AvailableRequest $request, string $roleName)
     {
         $this->request = $request;
-        $this->userId = $userId;
+        $this->roleName = $roleName;
+        $this->setFormattedEndpoint($request, $roleName);
     }
 
     /**
@@ -67,8 +75,8 @@ class GetUserRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = new ProtoGetUserRequest();
-        $r->setUserId($this->userId);
+        $r = new ProtoDeleteRoleRequest();
+        $r->setName($this->roleName);
 
         return $r->serializeToString();
     }

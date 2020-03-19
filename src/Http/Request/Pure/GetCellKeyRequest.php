@@ -39,6 +39,7 @@ namespace Virgil\PureKit\Http\Request\Pure;
 
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
+use PurekitV3Client\GetCellKeyRequest as ProtoGetCellKeyRequest;
 
 /**
  * Class GetCellKeyRequest
@@ -50,6 +51,8 @@ class GetCellKeyRequest extends BaseRequest
      * @var AvailableRequest
      */
     protected $request;
+    private $userId;
+    private $dataId;
 
     /**
      * GetCellKeyRequest constructor.
@@ -60,7 +63,8 @@ class GetCellKeyRequest extends BaseRequest
     public function __construct(AvailableRequest $request, string $userId, string $dataId)
     {
         $this->request = $request;
-        $this->setFormattedEndpoint($request, $userId, $dataId);
+        $this->userId = $userId;
+        $this->dataId = $dataId;
     }
 
     /**
@@ -68,6 +72,10 @@ class GetCellKeyRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        return "";
+        $r = new ProtoGetCellKeyRequest();
+        $r->setUserId($this->userId);
+        $r->setDataId($this->dataId);
+
+        return $r->serializeToString();
     }
 }

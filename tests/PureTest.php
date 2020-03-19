@@ -794,6 +794,8 @@ $externalPublicKeys = [],
 
                     $pure->recoverUser($firstUserId, $newPwd);
 
+                    $this->sleep(10);
+
                     $authResult2 = $pure->authenticateUser($firstUserId, $newPwd);
                     $decrypted2 = $pure->decrypt($authResult2->getGrant(), $firstUserId, $dataId, $blob);
 
@@ -814,6 +816,8 @@ $externalPublicKeys = [],
                     $newPwd2 = self::generateRandomString();
 
                     $pure->recoverUser($firstUserId, $newPwd2);
+
+                    $this->sleep(10);
 
                     $authResult2 = $pure->authenticateUser($firstUserId, $newPwd2);
 
@@ -1285,11 +1289,6 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                // VirgilCloudPureStorage should not support that
-                if (StorageType::VIRGIL_CLOUD() == $storage) {
-                    continue;
-                }
-
                 $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
@@ -1297,41 +1296,28 @@ $externalPublicKeys = [],
                 $userId2 = self::generateRandomString();
                 $password1 = self::generateRandomString();
                 $password2 = self::generateRandomString();
-                $dataId1 = self::generateRandomString();
                 $dataId2 = self::generateRandomString();
                 $roleName1 = self::generateRandomString();
-                $roleName2 = self::generateRandomString();
 
                 $pure->registerUser($userId1, $password1);
                 $pure->registerUser($userId2, $password2);
 
-                $text1 = self::generateRandomString();
                 $text2 = self::generateRandomString();
 
                 $authResult1 = $pure->authenticateUser($userId1, $password1);
-                $authResult2 = $pure->authenticateUser($userId2, $password2);
 
                 $pure->createRole($roleName1, [$userId1]);
-                $pure->createRole($roleName2, [$userId2]);
 
-                $cipherText1 = $pure->encrypt($userId1, $dataId1, [], [$roleName2], new VirgilPublicKeyCollection(),
-                    $text1);
                 $cipherText2 = $pure->encrypt($userId2, $dataId2, [], [$roleName1], new VirgilPublicKeyCollection(),
                     $text2);
 
-                $pure->deleteRole($roleName1, true);
+                $pure->deleteRole($roleName1);
 
                 try {
                     $pure->decrypt($authResult1->getGrant(), $userId2, $dataId2, $cipherText2);
                 } catch (PureLogicException $exception) {
                     $this->assertEquals(PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA(), $exception->getErrorStatus
                         ());
-                }
-
-                if ($storage != StorageType::MARIADB()) {
-                    $pure->deleteRole($roleName2, false);
-                    $plainText = $pure->decrypt($authResult2->getGrant(), $userId1, $dataId1, $cipherText1);
-                    $this->assertEquals($text1, $plainText);
                 }
             }
 
@@ -1376,6 +1362,8 @@ $externalPublicKeys = [],
                     $this->assertEquals(PureLogicErrorStatus::INVALID_PASSWORD(), $exception->getErrorStatus());
                 }
 
+                $this->sleep(10);
+
                 $authResult = $pure->authenticateUser($userId, $password2);
                 $this->assertNotNull($authResult);
 
@@ -1386,6 +1374,15 @@ $externalPublicKeys = [],
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
         }
+    }
+
+    /**
+     * group f
+     */
+    public function testRecoveryManyUsersShouldThrottle(): void
+    {
+        // TODO!
+        $this->assertTrue(true);
     }
 
     /**

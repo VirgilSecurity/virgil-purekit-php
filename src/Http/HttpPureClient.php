@@ -46,6 +46,7 @@ use PurekitV3Storage\UserRecord as ProtoUserRecord;
 use PurekitV3Storage\UserRecords as ProtoUserRecords;
 use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
@@ -71,7 +72,6 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
 class HttpPureClient extends HttpBaseClient
 {
     public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
-    public const KEY_CASCADE = "cascade";
 
     /**
      * HttpPureClient constructor.
@@ -273,7 +273,8 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetGrantKeyRequest $request
      * @return ProtoGrantKey
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws \Exception
      */
     public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey
     {
@@ -290,6 +291,15 @@ class HttpPureClient extends HttpBaseClient
      * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
      */
     public function deleteGrantKey(DeleteGrantKeyRequest $request): void
+    {
+        $this->_send($request);
+    }
+
+    /**
+     * @param DeleteRoleRequest $request
+     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     */
+    public function deleteRole(DeleteRoleRequest $request): void
     {
         $this->_send($request);
     }

@@ -446,13 +446,22 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
     /**
      * @param string $roleName
-     * @param bool $cascade
-     * @throws UnsupportedOperationException
+     * @throws VirgilCloudStorageException
+     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
+     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
+     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
-    public function deleteRole(string $roleName, bool $cascade): void
+    public function deleteRole(string $roleName): void
     {
-        // TODO: Implement
-        throw new UnsupportedOperationException();
+        ValidationUtils::checkNullOrEmpty($roleName, "roleName");
+
+        try {
+            $this->client->deleteRole(AvailableRequest::DELETE_ROLE(), $roleName);
+        }   catch (ProtocolException $exception) {
+            throw new VirgilCloudStorageException($exception);
+        } catch (ProtocolHttpException $exception) {
+            throw new VirgilCloudStorageException($exception);
+        }
     }
 
     /**

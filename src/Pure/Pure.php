@@ -306,7 +306,7 @@ class Pure
         if ($grantKey->getExpirationDate() < new \DateTime("now"))
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
 
-        $header = $deserializedEncryptedGrant->getHeader()->serializeToString();
+        $header = $deserializedEncryptedGrant->getEncryptedGrant()->getHeader();
         $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $header);
 
         return $this->pureCrypto->decryptSymmetricWithOneTimeKey($encryptedData, $header, $grantKeyRaw);
@@ -904,11 +904,10 @@ class Pure
 
     /**
      * @param string $roleName
-     * @param bool $cascade
      */
-    public function deleteRole(string $roleName, bool $cascade = true): void
+    public function deleteRole(string $roleName): void
     {
-        $this->storage->deleteRole($roleName, $cascade);
+        $this->storage->deleteRole($roleName);
     }
 
     /**

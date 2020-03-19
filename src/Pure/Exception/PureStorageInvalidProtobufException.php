@@ -44,26 +44,11 @@ namespace Virgil\PureKit\Pure\Exception;
 class PureStorageInvalidProtobufException extends PureStorageException
 {
     /**
-     * @var InvalidProtocolBufferException
-     */
-    private $invalidProtocolBufferException;
-
-    /**
      * PureStorageInvalidProtobufException constructor.
-     * @param InvalidProtocolBufferException $invalidProtocolBufferException
+     * @param \Throwable $exception
      */
-    public function __construct(InvalidProtocolBufferException $invalidProtocolBufferException)
+    public function __construct(\Throwable $exception)
     {
-        parent::__construct($invalidProtocolBufferException->getMessage());
-
-        $this->invalidProtocolBufferException = $invalidProtocolBufferException;
-    }
-
-    /**
-     * @return InvalidProtocolBufferException
-     */
-    public function getInvalidProtocolBufferException(): InvalidProtocolBufferException
-    {
-        return $this->invalidProtocolBufferException;
+        parent::__construct($exception);
     }
 }

@@ -1164,7 +1164,6 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
     /**
      * @param string $roleName
-     * @param bool $cascade
      * @throws MariaDbOperationNotSupportedException
      * @throws MariaDbSqlException
      * @throws PureStorageRoleNotFoundException
@@ -1172,13 +1171,9 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
      * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
-    public function deleteRole(string $roleName, bool $cascade): void
+    public function deleteRole(string $roleName): void
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
-
-        if (!$cascade) {
-            throw new MariaDbOperationNotSupportedException();
-        }
 
         try {
             $conn = $this->getConnection();

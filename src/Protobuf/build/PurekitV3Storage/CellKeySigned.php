@@ -18,13 +18,13 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     private $version = 0;
     /**
-     * Generated from protobuf field <code>string userId = 2;</code>
+     * Generated from protobuf field <code>string user_id = 2;</code>
      */
-    private $userId = '';
+    private $user_id = '';
     /**
-     * Generated from protobuf field <code>string dataId = 3;</code>
+     * Generated from protobuf field <code>string data_id = 3;</code>
      */
-    private $dataId = '';
+    private $data_id = '';
     /**
      * Generated from protobuf field <code>bytes cpk = 4;</code>
      */
@@ -45,8 +45,8 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type int $version
-     *     @type string $userId
-     *     @type string $dataId
+     *     @type string $user_id
+     *     @type string $data_id
      *     @type string $cpk
      *     @type string $encrypted_csk_cms
      *     @type string $encrypted_csk_body
@@ -80,45 +80,45 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string userId = 2;</code>
+     * Generated from protobuf field <code>string user_id = 2;</code>
      * @return string
      */
     public function getUserId()
     {
-        return $this->userId;
+        return $this->user_id;
     }
 
     /**
-     * Generated from protobuf field <code>string userId = 2;</code>
+     * Generated from protobuf field <code>string user_id = 2;</code>
      * @param string $var
      * @return $this
      */
     public function setUserId($var)
     {
         GPBUtil::checkString($var, True);
-        $this->userId = $var;
+        $this->user_id = $var;
 
         return $this;
     }
 
     /**
-     * Generated from protobuf field <code>string dataId = 3;</code>
+     * Generated from protobuf field <code>string data_id = 3;</code>
      * @return string
      */
     public function getDataId()
     {
-        return $this->dataId;
+        return $this->data_id;
     }
 
     /**
-     * Generated from protobuf field <code>string dataId = 3;</code>
+     * Generated from protobuf field <code>string data_id = 3;</code>
      * @param string $var
      * @return $this
      */
     public function setDataId($var)
     {
         GPBUtil::checkString($var, True);
-        $this->dataId = $var;
+        $this->data_id = $var;
 
         return $this;
     }

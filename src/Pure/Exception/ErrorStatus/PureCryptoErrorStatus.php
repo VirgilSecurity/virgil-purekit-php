@@ -39,6 +39,7 @@ namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
 class PureCryptoErrorStatus extends BaseErrorStatus
 {
+    private const UNDEFINED_EXCEPTION = [-1, "Undefined exception"];
     private const UNDERLYING_FOUNDATION_EXCEPTION = [1, "Underlying foundation exception"];
     private const UNDERLYING_PHE_EXCEPTION = [2, "Underlying phe exception"];
     private const UNDERLYING_CRYPTO_EXCEPTION= [3, "Underlying crypto exception"];

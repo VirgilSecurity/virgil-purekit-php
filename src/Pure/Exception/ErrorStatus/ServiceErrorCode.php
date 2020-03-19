@@ -50,6 +50,7 @@ class ServiceErrorCode extends Enum
     private const CELL_KEY_ALREADY_EXISTS = 50006;
     private const GRANT_KEY_NOT_FOUND = 50023;
     private const ROLE_ASSIGNMENT_NOT_FOUND = 50015;
+    private const THROTTLING = 50070;
     private const UNDEFINED = 0;
 
     /**

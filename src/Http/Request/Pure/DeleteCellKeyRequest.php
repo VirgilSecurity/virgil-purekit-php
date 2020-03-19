@@ -39,6 +39,7 @@ namespace Virgil\PureKit\Http\Request\Pure;
 
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
+use PurekitV3Client\DeleteCellKeyRequest as ProtoDeleteCellKeyRequest;
 
 /**
  * Class DeleteCellKeyRequest
@@ -50,6 +51,14 @@ class DeleteCellKeyRequest extends BaseRequest
      * @var AvailableRequest
      */
     protected $request;
+    /**
+     * @var string
+     */
+    private $userId;
+    /**
+     * @var string
+     */
+    private $dataId;
 
     /**
      * DeleteCellKeyRequest constructor.
@@ -60,6 +69,8 @@ class DeleteCellKeyRequest extends BaseRequest
     public function __construct(AvailableRequest $request, string $userId, string $dataId)
     {
         $this->request = $request;
+        $this->userId = $userId;
+        $this->dataId = $dataId;
         $this->setFormattedEndpoint($request, $userId, $dataId);
     }
 
@@ -68,6 +79,10 @@ class DeleteCellKeyRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        return "";
+        $r = new ProtoDeleteCellKeyRequest();
+        $r->setUserId($this->userId);
+        $r->setDataId($this->dataId);
+
+        return $r->serializeToString();
     }
 }
