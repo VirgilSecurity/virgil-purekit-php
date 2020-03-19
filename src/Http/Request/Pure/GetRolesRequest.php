@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-
 use PurekitV3Client\GetRolesRequest as ProtoGetRolesRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;

@@ -64,9 +64,9 @@ class AvailableRequest extends Enum
     private const UPDATE_CELL_KEY = ["/update-cell-key", self::POST];
     private const GET_CELL_KEY = ["/get-cell-key", self::POST];
     private const DELETE_CELL_KEY = ["/delete-cell-key", self::POST];
-    private const INSERT_ROLE = ["/insert-roles", self::POST];
+    private const INSERT_ROLE = ["/insert-role", self::POST];
     private const GET_ROLES = ["/get-roles", self::POST];
-    private const INSERT_ROLE_ASSIGNMENTS = ["/insert-role-assignments", self::POST];
+    private const INSERT_ROLE_ASSIGNMENTS = ["/role-assignments", self::POST];
     private const GET_ROLE_ASSIGNMENTS = ["/get-role-assignments", self::POST];
     private const GET_ROLE_ASSIGNMENT = ["/get-role-assignment", self::POST];
     private const DELETE_ROLE_ASSIGNMENTS = ["/delete-role-assignments", self::POST];

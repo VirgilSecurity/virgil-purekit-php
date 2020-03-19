@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use PurekitV3Client\GetUserRecords as ProtoGetUserRecords;
+use PurekitV3Client\GetUsersRequest as ProtoGetUsersRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -72,7 +72,7 @@ class GetUsersRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = new ProtoGetUserRecords();
+        $r = new ProtoGetUsersRequest();
         $r = $r->setUserIds($this->userIds);
         return $r->serializeToString();
     }

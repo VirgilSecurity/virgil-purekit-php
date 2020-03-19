@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use PurekitV3Client\DeleteRoleAssignments;
+use PurekitV3Client\DeleteRoleAssignmentsRequest as ProtoDeleteRoleAssignmentsRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -78,7 +78,7 @@ class DeleteRoleAssignmentsRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = new DeleteRoleAssignments();
+        $r = new ProtoDeleteRoleAssignmentsRequest();
         $r->setUserIds($this->userIds);
         $r->setRoleName($this->roleName);
 

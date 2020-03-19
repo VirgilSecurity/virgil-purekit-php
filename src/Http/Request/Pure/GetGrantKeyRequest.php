@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
+use PurekitV3Client\GetGrantKeyRequest as ProtoGetGrantKeyRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -79,7 +79,7 @@ class GetGrantKeyRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = (new ProtoGrantKeyDescriptor)
+        $r = (new ProtoGetGrantKeyRequest)
             ->setUserId($this->userId)
             ->setKeyId($this->keyId);
 

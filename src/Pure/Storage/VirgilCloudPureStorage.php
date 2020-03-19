@@ -43,6 +43,7 @@ use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Http\Request\Pure\DeleteCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteGrantKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteRoleAssignmentsRequest;
+use Virgil\PureKit\Http\Request\Pure\DeleteRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\DeleteUserRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentRequest;
 use Virgil\PureKit\Http\Request\Pure\GetRoleAssignmentsRequest;
@@ -223,8 +224,8 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $request = new GetUsersRequest(AvailableRequest::GET_USERS(), $userIds);
-
             $protoRecords = $this->client->getUsers($request);
+
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {
@@ -456,7 +457,9 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
 
         try {
-            $this->client->deleteRole(AvailableRequest::DELETE_ROLE(), $roleName);
+            $request = new DeleteRoleRequest(AvailableRequest::DELETE_ROLE(), $roleName);
+
+            $this->client->deleteRole($request);
         }   catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
         } catch (ProtocolHttpException $exception) {

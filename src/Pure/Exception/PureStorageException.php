@@ -47,7 +47,7 @@ class PureStorageException extends PureException
      * PureStorageException constructor.
      * @param $exception
      */
-    public function __construct($exception)
+    public function __construct($exception = null)
     {
         switch ($exception) {
             case (is_string($exception)):
@@ -55,6 +55,8 @@ class PureStorageException extends PureException
                 break;
             case ($exception instanceof \Throwable):
                 parent::__construct($exception->getMessage(), $exception->getCode());
+                break;
+            case null:
                 break;
         }
     }

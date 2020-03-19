@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use PurekitV3Client\GetRoleAssignment as ProtoGetRoleAssignment;
+use PurekitV3Client\GetRoleAssignmentRequest as ProtoGetRoleAssignmentRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -79,7 +79,7 @@ class GetRoleAssignmentRequest extends BaseRequest
     public function getOptionsBody(): string
     {
 
-        $r = new ProtoGetRoleAssignment();
+        $r = new ProtoGetRoleAssignmentRequest();
         $r->setRoleName($this->roleName);
         $r->setUserId($this->userId);
 

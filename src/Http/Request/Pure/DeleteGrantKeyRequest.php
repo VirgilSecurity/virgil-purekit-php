@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use PurekitV3Client\GrantKeyDescriptor as ProtoGrantKeyDescriptor;
+use PurekitV3Client\DeleteGrantKeyRequest as ProtoDeleteGrantKeyRequest;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
@@ -78,7 +78,7 @@ class DeleteGrantKeyRequest extends BaseRequest
      */
     public function getOptionsBody(): string
     {
-        $r = (new ProtoGrantKeyDescriptor)
+        $r = (new ProtoDeleteGrantKeyRequest)
             ->setUserId($this->userId)
             ->setKeyId($this->keyId);
 
