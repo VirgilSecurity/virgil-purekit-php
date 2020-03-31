@@ -55,7 +55,7 @@ use Virgil\PureKit\Pure\PureContext;
 use Virgil\PureKit\Pure\PureSessionParams;
 use Virgil\PureKit\Pure\PureSetupResult;
 use Virgil\PureKit\Pure\Storage\_\StorageType;
-use Virgil\PureKit\Pure\Storage\MariaDBPureStorage;
+use Virgil\PureKit\Pure\Storage\MariaDbPureStorage;
 
 /**
  * Class PureTest
@@ -282,7 +282,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     private static function createStorages(): array
     {
 //        $storages[0] = StorageType::MARIADB();
-        $storages[1] = StorageType::VIRGIL_CLOUD();
+        $storages[0] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
 
@@ -1419,7 +1419,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @group
+     * @group f
      */
     public function testCrossCompatibilityJsonShouldWork(): void
     {
