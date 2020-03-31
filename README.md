@@ -3,6 +3,7 @@
 [![GitHub license](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](https://github.com/VirgilSecurity/virgil/blob/master/LICENSE)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
 [![Total Downloads](https://img.shields.io/packagist/dt/virgil/purekit.svg?style=flat-square)](https://packagist.org/packages/virgil/purekit)
+[![API Reference](https://img.shields.io/badge/API%20reference-purekit--php-green)](https://virgilsecurity.github.io/virgil-purekit-php/)
 
 [Introduction](#introduction) | [Benefits](#benefits) | [Features](#features) |  [Installation](#installation) | [Resources](#resources) | [License](#license) | [Support](#support)
 
@@ -55,6 +56,7 @@ Navigate to our [Developer Documentation](https://developer.virgilsecurity.com/d
 
 - [PureKit Product Page](https://virgilsecurity.com/purekit/)
 - [PureKit Documentation](https://developer.virgilsecurity.com/docs/purekit/) - start integrating PureKit into your project with our detailed guides.
+- [PureKit API Reference](https://virgilsecurity.github.io/virgil-purekit-php/)
 - [MariaDB Demo](https://github.com/VirgilSecurity/virgil-mariadb-demo) - a simple web application that illustrates how Virgil PureKit can be used with MariaDB to store and share data in the most secure way.
 - [Virgil PHE WhitePaper](https://virgilsecurity.com/wp-content/uploads/2018/11/PHE-Whitepaper-2018.pdf) - foundation principles of the Password-Hardened Encryption (PHE) protocol.
 - [PHP Samples](/samples) - explore our PHP PureKit samples to easily run the SDK
