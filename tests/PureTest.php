@@ -35,14 +35,13 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Tests;
+namespace Virgil\PureKitTests;
 
 use Dotenv\Dotenv;
-use Virgil\Crypto\Core\Data;
-use Virgil\Crypto\Core\HashAlgorithms;
-use Virgil\Crypto\Core\KeyPairType;
+use Virgil\Crypto\Core\Enum\HashAlgorithms;
+use Virgil\Crypto\Core\Enum\KeyPairType;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
 use Virgil\Crypto\VirgilCrypto;
-use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
@@ -148,19 +147,19 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->publicKeyNew = $e ? $_ENV["{$e}_PUBLIC_KEY_NEW"] : $_ENV["PUBLIC_KEY_NEW"];
         $this->secretKeyNew = $e ? $_ENV["{$e}_SECRET_KEY_NEW"] : $_ENV["SECRET_KEY_NEW"];
         $this->publicKeyWrong = $e ? $_ENV["{$e}_PUBLIC_KEY_WRONG"] : substr_replace($_ENV["PUBLIC_KEY"],
-            self::generateRandomString(176), 5,176);
+            self::generateRandomString(176), 5, 176);
         $this->updateToken = $e ? $_ENV["{$e}_UPDATE_TOKEN"] : $_ENV["UPDATE_TOKEN"];
         $this->pheServerAddress = $e ? $_ENV["{$e}_PHE_SERVER_ADDRESS"] : null;
         $this->pureServerAddress = $e ? $_ENV["{$e}_PURE_SERVER_ADDRESS"] : null;
         $this->kmsServerAddress = $e ? $_ENV["{$e}_KMS_SERVER_ADDRESS"] : null;
 
-        $s = $e ? __DIR__.DIRECTORY_SEPARATOR."_resources".DIRECTORY_SEPARATOR."compatibility_tables_{$l}.sql" :
-        __DIR__.DIRECTORY_SEPARATOR."_resources".DIRECTORY_SEPARATOR."compatibility_tables.sql";
+        $s = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables_{$l}.sql" :
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables.sql";
 
         $this->sqls = file_get_contents($s);
 
-        $c = $e ? __DIR__.DIRECTORY_SEPARATOR."_resources".DIRECTORY_SEPARATOR."compatibility_data_{$l}.json" :
-            __DIR__.DIRECTORY_SEPARATOR."_resources".DIRECTORY_SEPARATOR."compatibility_data.json";
+        $c = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data_{$l}.json" :
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data.json";
 
         $this->testData = json_decode(file_get_contents($c));
 
@@ -230,8 +229,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
      * @throws \Virgil\PureKit\Pure\Exception\MariaDbSqlException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
-    private function setupPure(bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array
-$externalPublicKeys = [],
+    private function setupPure(bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array $externalPublicKeys = [],
                                StorageType $storageType, bool $skipClean = false):
     PureSetupResult
     {
@@ -283,7 +281,7 @@ $externalPublicKeys = [],
      */
     private static function createStorages(): array
     {
-        $storages[0] = StorageType::MARIADB();
+//        $storages[0] = StorageType::MARIADB();
         $storages[1] = StorageType::VIRGIL_CLOUD();
         return $storages;
     }
@@ -299,7 +297,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -326,7 +324,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -393,7 +391,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -435,7 +433,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -478,7 +476,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -521,7 +519,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -569,7 +567,7 @@ $externalPublicKeys = [],
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -601,7 +599,7 @@ $externalPublicKeys = [],
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -638,7 +636,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -694,7 +692,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -949,7 +947,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -968,7 +966,7 @@ $externalPublicKeys = [],
                 $keyPair = $pureResult->getContext()->getCrypto()->generateKeyPair();
 
                 $pkc = new VirgilPublicKeyCollection();
-                $pkc->add($keyPair->getPublicKey());
+                $pkc->addPublicKey($keyPair->getPublicKey());
 
                 $cipherText = $pure->encrypt($userId1, $dataId, [$userId2], [],
                     $pkc, $text);
@@ -1018,7 +1016,6 @@ $externalPublicKeys = [],
                 $text = self::generateRandomString();
 
                 $pure->registerUser($userId, $password);
-
                 $cipherText = $pure->encrypt($userId, $dataId, [], [], new VirgilPublicKeyCollection(), $text);
 
                 // TODO!
@@ -1042,7 +1039,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1090,7 +1087,7 @@ $externalPublicKeys = [],
                 if (StorageType::MARIADB() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1137,7 +1134,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1185,15 +1182,12 @@ $externalPublicKeys = [],
 
                 $record = $pure->getStorage()->selectUser($userId);
 
-                $data = new Data($record->getBackupPwdHash());
-
-                $pwdHashDecrypted = $pureResult->getContext()->getCrypto()->decrypt($data, $pureResult->getBupkp()
+                $pwdHashDecrypted = $pureResult->getContext()->getCrypto()->decrypt($record->getBackupPwdHash(), $pureResult->getBupkp()
                     ->getPrivateKey());
 
                 $pwdHash = $pureResult->getContext()->getCrypto()->computeHash($password, HashAlgorithms::SHA512());
 
                 $this->assertEquals($pwdHash, $pwdHashDecrypted);
-
             }
         } catch (\Exception $exception) {
             $this->fail($this->debugException($exception));
@@ -1317,7 +1311,7 @@ $externalPublicKeys = [],
                     $pure->decrypt($authResult1->getGrant(), $userId2, $dataId2, $cipherText2);
                 } catch (PureLogicException $exception) {
                     $this->assertEquals(PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA(), $exception->getErrorStatus
-                        ());
+                    ());
                 }
             }
 
@@ -1339,7 +1333,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1396,7 +1390,7 @@ $externalPublicKeys = [],
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true,null, false, [], $storage);
+                $pureResult = $this->setupPure(true, null, false, [], $storage);
 
                 $pure = new Pure($pureResult->getContext());
 

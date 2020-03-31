@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure;
 
-
 /**
  * Class PureSessionParams
  * @package Virgil\PureKit\Pure

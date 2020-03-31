@@ -39,13 +39,13 @@ namespace Virgil\PureKit\Pure;
 
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
-use Virgil\Crypto\Core\VirgilKeyPair;
-use Virgil\Crypto\Core\VirgilPrivateKey;
-use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPrivateKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
-use Virgil\PureKit\Pure\Collection\VirgilPublicKeyCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyMap;
 use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
@@ -321,7 +321,6 @@ class Pure
      * @throws Exception\NullPointerException
      * @throws PureCryptoException
      * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function decryptGrantFromUser(string $encryptedGrantString): PureGrant
     {
@@ -382,7 +381,6 @@ class Pure
      * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function changeUserPassword_(PureGrant $grant, string $newPassword): void
     {
@@ -589,7 +587,7 @@ class Pure
 
                 foreach ($userRecords->getAsArray() as $record) {
                     $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
-                    $recipientList->add($otherUpk);
+                    $recipientList->addPublicKey($otherUpk);
                 }
 
                 $roles = $this->storage->selectRoles($roleNames);
@@ -597,7 +595,7 @@ class Pure
                 if ($roles->getAsArray()) {
                     foreach ($roles->getAsArray() as $role) {
                         $rpk = $this->pureCrypto->importPublicKey($role->getRpk());
-                        $recipientList->add($rpk);
+                        $recipientList->addPublicKey($rpk);
                     }
                 }
 
@@ -618,13 +616,13 @@ class Pure
                 $this->storage->insertCellKey($cellKey);
 
                 $cpk = $ckp->getPublicKey();
-                $vpkc->add($cpk);
+                $vpkc->addPublicKey($cpk);
 
             } catch (PureStorageCellKeyAlreadyExistsException $exception) {
                 $cellKey = $this->storage->selectCellKey($userId, $dataId);
 
                 $cpk = $this->pureCrypto->importPublicKey($cellKey->getCpk());
-                $vpkc->add($cpk);
+                $vpkc->addPublicKey($cpk);
             }
         }
 
@@ -764,7 +762,7 @@ class Pure
 
         if (!empty($roles->getAsArray())) {
             foreach ($roles->getAsArray() as $role) {
-                $roleKeys->add($this->pureCrypto->importPublicKey($role->getRpk()));
+                $roleKeys->addPublicKey($this->pureCrypto->importPublicKey($role->getRpk()));
             }
         }
 
@@ -1136,7 +1134,7 @@ $sessionId = null, int $ttl): AuthResult
         if (!empty($otherUserRecords->getAsArray())) {
             foreach ($otherUserRecords->getAsArray() as $record) {
                 $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
-                $publicKeys->add($otherUpk);
+                $publicKeys->addPublicKey($otherUpk);
             }
         }
 

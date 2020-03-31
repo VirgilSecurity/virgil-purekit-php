@@ -17,7 +17,7 @@
     "guzzlehttp/guzzle": "~6.0",
     "google/protobuf": "^3.6.1",
     "myclabs/php-enum": "^1.7",
-    "virgil/cryptowrapper": "^1",
+    "virgil/crypto": "dev-v6-dev",
     "ext-json": "*",
     "ext-pdo": "*"
   },
@@ -38,7 +38,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Virgil\\PureKit\\Tests\\": "tests"
+      "Virgil\\PureKitTests\\": "tests"
     }
   }
 }

@@ -37,8 +37,7 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\Crypto\Core\HashAlgorithms;
-use Virgil\CryptoWrapper\Phe\Exception\PheException;
+use Virgil\Crypto\Core\Enum\HashAlgorithms;
 use Virgil\CryptoWrapper\Phe\PheClient;
 use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
@@ -189,7 +188,7 @@ class PheManager
 
                 return $phek;
             }
-        catch (PheException $exception) {
+        catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
         catch (ProtocolException $exception) {
@@ -213,7 +212,7 @@ class PheManager
 
         try {
             return $this->previousClient->updateEnrollmentRecord($enrollmentRecord, $this->updateToken);
-        } catch (PheException $exception) {
+        } catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
 
@@ -241,7 +240,7 @@ class PheManager
                 $response->getResponse(),
                 $passwordHash
             );
-        } catch (PheException $exception) {
+        } catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }

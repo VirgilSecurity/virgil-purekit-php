@@ -37,7 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Collection;
 
-use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
 
 /**
  * Class VirgilPublicKeyMap
@@ -68,7 +69,7 @@ class VirgilPublicKeyMap
      */
     public function put(string $key, VirgilPublicKey $virgilPublicKey): void
     {
-        $this->virgilPublicKeyCollection->add($virgilPublicKey);
+        $this->virgilPublicKeyCollection->addPublicKey($virgilPublicKey);
         $this->collection[$key] = $this->virgilPublicKeyCollection;
     }
 

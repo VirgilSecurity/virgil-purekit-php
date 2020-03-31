@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Pure;
 
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
-use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\CryptoWrapper\Phe\UokmsClient;
 use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
 use Virgil\PureKit\Http\_\AvailableRequest;
@@ -157,7 +156,7 @@ class KmsManager
 
             $this->httpClient = $context->getKmsClient();
         }
-        catch (PheException $exception) {
+        catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -224,7 +223,7 @@ class KmsManager
                 $decryptResponse->getResponse(),
                 $uokmsClientGenerateDecryptRequestResult[0],
                 PureCrypto::DERIVED_SECRET_LENGTH);
-        } catch (PheException $exception) {
+        } catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         } catch (ProtocolException $exception) {
             throw new KmsClientException($exception);
@@ -246,7 +245,7 @@ class KmsManager
             return $kmsClient->decryptOneparty($grantKey->getEncryptedGrantKeyWrap(),
                 PureCrypto::DERIVED_SECRET_LENGTH);
         }
-        catch (PheException $exception) {
+        catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -265,7 +264,7 @@ class KmsManager
             ValidationUtils::checkNull($wrap, "wrap");
 
             return $this->pwdKmsRotation->updateWrap($wrap);
-        } catch (PheException $exception) {
+        } catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -285,7 +284,7 @@ class KmsManager
 
             return $this->grantKmsRotation->updateWrap($wrap);
         }
-        catch (PheException $exception) {
+        catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -366,7 +365,7 @@ class KmsManager
             $resetPwdBlob = $this->pureCrypto->encryptSymmetricWithOneTimeKey($data, $header, $derivedSecret);
 
             return new KmsEncryptedData($kmsResult[0], $resetPwdBlob);
-        } catch (PheException $exception) {
+        } catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }

@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
-use Virgil\Crypto\Core\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**

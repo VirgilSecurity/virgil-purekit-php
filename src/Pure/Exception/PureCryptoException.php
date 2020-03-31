@@ -39,8 +39,6 @@ namespace Virgil\PureKit\Pure\Exception;
 
 use RuntimeException;
 use Virgil\Crypto\Exceptions\VirgilCryptoException;
-use Virgil\CryptoWrapper\Foundation\Exception\FoundationException;
-use Virgil\CryptoWrapper\Phe\Exception\PheException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 
 /**
@@ -54,11 +52,11 @@ class PureCryptoException extends PureException
      */
     private $cryptoException;
     /**
-     * @var FoundationException
+     * @var \FoundationException
      */
     private $foundationException;
     /**
-     * @var PheException
+     * @var \PheException
      */
     private $pheException;
     /**
@@ -93,12 +91,12 @@ class PureCryptoException extends PureException
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_CRYPTO_EXCEPTION();
                 $this->cryptoException = $exception;
                 break;
-            case ($exception instanceof FoundationException):
+            case ($exception instanceof \FoundationException):
                 parent::__construct($exception);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION();
                 $this->foundationException = $exception;
                 break;
-            case ($exception instanceof PheException):
+            case ($exception instanceof \PheException):
                 parent::__construct($exception);
                 $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION();
                 $this->pheException = $exception;
@@ -123,17 +121,17 @@ class PureCryptoException extends PureException
     }
 
     /**
-     * @return null|FoundationException
+     * @return null|\FoundationException
      */
-    public function getFoundationException(): ?FoundationException
+    public function getFoundationException(): ?\FoundationException
     {
         return $this->foundationException;
     }
 
     /**
-     * @return null|PheException
+     * @return null|\PheException
      */
-    public function getPheException(): ?PheException
+    public function getPheException(): ?\PheException
     {
         return $this->pheException;
     }

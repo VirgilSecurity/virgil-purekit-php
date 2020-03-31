@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure;
 
-
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**

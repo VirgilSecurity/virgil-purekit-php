@@ -48,7 +48,7 @@ use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
 use PurekitV3Storage\RoleAssignmentSigned as ProtoRoleAssignmentSigned;
 use PurekitV3Storage\RoleSigned as ProtoRoleSigned;
 use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
-use Virgil\Crypto\Core\VirgilKeyPair;
+use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 use Virgil\PureKit\Pure\Exception\InvalidProtocolBufferException;
@@ -114,7 +114,7 @@ class PureModelSerializer
         try {
             return $this->crypto->generateSignature($model, $this->signingKey->getPrivateKey());
         } catch (SigningException $exception) {
-            throw new PureStorageGenericException(ErrorStatus::SIGNING_EXCEPTION());
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::SIGNING_EXCEPTION());
         }
     }
 
@@ -129,11 +129,11 @@ class PureModelSerializer
         try {
             $verified = $this->crypto->verifySignature($signature, $model, $this->signingKey->getPublicKey());
         } catch (VerificationException $exception) {
-            throw new PureStorageGenericException(ErrorStatus::VERIFICATION_EXCEPTION());
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::VERIFICATION_EXCEPTION());
         }
 
         if (!$verified)
-            throw new PureStorageGenericException(ErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
+            throw new PureStorageGenericException(PureStorageGenericErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
     }
 
     /**

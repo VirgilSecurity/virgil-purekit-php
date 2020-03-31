@@ -35,7 +35,7 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Tests;
+namespace Virgil\PureKitTests;
 
 use Virgil\PureKit\Pure\NonrotatableSecretsGenerator;
 
@@ -72,6 +72,9 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
         $this->vskpId = "l3RDBZ9U6Cs=";
     }
 
+    /**
+     * @group
+     */
     public function testGenerateSecretsFixedSeedShouldMatch()
     {
         try {

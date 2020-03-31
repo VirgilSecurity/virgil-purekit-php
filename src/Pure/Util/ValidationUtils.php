@@ -82,7 +82,6 @@ class ValidationUtils
     }
 
     // TODO!
-
     /**
      * @param array $argument
      * @return bool

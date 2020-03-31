@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Pure;
 
-use Virgil\Crypto\Core\VirgilPublicKey;
+use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKey;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\PureKit\Http\HttpKmsClient;
 use Virgil\PureKit\Http\HttpPheClient;
