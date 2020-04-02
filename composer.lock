@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b4712a76529d36bc10debe463aa533d9",
+    "content-hash": "ab988990c8c0d0cf80bf3a229a1fed80",
     "packages": [
         {
             "name": "google/protobuf",
@@ -446,16 +446,16 @@
         },
         {
             "name": "virgil/crypto",
-            "version": "dev-v6-dev",
+            "version": "v6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/VirgilSecurity/virgil-crypto-php.git",
-                "reference": "5f87922ad433d1a5e8e3fcd43a947b6d2c589b5d"
+                "reference": "6f6a0c37be0c4f6415ed9a648806f6a0a462713d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/VirgilSecurity/virgil-crypto-php/zipball/5f87922ad433d1a5e8e3fcd43a947b6d2c589b5d",
-                "reference": "5f87922ad433d1a5e8e3fcd43a947b6d2c589b5d",
+                "url": "https://api.github.com/repos/VirgilSecurity/virgil-crypto-php/zipball/6f6a0c37be0c4f6415ed9a648806f6a0a462713d",
+                "reference": "6f6a0c37be0c4f6415ed9a648806f6a0a462713d",
                 "shasum": ""
             },
             "require": {
@@ -505,7 +505,7 @@
                 "verification",
                 "virgil"
             ],
-            "time": "2020-03-31T02:18:24+00:00"
+            "time": "2020-04-02T15:05:23+00:00"
         },
         {
             "name": "virgil/crypto-wrapper",
@@ -1288,16 +1288,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "8.5.2",
+            "version": "8.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "018b6ac3c8ab20916db85fa91bf6465acb64d1e0"
+                "reference": "67750516bc02f300e2742fed2f50177f8f37bedf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/018b6ac3c8ab20916db85fa91bf6465acb64d1e0",
-                "reference": "018b6ac3c8ab20916db85fa91bf6465acb64d1e0",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/67750516bc02f300e2742fed2f50177f8f37bedf",
+                "reference": "67750516bc02f300e2742fed2f50177f8f37bedf",
                 "shasum": ""
             },
             "require": {
@@ -1367,7 +1367,17 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2020-01-08T08:49:49+00:00"
+            "funding": [
+                {
+                    "url": "https://phpunit.de/donate.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/sebastianbergmann",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-03-31T08:52:04+00:00"
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
@@ -2075,9 +2085,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "virgil/crypto": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
