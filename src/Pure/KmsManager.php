@@ -40,7 +40,6 @@ namespace Virgil\PureKit\Pure;
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use Virgil\CryptoWrapper\Phe\UokmsClient;
 use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
 use Virgil\PureKit\Pure\Exception\KmsClientException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
@@ -214,7 +213,7 @@ class KmsManager
                 ->setAlias(self::RECOVER_PWD_ALIAS)
                 ->setRequest($uokmsClientGenerateDecryptRequestResult[1]);
 
-            $request = new DecryptRequest(AvailableRequest::DECRYPT_REQUEST(), $decryptRequest);
+            $request = new DecryptRequest($decryptRequest);
 
             $decryptResponse = $this->httpClient->decrypt($request);
 

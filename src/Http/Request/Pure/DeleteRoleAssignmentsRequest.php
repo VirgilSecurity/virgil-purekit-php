@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Client\DeleteRoleAssignmentsRequest as ProtoDeleteRoleAssignmentsRequest;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -47,10 +46,6 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class DeleteRoleAssignmentsRequest extends BaseRequest
 {
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
     /**
      * @var string
      */
@@ -62,13 +57,11 @@ class DeleteRoleAssignmentsRequest extends BaseRequest
 
     /**
      * DeleteRoleAssignmentsRequest constructor.
-     * @param AvailableRequest $request
      * @param string $roleName
      * @param array $userIds
      */
-    public function __construct(AvailableRequest $request, string $roleName, array $userIds)
+    public function __construct(string $roleName, array $userIds)
     {
-        $this->request = $request;
         $this->roleName = $roleName;
         $this->userIds = $userIds;
     }

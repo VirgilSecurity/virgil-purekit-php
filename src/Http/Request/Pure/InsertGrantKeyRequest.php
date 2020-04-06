@@ -37,9 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-
 use PurekitV3Storage\GrantKey;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -49,23 +47,17 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertGrantKeyRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var GrantKey
      */
     private $grantKey;
 
     /**
      * InsertGrantKeyRequest constructor.
-     * @param AvailableRequest $request
      * @param GrantKey $grantKey
      */
-    public function __construct(AvailableRequest $request, GrantKey $grantKey)
+    public function __construct(GrantKey $grantKey)
     {
         $this->grantKey = $grantKey;
-        $this->request = $request;
     }
 
     /**

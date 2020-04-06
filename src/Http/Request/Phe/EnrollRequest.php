@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Phe;
 
 use Purekit\EnrollmentRequest as ProtoEnrollmentRequest;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -51,19 +50,13 @@ class EnrollRequest extends BaseRequest
      * @var int
      */
     private $version;
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
 
     /**
      * EnrollRequest constructor.
-     * @param AvailableRequest $request
      * @param int $version
      */
-    public function __construct(AvailableRequest $request, int $version)
+    public function __construct(int $version)
     {
-        $this->request = $request;
         $this->version = $version;
     }
 

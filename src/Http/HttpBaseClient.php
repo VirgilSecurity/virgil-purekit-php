@@ -41,6 +41,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Purekit\HttpError as ProtoHttpError;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
+use Virgil\PureKit\Http\_\HttpMethod;
 use Virgil\PureKit\Http\Request\BaseRequest;
 use Virgil\PureKit\Pure\Exception\ProtocolException;
 
@@ -84,13 +85,18 @@ class HttpBaseClient
 
     /**
      * @param BaseRequest $request
+     * @param string $endpoint
+     * @param HttpMethod|null $method
      * @return ResponseInterface
      * @throws ProtocolException
      */
-    protected function _send(BaseRequest $request): ResponseInterface
+    protected function _send(BaseRequest $request, string $endpoint, HttpMethod $method = null):
+    ResponseInterface
     {
+        $method = $method ?: HttpMethod::POST();
+
         try {
-            return $this->httpClient->request($request->getMethod(), "." . $request->getEndpoint() .
+            return $this->httpClient->request($method->getValue(), "." . $endpoint .
                 $request->getParams(),
                 [
                     "headers" => $request->getOptionsHeader($this->appToken),

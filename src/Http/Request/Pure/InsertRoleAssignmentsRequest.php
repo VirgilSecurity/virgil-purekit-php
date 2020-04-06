@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Storage\RoleAssignments;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,22 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertRoleAssignmentsRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var RoleAssignments
      */
     private $protoRoleAssignments;
 
     /**
      * InsertRoleAssignmentsRequest constructor.
-     * @param AvailableRequest $request
      * @param RoleAssignments $protoRoleAssignments
      */
-    public function __construct(AvailableRequest $request, RoleAssignments $protoRoleAssignments)
+    public function __construct(RoleAssignments $protoRoleAssignments)
     {
-        $this->request = $request;
         $this->protoRoleAssignments = $protoRoleAssignments;
     }
 

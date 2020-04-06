@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Storage\Role as ProtoRole;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,22 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertRoleRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var ProtoRole
      */
     private $protoRole;
 
     /**
      * InsertRoleRequest constructor.
-     * @param AvailableRequest $request
      * @param ProtoRole $protoRole
      */
-    public function __construct(AvailableRequest $request, ProtoRole $protoRole)
+    public function __construct(ProtoRole $protoRole)
     {
-        $this->request = $request;
         $this->protoRole = $protoRole;
     }
 

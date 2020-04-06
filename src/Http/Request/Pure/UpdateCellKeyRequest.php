@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Storage\CellKey as ProtoCellKey;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,9 +47,14 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class UpdateCellKeyRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
+     * @var string
      */
-    protected $request;
+    private $userId;
+    /**
+     * @var string
+     */
+    private $dataId;
+
     /**
      * @var ProtoCellKey
      */
@@ -58,16 +62,15 @@ class UpdateCellKeyRequest extends BaseRequest
 
     /**
      * UpdateCellKeyRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      * @param string $dataId
      * @param ProtoCellKey $cellKey
      */
-    public function __construct(AvailableRequest $request, string $userId, string $dataId, ProtoCellKey $cellKey)
+    public function __construct(string $userId, string $dataId, ProtoCellKey $cellKey)
     {
-        $this->request = $request;
         $this->cellKey = $cellKey;
-        $this->setFormattedEndpoint($request, $userId, $dataId);
+        $this->userId = $userId;
+        $this->dataId = $dataId;
     }
 
     /**
@@ -76,5 +79,21 @@ class UpdateCellKeyRequest extends BaseRequest
     public function getOptionsBody(): string
     {
         return $this->cellKey->serializeToString();
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserId(): string
+    {
+        return $this->userId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDataId(): string
+    {
+        return $this->dataId;
     }
 }

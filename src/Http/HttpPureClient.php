@@ -96,7 +96,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertUser(InsertUserRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/insert-user");
     }
 
     /**
@@ -105,7 +105,8 @@ class HttpPureClient extends HttpBaseClient
      */
     public function updateUser(UpdateUserRequest $request): void
     {
-        $this->_send($request);
+        $endpoint = sprintf("/update-user", $request->getUserId());
+        $this->_send($request, $endpoint);
     }
 
     /**
@@ -115,7 +116,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getUser(GetUserRequest $request): ProtoUserRecord
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-user");
 
         $res = new ProtoUserRecord();
         $res->mergeFromString($r->getBody()->getContents());
@@ -130,7 +131,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getUsers(GetUsersRequest $request): ProtoUserRecords
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-users");
 
         $res = new ProtoUserRecords();
         $res->mergeFromString($r->getBody()->getContents());
@@ -144,7 +145,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteUser(DeleteUserRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/delete-user");
     }
 
     /**
@@ -153,7 +154,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertCellKey(InsertCellKeyRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/insert-cell-key");
     }
 
     /**
@@ -162,7 +163,8 @@ class HttpPureClient extends HttpBaseClient
      */
     public function updateCellKey(UpdateCellKeyRequest $request): void
     {
-        $this->_send($request);
+        $endpoint = sprintf("/update-cell-key", $request->getUserId(), $request->getUserId());
+        $this->_send($request, $endpoint);
     }
 
     /**
@@ -172,7 +174,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getCellKey(GetCellKeyRequest $request): ProtoCellKey
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-cell-key");
 
         $res = new ProtoCellKey();
         $res->mergeFromString($r->getBody()->getContents());
@@ -186,7 +188,8 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteCellKey(DeleteCellKeyRequest $request): void
     {
-        $this->_send($request);
+        $endpoint = sprintf("/delete-cell-key", $request->getUserId(), $request->getDataId());
+        $this->_send($request, $endpoint);
     }
 
     /**
@@ -195,7 +198,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertRole(InsertRoleRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/insert-role");
     }
 
     /**
@@ -205,7 +208,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getRoles(GetRolesRequest $request): ProtoRoles
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-roles");
 
         $res = new ProtoRoles();
         $res->mergeFromString($r->getBody()->getContents());
@@ -219,7 +222,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/role-assignments", null);
     }
 
     /**
@@ -229,7 +232,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getRoleAssignments(GetRoleAssignmentsRequest $request): ProtoRoleAssignments
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-role-assignments");
 
         $res = new ProtoRoleAssignments();
         $res->mergeFromString($r->getBody()->getContents());
@@ -244,7 +247,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getRoleAssignment(GetRoleAssignmentRequest $request): ProtoRoleAssignment
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-role-assignment");
 
         $res = new ProtoRoleAssignment();
         $res->mergeFromString($r->getBody()->getContents());
@@ -258,7 +261,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteRoleAssignments(DeleteRoleAssignmentsRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/delete-role-assignment");
     }
 
     /**
@@ -267,7 +270,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertGrantKey(InsertGrantKeyRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/insert-grant-key");
     }
 
     /**
@@ -278,7 +281,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/get-grant-key");
 
         $res = new ProtoGrantKey();
         $res->mergeFromString($r->getBody()->getContents());
@@ -292,7 +295,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteGrantKey(DeleteGrantKeyRequest $request): void
     {
-        $this->_send($request);
+        $this->_send($request, "/delete-grant-key");
     }
 
     /**
@@ -301,6 +304,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteRole(DeleteRoleRequest $request): void
     {
-        $this->_send($request);
+        $endpoint = sprintf("/delete-role", $request->getRoleName());
+        $this->_send($request, $endpoint);
     }
 }

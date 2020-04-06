@@ -77,7 +77,7 @@ class HttpPheClient extends HttpBaseClient
     {
         ValidationUtils::checkNull($request, "request");
 
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/enroll");
 
         $res = new ProtoEnrollmentResponse();
         $res->mergeFromString($r->getBody()->getContents());
@@ -94,7 +94,7 @@ class HttpPheClient extends HttpBaseClient
     {
         ValidationUtils::checkNull($request, "request");
 
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/verify-password");
 
         $res = new ProtoVerifyPasswordResponse();
         $res->mergeFromString($r->getBody()->getContents());

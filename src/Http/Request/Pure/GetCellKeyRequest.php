@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 use PurekitV3Client\GetCellKeyRequest as ProtoGetCellKeyRequest;
 
@@ -48,21 +47,21 @@ use PurekitV3Client\GetCellKeyRequest as ProtoGetCellKeyRequest;
 class GetCellKeyRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
+     * @var string
      */
-    protected $request;
     private $userId;
+    /**
+     * @var string
+     */
     private $dataId;
 
     /**
      * GetCellKeyRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      * @param string $dataId
      */
-    public function __construct(AvailableRequest $request, string $userId, string $dataId)
+    public function __construct(string $userId, string $dataId)
     {
-        $this->request = $request;
         $this->userId = $userId;
         $this->dataId = $dataId;
     }

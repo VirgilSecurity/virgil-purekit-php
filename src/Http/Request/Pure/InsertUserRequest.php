@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,22 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertUserRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var ProtoUserRecord
      */
     private $userRecord;
 
     /**
      * InsertUserRequest constructor.
-     * @param AvailableRequest $request
      * @param ProtoUserRecord $userRecord
      */
-    public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord)
+    public function __construct(ProtoUserRecord $userRecord)
     {
-        $this->request = $request;
         $this->userRecord = $userRecord;
     }
 

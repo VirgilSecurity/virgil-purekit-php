@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Phe;
 
 use Purekit\VerifyPasswordRequest as ProtoVerifyPasswordRequest;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -47,10 +46,6 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class VerifyPasswordRequest extends BaseRequest
 {
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
     /**
      * @var int
      */
@@ -62,13 +57,11 @@ class VerifyPasswordRequest extends BaseRequest
 
     /**
      * VerifyPasswordRequest constructor.
-     * @param AvailableRequest $r
      * @param string $verifyPasswordRequest
      * @param int $version
      */
-    public function __construct(AvailableRequest $r, string $verifyPasswordRequest, int $version)
+    public function __construct(string $verifyPasswordRequest, int $version)
     {
-        $this->request = $r;
         $this->version = $version;
         $this->verifyPasswordRequest = $verifyPasswordRequest;
     }

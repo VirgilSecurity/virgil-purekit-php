@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Client\GetRoleAssignmentsRequest as ProtoGetRoleAssignmentsRequest;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,22 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class GetRoleAssignmentsRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var string
      */
     private $userId;
 
     /**
      * GetRoleAssignmentsRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      */
-    public function __construct(AvailableRequest $request, string $userId)
+    public function __construct(string $userId)
     {
-        $this->request = $request;
         $this->userId = $userId;
     }
 

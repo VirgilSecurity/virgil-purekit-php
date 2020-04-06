@@ -39,7 +39,6 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 use PurekitV3Client\DeleteRoleRequest as ProtoDeleteRoleRequest;
 
@@ -50,24 +49,17 @@ use PurekitV3Client\DeleteRoleRequest as ProtoDeleteRoleRequest;
 class DeleteRoleRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var string
      */
     private $roleName;
 
     /**
      * DeleteCellKeyRequest constructor.
-     * @param AvailableRequest $request
      * @param string $roleName
      */
-    public function __construct(AvailableRequest $request, string $roleName)
+    public function __construct(string $roleName)
     {
-        $this->request = $request;
         $this->roleName = $roleName;
-        $this->setFormattedEndpoint($request, $roleName);
     }
 
     /**
@@ -79,5 +71,13 @@ class DeleteRoleRequest extends BaseRequest
         $r->setName($this->roleName);
 
         return $r->serializeToString();
+    }
+
+    /**
+     * @return string
+     */
+    public function getRoleName(): string
+    {
+        return $this->roleName;
     }
 }

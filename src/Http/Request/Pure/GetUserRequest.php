@@ -39,26 +39,22 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 use PurekitV3Client\GetUserRequest as ProtoGetUserRequest;
 
 class GetUserRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
+     * @var string
      */
-    protected $request;
     private $userId;
 
     /**
      * GetUserRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      */
-    public function __construct(AvailableRequest $request, string $userId)
+    public function __construct(string $userId)
     {
-        $this->request = $request;
         $this->userId = $userId;
     }
 

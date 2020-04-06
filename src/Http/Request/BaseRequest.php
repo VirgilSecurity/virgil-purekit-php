@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Http\Request;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\_\HttpVirgilAgent;
 
 /**
@@ -47,19 +46,9 @@ use Virgil\PureKit\Http\_\HttpVirgilAgent;
 abstract class BaseRequest
 {
     /**
-     * @var
-     */
-    private $endpoint;
-
-    /**
      * @var null
      */
     protected $params = null;
-
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
 
     /**
      * @param string $appToken
@@ -68,31 +57,6 @@ abstract class BaseRequest
     public function getOptionsHeader(string $appToken): array
     {
         return ["virgil-agent" => HttpVirgilAgent::getFormatted(), "AppToken" => $appToken];
-    }
-
-    /**
-     * @return string
-     */
-    public function getMethod(): string
-    {
-        return $this->request->getMethod();
-    }
-
-    /**
-     * @return string
-     */
-    public function getEndpoint(): string
-    {
-        return $this->endpoint ? $this->endpoint : $this->request->getEndpoint();
-    }
-
-    /**
-     * @param AvailableRequest $request
-     * @param string ...$args
-     */
-    public function setFormattedEndpoint(AvailableRequest $request, string ...$args)
-    {
-        $this->endpoint = sprintf($request->getEndpoint(), ...$args);
     }
 
     /**

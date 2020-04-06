@@ -39,7 +39,6 @@ namespace Virgil\PureKit\Pure;
 
 use Virgil\Crypto\Core\Enum\HashAlgorithms;
 use Virgil\CryptoWrapper\Phe\PheClient;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
@@ -174,8 +173,7 @@ class PheManager
                 $pheVerifyRequest = $client->createVerifyPasswordRequest($passwordHash,
                     $userRecord->getPheRecord());
 
-                $request = new VerifyPasswordRequest(AvailableRequest::VERIFY_PASSWORD(), $pheVerifyRequest,
-            $userRecord->getRecordVersion());
+                $request = new VerifyPasswordRequest($pheVerifyRequest, $userRecord->getRecordVersion());
 
                 $response = $this->httpClient->verifyPassword($request);
 
@@ -191,10 +189,7 @@ class PheManager
         catch (\PheException $exception) {
             throw new PureCryptoException($exception);
         }
-        catch (ProtocolException $exception) {
-            throw new PheClientException($exception);
-        }
-        catch (ProtocolHttpException $exception) {
+        catch (ProtocolException | ProtocolHttpException $exception) {
             throw new PheClientException($exception);
         }
     }
@@ -226,7 +221,7 @@ class PheManager
      */
     public function getEnrollment(string $passwordHash): array
     {
-        $request = new EnrollRequest(AvailableRequest::ENROLL(), $this->currentVersion);
+        $request = new EnrollRequest($this->currentVersion);
 
         try {
             $response = $this->httpClient->enrollAccount($request);

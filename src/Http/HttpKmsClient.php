@@ -73,7 +73,7 @@ class HttpKmsClient extends HttpBaseClient
      */
     public function decrypt(DecryptRequest $request): ProtoDecryptResponse
     {
-        $r = $this->_send($request);
+        $r = $this->_send($request, "/decrypt");
 
         $res = new ProtoDecryptResponse();
         $res->mergeFromString($r->getBody()->getContents());

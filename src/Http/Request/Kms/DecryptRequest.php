@@ -37,7 +37,7 @@
 
 namespace Virgil\PureKit\Http\Request\Kms;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
+use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -47,22 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class DecryptRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var \PurekitV3Client\DecryptRequest
      */
     private $decryptRequest;
 
     /**
      * DecryptRequest constructor.
-     * @param AvailableRequest $request
-     * @param \PurekitV3Client\DecryptRequest $decryptRequest
+     * @param ProtoDecryptRequest $decryptRequest
      */
-    public function __construct(AvailableRequest $request, \PurekitV3Client\DecryptRequest $decryptRequest)
+    public function __construct(ProtoDecryptRequest $decryptRequest)
     {
-        $this->request = $request;
         $this->decryptRequest = $decryptRequest;
     }
 

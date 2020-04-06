@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Storage\UserRecord as ProtoUserRecord;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -48,25 +47,23 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class UpdateUserRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var ProtoUserRecord
      */
     private $userRecord;
+    /**
+     * @var string
+     */
+    private $userId;
 
     /**
      * UpdateUserRequest constructor.
-     * @param AvailableRequest $request
      * @param ProtoUserRecord $userRecord
      * @param string $userId
      */
-    public function __construct(AvailableRequest $request, ProtoUserRecord $userRecord, string $userId)
+    public function __construct(ProtoUserRecord $userRecord, string $userId)
     {
-        $this->request = $request;
         $this->userRecord = $userRecord;
-        $this->setFormattedEndpoint($request, $userId);
+        $this->userId = $userId;
     }
 
     /**
@@ -75,5 +72,13 @@ class UpdateUserRequest extends BaseRequest
     public function getOptionsBody(): string
     {
         return $this->userRecord->serializeToString();
+    }
+
+    /**
+     * @return string
+     */
+    public function getUserId(): string
+    {
+        return $this->userId;
     }
 }

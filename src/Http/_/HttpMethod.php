@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2020 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -35,46 +35,18 @@
  * Lead Maintainer: Virgil Security Inc. <support@virgilsecurity.com>
  */
 
-namespace Virgil\PureKit\Http\Request\Pure;
+namespace Virgil\PureKit\Http\_;
 
-use PurekitV3Client\GetGrantKeyRequest as ProtoGetGrantKeyRequest;
-use Virgil\PureKit\Http\Request\BaseRequest;
+use MyCLabs\Enum\Enum;
 
 /**
- * Class GetGrantKeyRequest
- * @package Virgil\PureKit\Http\Request\Pure
+ * Class HttpMethod
+ * @package Virgil\PureKit\Http\_
  */
-class GetGrantKeyRequest extends BaseRequest
+class HttpMethod extends Enum
 {
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $keyId;
-
-    /**
-     * GetGrantKeyRequest constructor.
-     * @param string $userId
-     * @param string $keyId
-     */
-    public function __construct(string $userId, string $keyId)
-    {
-        $this->userId = $userId;
-        $this->keyId = $keyId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOptionsBody(): string
-    {
-        $r = (new ProtoGetGrantKeyRequest)
-            ->setUserId($this->userId)
-            ->setKeyId($this->keyId);
-
-        return $r->serializeToString();
-    }
+    private const GET = "GET";
+    private const POST = "POST";
+    private const PUT = "PUT";
+    private const DELETE = "DELETE";
 }

@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Http\Request\Pure;
 
 use PurekitV3Client\DeleteGrantKeyRequest as ProtoDeleteGrantKeyRequest;
-use Virgil\PureKit\Http\_\AvailableRequest;
 use Virgil\PureKit\Http\Request\BaseRequest;
 
 /**
@@ -47,10 +46,6 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class DeleteGrantKeyRequest extends BaseRequest
 {
-    /**
-     * @var AvailableRequest
-     */
-    protected $request;
     /**
      * @var string
      */
@@ -62,13 +57,11 @@ class DeleteGrantKeyRequest extends BaseRequest
 
     /**
      * DeleteGrantKeyRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      * @param string $keyId
      */
-    public function __construct(AvailableRequest $request, string $userId, string $keyId)
+    public function __construct(string $userId, string $keyId)
     {
-        $this->request = $request;
         $this->userId = $userId;
         $this->keyId = $keyId;
     }

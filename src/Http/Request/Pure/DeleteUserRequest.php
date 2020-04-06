@@ -37,8 +37,6 @@
 
 namespace Virgil\PureKit\Http\Request\Pure;
 
-use Virgil\PureKit\Http\_\AvailableRequest;
-use Virgil\PureKit\Http\HttpPureClient;
 use Virgil\PureKit\Http\Request\BaseRequest;
 use PurekitV3Client\DeleteUserRequest as ProtoDeleteUserRequest;
 
@@ -49,25 +47,18 @@ use PurekitV3Client\DeleteUserRequest as ProtoDeleteUserRequest;
 class DeleteUserRequest extends BaseRequest
 {
     /**
-     * @var AvailableRequest
-     */
-    protected $request;
-    /**
      * @var string
      */
     private $userId;
 
     /**
      * DeleteUserRequest constructor.
-     * @param AvailableRequest $request
      * @param string $userId
      * @param bool $cascade
      */
-    public function __construct(AvailableRequest $request, string $userId, bool $cascade)
+    public function __construct(string $userId, bool $cascade)
     {
         $cascade = $cascade ? "true" : "false";
-
-        $this->request = $request;
         $this->userId = $userId;
         $this->setParams(["cascade" => $cascade]);
     }
