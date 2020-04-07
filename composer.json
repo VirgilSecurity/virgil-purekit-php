@@ -15,25 +15,30 @@
     "php": "^7.2",
     "vlucas/phpdotenv": "^2.5",
     "guzzlehttp/guzzle": "~6.0",
-    "google/protobuf": "^3.6.1"
+    "google/protobuf": "^3.6.1",
+    "myclabs/php-enum": "^1.7",
+    "virgil/crypto": "*",
+    "ext-json": "*",
+    "ext-pdo": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7"
+    "phpunit/phpunit": "^8"
   },
   "autoload": {
     "psr-4": {
-      "Virgil\\PureKit\\": "PureKit",
-      "Purekit\\": "PureKit/Core/Protobuf/build/Purekit",
-      "GPBMetadata\\": "PureKit/Core/Protobuf/build/GPBMetadata"
+      "Virgil\\PureKit\\": "src",
+      "src\\": "src/Core/Protobuf/build/Purekit",
+      "GPBMetadata\\": "src/Protobuf/build/GPBMetadata",
+      "Purekit\\": "src/Protobuf/build/Purekit",
+      "PurekitV3Client\\": "src/Protobuf/build/PurekitV3Client",
+      "PurekitV3Crypto\\": "src/Protobuf/build/PurekitV3Crypto",
+      "PurekitV3Grant\\": "src/Protobuf/build/PurekitV3Grant",
+      "PurekitV3Storage\\": "src/Protobuf/build/PurekitV3Storage"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Virgil\\PureKit\\Tests\\": "PureKit/_tests/src"
+      "Virgil\\PureKitTests\\": "tests"
     }
-  },
-  "scripts": {
-    "setup-extension": [
-    ]
   }
 }
