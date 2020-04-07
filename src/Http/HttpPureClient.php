@@ -104,8 +104,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function updateUser(UpdateUserRequest $request): void
     {
-        $endpoint = sprintf("/update-user", $request->getUserId());
-        $this->_send($request, $endpoint);
+        $this->_send($request, "/update-user");
     }
 
     /**
@@ -162,8 +161,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function updateCellKey(UpdateCellKeyRequest $request): void
     {
-        $endpoint = sprintf("/update-cell-key", $request->getUserId(), $request->getUserId());
-        $this->_send($request, $endpoint);
+        $this->_send($request, "/update-cell-key");
     }
 
     /**
@@ -187,8 +185,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteCellKey(DeleteCellKeyRequest $request): void
     {
-        $endpoint = sprintf("/delete-cell-key", $request->getUserId(), $request->getDataId());
-        $this->_send($request, $endpoint);
+        $this->_send($request, "/delete-cell-key");
     }
 
     /**
@@ -221,7 +218,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
     {
-        $this->_send($request, "/role-assignments", null);
+        $this->_send($request, "/role-assignments");
     }
 
     /**
@@ -303,7 +300,6 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteRole(DeleteRoleRequest $request): void
     {
-        $endpoint = sprintf("/delete-role", $request->getRoleName());
-        $this->_send($request, $endpoint);
+        $this->_send($request, "/delete-role");
     }
 }
