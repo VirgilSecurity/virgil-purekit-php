@@ -152,8 +152,8 @@ class PureContext
 
         $this->secretKey = self::parseCredentials(self::SECRET_KEY_PREFIX, $secretKey, true, 3);
         $this->publicKey = self::parseCredentials(self::PUBLIC_KEY_PREFIX, $publicKey, true, 2);
-        $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress, true);
-        $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress, true);
+        $this->pheClient = new HttpPheClient($appToken, $pheServiceAddress);
+        $this->kmsClient = new HttpKmsClient($appToken, $kmsServiceAddress);
 
         if ($storage instanceof PureModelSerializerDependent) {
             $dependent = $storage;

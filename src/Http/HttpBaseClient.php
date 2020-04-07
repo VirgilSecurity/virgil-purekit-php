@@ -60,10 +60,6 @@ class HttpBaseClient
      */
     private $serviceBaseUrl;
     /**
-     * @var bool
-     */
-    private $debug;
-    /**
      * @var string
      */
     private $appToken;
@@ -74,11 +70,10 @@ class HttpBaseClient
      * @param string $appToken
      * @param bool $debug
      */
-    public function __construct(string $serviceBaseUrl, string $appToken, bool $debug = false)
+    public function __construct(string $serviceBaseUrl, string $appToken)
     {
         $this->serviceBaseUrl = $serviceBaseUrl;
         $this->appToken = $appToken;
-        $this->debug = $debug;
 
         $this->httpClient = new GuzzleClient(['base_uri' => $this->_getServiceBaseUrl()]);
     }
@@ -101,7 +96,6 @@ class HttpBaseClient
                 [
                     "headers" => $request->getOptionsHeader($this->appToken),
                     "body" => $request->getOptionsBody(),
-                    'debug' => $this->debug
                 ]);
         } catch (ClientException $exception) {
 

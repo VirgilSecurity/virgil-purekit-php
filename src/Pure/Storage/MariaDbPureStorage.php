@@ -727,8 +727,6 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $namesSet = $roleNames;
 
-            // TODO: Proper StringBuilder size
-
             $sbSql = "SELECT protobuf FROM virgil_roles WHERE role_name in (";
 
             for ($i = 0; $i < count($roleNames); $i++) {
@@ -986,19 +984,28 @@ class MariaDbPureStorage implements PureStorage, PureModelSerializerDependent
 
             $j = 0;
 
+            $rowsArray = [];
+
             foreach ($userIds as $userId) {
                 $stmt->bindParam(1, $roleName);
                 $stmt->bindParam(2, $userId);
                 $userIdsArray[$j++] = $userId;
 
                 $stmt->execute();
+
+                $rowsArray[] = $stmt->rowCount();
             }
 
-            if ($j != count($userIds))
+            if (count($rowsArray) != count($userIds))
                 throw new MariaDbOperationNotSupportedException();
 
-            // TODO! Add throwable
-            // PureStorageRoleAssignmentNotFoundException($userIdsArray[$i], $roleName);
+            for ($i = 0; $i < count($rowsArray); $i++) {
+                if ($rowsArray[$i] != 1) {
+                    throw new PureStorageRoleAssignmentNotFoundException($userIdsArray[$i], $roleName);
+                }
+            }
+
+            $conn->commit();
 
         } catch (PDOException $exception) {
             $conn->rollBack();

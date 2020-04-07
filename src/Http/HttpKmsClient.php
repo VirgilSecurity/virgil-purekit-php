@@ -53,17 +53,16 @@ class HttpKmsClient extends HttpBaseClient
      * HttpKmsClient constructor.
      * @param string $appToken
      * @param string $serviceBaseUrl
-     * @param bool $debug
      * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
      * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
-    public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS, bool $debug = false)
+    public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS)
     {
         ValidationUtils::checkNullOrEmpty($appToken, "appToken");
         ValidationUtils::checkNullOrEmpty($serviceBaseUrl, "serviceAddress");
 
-        parent::__construct($serviceBaseUrl, $appToken, $debug);
+        parent::__construct($serviceBaseUrl, $appToken);
     }
 
     /**
