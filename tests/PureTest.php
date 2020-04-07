@@ -1195,7 +1195,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @group f
+     * @group
      */
     public function testEncryptionRolesShouldDecrypt(): void
     {

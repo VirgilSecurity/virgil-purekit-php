@@ -257,7 +257,7 @@ class HttpPureClient extends HttpBaseClient
      */
     public function deleteRoleAssignments(DeleteRoleAssignmentsRequest $request): void
     {
-        $this->_send($request, "/delete-role-assignment");
+        $this->_send($request, "/delete-role-assignments");
     }
 
     /**
