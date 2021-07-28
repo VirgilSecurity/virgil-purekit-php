@@ -601,8 +601,9 @@ class Pure
 
                 $externalPublicKeys = $this->externalPublicKeys->get($dataId);
 
-                if (!is_null($externalPublicKeys))
+                if (!is_null($externalPublicKeys)) {
                     $recipientList->addCollection($externalPublicKeys);
+                }
 
                 $ckp = $this->pureCrypto->generateCellKey();
                 $cpkData = $this->pureCrypto->exportPublicKey($ckp->getPublicKey());
