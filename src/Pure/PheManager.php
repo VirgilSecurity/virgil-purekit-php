@@ -226,7 +226,6 @@ class PheManager
         try {
             $response = $this->httpClient->enrollAccount($request);
         } catch (ProtocolException | ProtocolHttpException $exception) {
-            print($exception);
             throw new PheClientException($exception);
         }
 
