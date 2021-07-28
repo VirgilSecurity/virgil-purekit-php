@@ -54,7 +54,7 @@ class FileUtils
             . DIRECTORY_SEPARATOR . "VERSION";
 
         if (is_file($path))
-            $v = file_get_contents($path);
+            $v = trim(file_get_contents($path));
 
         return $v;
     }
