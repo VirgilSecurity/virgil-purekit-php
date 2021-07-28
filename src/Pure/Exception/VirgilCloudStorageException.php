@@ -58,6 +58,8 @@ class VirgilCloudStorageException extends PureStorageException
      */
     public function __construct($e)
     {
+        parent::__construct($e);
+        
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
