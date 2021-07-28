@@ -211,9 +211,9 @@ class PureContext
             $nm, $bu,
             $sk, $pk,
             $storage,
-            $externalPublicKeys,
             $pheServiceAddress,
-            $kmsServiceAddress
+            $kmsServiceAddress,
+            $externalPublicKeys
         );
     }
 
@@ -249,8 +249,8 @@ class PureContext
 
         $storage = new VirgilCloudPureStorage($pureClient);
 
-        return self::_createContext($crypto, $at, $nm, $bu, $sk, $pk, $storage, $externalPublicKeys,
-            $pheServiceAddress, $kmsServiceAddress);
+        return self::_createContext($crypto, $at, $nm, $bu, $sk, $pk, $storage,
+                $pheServiceAddress, $kmsServiceAddress, $externalPublicKeys);
     }
 
     /**
@@ -275,8 +275,7 @@ class PureContext
     private static function _createContext(VirgilCrypto $crypto, string $appToken, string $nms, string $bu,
                                            string $sk, string $pk,
                                            PureStorage $storage,
-                                           array $externalPublicKeys = [],
-                                           string $pheServiceAddress, string $kmsServiceAddress): PureContext
+                                           string $pheServiceAddress, string $kmsServiceAddress, array $externalPublicKeys = []): PureContext
     {
         return new self(
             $crypto, $appToken, $nms, $bu, $sk, $pk, $storage, $externalPublicKeys, $pheServiceAddress,

@@ -138,8 +138,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
         (new Dotenv(__DIR__ . "/../"))->load();
 
         $l = $e = null;
-        if (!empty($_ENV["ENV"]))
+        if (!empty($_ENV["VIRGIL_ENV"])) {
+            list($e, $l) = [$_ENV["VIRGIL_ENV"], strtolower($_ENV["VIRGIL_ENV"])];
+
+        } else if (!empty($_ENV["ENV"])) {
+            // Preserve backward compatibility for tests running within Travis CI.
             list($e, $l) = [$_ENV["ENV"], strtolower($_ENV["ENV"])];
+        }
 
         $this->appToken = $e ? $_ENV["{$e}_APP_TOKEN"] : $_ENV["APP_TOKEN"];
         $this->publicKeyOld = $e ? $_ENV["{$e}_PUBLIC_KEY"] : $_ENV["PUBLIC_KEY"];
@@ -154,12 +159,12 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->kmsServerAddress = $e ? $_ENV["{$e}_KMS_SERVER_ADDRESS"] : null;
 
         $s = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables_{$l}.sql" :
-            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables.sql";
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables_prod.sql";
 
         $this->sqls = file_get_contents($s);
 
         $c = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data_{$l}.json" :
-            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data.json";
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data_prod.json";
 
         $this->testData = json_decode(file_get_contents($c));
 
@@ -229,8 +234,8 @@ class PureTest extends \PHPUnit\Framework\TestCase
      * @throws \Virgil\PureKit\Pure\Exception\MariaDbSqlException
      * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
      */
-    private function setupPure(bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array $externalPublicKeys = [],
-                               StorageType $storageType, bool $skipClean = false):
+    private function setupPure(StorageType $storageType, bool $useOldKeys = true, string $nms = null, bool $useUpdateToken = false, array $externalPublicKeys = [],
+                               bool $skipClean = false):
     PureSetupResult
     {
         $bupkp = $this->crypto->generateKeyPair(KeyPairType::ED25519());
@@ -297,7 +302,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -324,7 +329,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
 
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -359,7 +364,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -391,7 +396,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -433,7 +438,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -476,7 +481,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -519,7 +524,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -567,7 +572,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -599,7 +604,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -636,7 +641,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -692,7 +697,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -749,7 +754,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $newPwd = self::generateRandomString();
 
                 {
-                    $pureResult = $this->setupPure(true, null, false, [], $storage);
+                    $pureResult = $this->setupPure($storage, true, null, false, []);
 
                     $pure = new Pure($pureResult->getContext());
                     $pureStorage = $pure->getStorage();
@@ -767,7 +772,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, true, $nms, true, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
 
                     $pure = new Pure($pureResult->getContext(), true);
@@ -780,7 +785,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(false, $nms, false, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, false, $nms, false, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
@@ -801,7 +806,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, true, $nms, true, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
@@ -856,7 +861,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $text = self::generateRandomString();
 
                 {
-                    $pureResult = $this->setupPure(true, null, false, [], $storage);
+                    $pureResult = $this->setupPure($storage, true, null, false, []);
                     $pure = new Pure($pureResult->getContext());
 
                     $pureStorage = $pure->getStorage();
@@ -877,7 +882,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, true, $nms, true, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
@@ -893,7 +898,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(false, $nms, false, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, false, $nms, false, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
@@ -911,7 +916,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 }
 
                 {
-                    $pureResult = $this->setupPure(true, $nms, true, [], $storage, true);
+                    $pureResult = $this->setupPure($storage, true, $nms, true, [], true);
                     $pureResult->getContext()->setStorage($pureStorage);
                     $pure = new Pure($pureResult->getContext());
 
@@ -947,7 +952,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -1007,7 +1012,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 $publicKeyBase64 = base64_encode($this->crypto->exportPublicKey($keyPair->getPublicKey()));
                 $externalPublicKeys = [$dataId => [$publicKeyBase64]];
 
-                $pureResult = $this->setupPure(true, null, false, $externalPublicKeys, $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, $externalPublicKeys);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1039,7 +1044,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1087,7 +1092,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
                 if (StorageType::MARIADB() == $storage)
                     continue;
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1134,7 +1139,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1172,7 +1177,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId = self::generateRandomString();
@@ -1204,7 +1209,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         try {
             $storages = self::createStorages();
             foreach ($storages as $storage) {
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -1283,7 +1288,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
                 $pure = new Pure($pureResult->getContext());
 
                 $userId1 = self::generateRandomString();
@@ -1333,7 +1338,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1390,7 +1395,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $storages = self::createStorages();
             foreach ($storages as $storage) {
 
-                $pureResult = $this->setupPure(true, null, false, [], $storage);
+                $pureResult = $this->setupPure($storage, true, null, false, []);
 
                 $pure = new Pure($pureResult->getContext());
 
@@ -1439,7 +1444,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
             $blob2 = base64_decode($this->testData->blob2);
             $nms = base64_decode($this->testData->nms);
 
-            $pureResult = $this->setupPure(false, $nms, false, [], StorageType::MARIADB(), true);
+            $pureResult = $this->setupPure(StorageType::MARIADB(), false, $nms, false, [], true);
             $pure = new Pure($pureResult->getContext());
 
             $mariaDbPureStorage = $pureResult->getContext()->getStorage();

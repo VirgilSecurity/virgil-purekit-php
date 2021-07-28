@@ -38,8 +38,8 @@
 namespace Virgil\PureKit\Http;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Purekit\HttpError as ProtoHttpError;
 use GuzzleHttp\Exception\ClientException;
+use Purekit\HttpError as ProtoHttpError;
 use Psr\Http\Message\ResponseInterface;
 use Virgil\PureKit\Http\_\HttpMethod;
 use Virgil\PureKit\Http\Request\BaseRequest;
