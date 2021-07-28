@@ -78,6 +78,10 @@ class VirgilPublicKeyMap
      * @return null|VirgilPublicKeyCollection
      */
     public function get(string $key): ?VirgilPublicKeyCollection {
-        return $this->collection[$key];
+        if (!is_null($this->collection)) {
+            return $this->collection[$key];
+        }
+
+        return null;
     }
 }
