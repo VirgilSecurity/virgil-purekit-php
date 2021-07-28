@@ -138,8 +138,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
         (new Dotenv(__DIR__ . "/../"))->load();
 
         $l = $e = null;
-        if (!empty($_ENV["VIRGIL_ENV"]))
+        if (!empty($_ENV["VIRGIL_ENV"])) {
             list($e, $l) = [$_ENV["VIRGIL_ENV"], strtolower($_ENV["VIRGIL_ENV"])];
+
+        } else if (!empty($_ENV["ENV"])) {
+            // Preserve backward compatibility for tests running within Travis CI.
+            list($e, $l) = [$_ENV["ENV"], strtolower($_ENV["ENV"])];
+        }
 
         $this->appToken = $e ? $_ENV["{$e}_APP_TOKEN"] : $_ENV["APP_TOKEN"];
         $this->publicKeyOld = $e ? $_ENV["{$e}_PUBLIC_KEY"] : $_ENV["PUBLIC_KEY"];
