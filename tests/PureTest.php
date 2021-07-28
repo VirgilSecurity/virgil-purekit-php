@@ -154,12 +154,12 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->kmsServerAddress = $e ? $_ENV["{$e}_KMS_SERVER_ADDRESS"] : null;
 
         $s = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables_{$l}.sql" :
-            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables.sql";
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_tables_prod.sql";
 
         $this->sqls = file_get_contents($s);
 
         $c = $e ? __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data_{$l}.json" :
-            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data.json";
+            __DIR__ . DIRECTORY_SEPARATOR . "_resources" . DIRECTORY_SEPARATOR . "compatibility_data_prod.json";
 
         $this->testData = json_decode(file_get_contents($c));
 
