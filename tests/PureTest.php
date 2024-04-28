@@ -135,7 +135,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     {
         $this->crypto = new VirgilCrypto();
 
-        (new Dotenv(__DIR__ . "/../"))->load();
+        (Dotenv::createImmutable(__DIR__ . "/../"))->load();
 
         $l = $e = null;
         if (!empty($_ENV["VIRGIL_ENV"])) {
