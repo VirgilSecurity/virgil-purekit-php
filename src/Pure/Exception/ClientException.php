@@ -59,6 +59,8 @@ class ClientException extends PureException
      */
     public function __construct(\Exception $exception)
     {
+        parent::__construct($e);
+
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
