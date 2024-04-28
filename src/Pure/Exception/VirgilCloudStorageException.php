@@ -58,18 +58,17 @@ class VirgilCloudStorageException extends PureStorageException
      */
     public function __construct($e)
     {
+        parent::__construct($e);
+
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
-        switch ($e) {
-            case ($e instanceof ProtocolException):
-                $this->protocolException = $e;
-                break;
-            case ($e instanceof ProtocolHttpException):
-                $this->protocolHttpException = $e;
-                break;
-            default:
-                throw $e;
+        if ($e instanceof ProtocolException) {
+            $this->protocolException = $e;
+        } else if ($e instanceof ProtocolHttpException) {
+            $this->protocolHttpException = $e;
+        } else {
+            throw $e;
         }
     }
 

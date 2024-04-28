@@ -135,7 +135,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
     {
         $this->crypto = new VirgilCrypto();
 
-        (new Dotenv(__DIR__ . "/../"))->load();
+        (Dotenv::createImmutable(__DIR__ . "/../"))->load();
 
         $l = $e = null;
         if (!empty($_ENV["VIRGIL_ENV"])) {
@@ -291,9 +291,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         return $storages;
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRegistrationNewUserShouldSucceed(): void
     {
         $this->sleep();
@@ -318,9 +316,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testAuthenticationNewUserShouldSucceed(): void
     {
         $this->sleep();
@@ -354,9 +350,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testEncryptionRandomDataShouldMatch(): void
     {
         $this->sleep();
@@ -386,9 +380,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testSharing2UsersShouldDecrypt(): void
     {
         $this->sleep();
@@ -427,9 +419,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testSharingRevokeAccessShouldNotDecrypt(): void
     {
         $this->sleep();
@@ -470,9 +460,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testGrantChangePasswordShouldNotDecrypt(): void
     {
         $this->sleep();
@@ -513,9 +501,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testGrantExpireShouldNotDecrypt(): void
     {
         $this->sleep();
@@ -562,9 +548,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testGrantInvalidateShouldNotDecrypt(): void
     {
         $this->sleep();
@@ -594,9 +578,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testGrantAdminAccessShouldDecrypt(): void
     {
         $this->sleep();
@@ -630,9 +612,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testResetPwdNewUserShouldNotDecrypt(): void
     {
         $this->sleep();
@@ -686,9 +666,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRestorePwdNewUserShouldDecrypt(): void
     {
         $this->sleep();
@@ -729,9 +707,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRotationLocalStorageDecryptAndRecoverWorks(): void
     {
         $this->sleep();
@@ -837,9 +813,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRotationLocalStorageGrantWorks(): void
     {
         $this->sleep();
@@ -941,9 +915,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testEncryptionAdditionalKeysShouldDecrypt(): void
     {
         $this->sleep();
@@ -995,9 +967,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testEncryptionExternalKeysShouldDecrypt(): void
     {
         $this->sleep();
@@ -1033,9 +1003,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testDeleteUserCascadeShouldDeleteUserAndKeys(): void
     {
         $this->sleep();
@@ -1077,9 +1045,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testDeleteUserNoCascadeShouldDeleteUser(): void
     {
         $this->sleep();
@@ -1128,9 +1094,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testDeleteKeyNewKeyShouldDelete(): void
     {
         $this->sleep();
@@ -1166,9 +1130,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRegistrationNewUserBackupsPwdHash(): void
     {
         $this->sleep();
@@ -1199,9 +1161,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testEncryptionRolesShouldDecrypt(): void
     {
         $this->sleep();
@@ -1277,9 +1237,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testDeleteRolesNewRoleShouldDelete(): void
     {
         $this->sleep();
@@ -1327,9 +1285,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testRecoveryNewUserShouldRecover(): void
     {
         $this->sleep();
@@ -1384,9 +1340,7 @@ class PureTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(true);
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testShareRoleShouldDecrypt(): void
     {
         $this->sleep();
@@ -1423,11 +1377,13 @@ class PureTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    /**
-     * @group f
-     */
+    #[group]
     public function testCrossCompatibilityJsonShouldWork(): void
     {
+        $this->markTestIncomplete(
+            'TODO: Add test for MariaDbPureStorage'
+        );
+
         $this->sleep();
 
         try {

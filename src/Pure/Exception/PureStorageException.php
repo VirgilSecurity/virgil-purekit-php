@@ -49,15 +49,10 @@ class PureStorageException extends PureException
      */
     public function __construct($exception = null)
     {
-        switch ($exception) {
-            case (is_string($exception)):
-                parent::__construct($exception);
-                break;
-            case ($exception instanceof \Throwable):
-                parent::__construct($exception->getMessage(), $exception->getCode());
-                break;
-            case null:
-                break;
+        if (is_string($exception)) {
+            parent::__construct($exception);
+        } else if ($exception instanceof \Throwable) {
+            parent::__construct($exception->getMessage(), $exception->getCode());
         }
     }
 }

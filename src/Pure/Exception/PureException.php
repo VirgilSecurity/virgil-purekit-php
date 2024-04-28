@@ -51,13 +51,10 @@ class PureException extends \Exception
      */
     public function __construct($e)
     {
-        switch ($e) {
-            case (is_string($e)):
-                parent::__construct($e);
-                break;
-            case ($e instanceof Throwable):
-                parent::__construct($e->getMessage(), $e->getCode());
-                break;
+        if (is_string($e)) {
+            parent::__construct($e);
+        } else if ($e instanceof Throwable) {
+            parent::__construct($e->getMessage(), $e->getCode());
         }
     }
 }
