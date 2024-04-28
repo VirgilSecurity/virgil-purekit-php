@@ -62,15 +62,12 @@ class ClientException extends PureException
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
-        switch ($exception) {
-            case ($exception instanceof ProtocolException):
-                $this->protocolException = $exception;
-                break;
-            case ($exception instanceof ProtocolHttpException):
-                $this->protocolHttpException = $exception;
-                break;
-            default:
-                throw $exception;
+        if ($exception instanceof ProtocolException) {
+            $this->protocolException = $exception;
+         } else if ($exception instanceof ProtocolHttpException) {
+            $this->protocolHttpException = $exception;
+        } else {
+            throw $exception;
         }
     }
 

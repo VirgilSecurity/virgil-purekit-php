@@ -72,9 +72,7 @@ class NonrotatableSecretsGeneratorTest extends \PHPUnit\Framework\TestCase
         $this->vskpId = "l3RDBZ9U6Cs=";
     }
 
-    /**
-     * @group
-     */
+    #[group]
     public function testGenerateSecretsFixedSeedShouldMatch()
     {
         try {
