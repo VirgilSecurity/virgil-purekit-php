@@ -32,7 +32,8 @@ class VersionedUpdateToken extends \Google\Protobuf\Internal\Message
      *     @type string $update_token
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Purekit::initOnce();
         parent::__construct($data);
     }
@@ -75,11 +76,9 @@ class VersionedUpdateToken extends \Google\Protobuf\Internal\Message
      */
     public function setUpdateToken($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->update_token = $var;
 
         return $this;
     }
-
 }
-

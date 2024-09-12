@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,51 +37,16 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class UserRecord
  * @package Virgil\PureKit\Pure\model
  */
-class UserRecord
+readonly class UserRecord
 {
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $pheRecord;
-    /**
-     * @var int
-     */
-    private $recordVersion;
-    /**
-     * @var string
-     */
-    private $upk;
-    /**
-     * @var string
-     */
-    private $encryptedUsk;
-    /**
-     * @var string
-     */
-    private $encryptedUskBackup;
-    /**
-     * @var string
-     */
-    private $backupPwdHash;
-    /**
-     * @var string
-     */
-    private $passwordRecoveryWrap;
-    /**
-     * @var string
-     */
-    private $passwordRecoveryBlob;
-
     /**
      * UserRecord constructor.
      * @param string $userId
@@ -93,14 +58,20 @@ class UserRecord
      * @param string $backupPwdHash
      * @param string $passwordRecoveryWrap
      * @param string $passwordRecoveryBlob
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(string $userId, string $pheRecord, int $recordVersion, string $upk,
-                                string $encryptedUsk, string $encryptedUskBackup, string $backupPwdHash,
-                                string $passwordRecoveryWrap, string $passwordRecoveryBlob)
-    {
+    public function __construct(
+        private string $userId,
+        private string $pheRecord,
+        private int $recordVersion,
+        private string $upk,
+        private string $encryptedUsk,
+        private string $encryptedUskBackup,
+        private string $backupPwdHash,
+        private string $passwordRecoveryWrap,
+        private string $passwordRecoveryBlob
+    ) {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNullOrEmpty($pheRecord, "pheRecord");
         ValidationUtils::checkNullOrEmpty($upk, "upk");
@@ -109,16 +80,6 @@ class UserRecord
         ValidationUtils::checkNullOrEmpty($backupPwdHash, "backupPwdHash");
         ValidationUtils::checkNullOrEmpty($passwordRecoveryWrap, "passwordRecoveryWrap");
         ValidationUtils::checkNullOrEmpty($passwordRecoveryBlob, "passwordRecoveryBlob");
-
-        $this->userId = $userId;
-        $this->pheRecord = $pheRecord;
-        $this->recordVersion = $recordVersion;
-        $this->upk = $upk;
-        $this->encryptedUsk = $encryptedUsk;
-        $this->encryptedUskBackup = $encryptedUskBackup;
-        $this->backupPwdHash = $backupPwdHash;
-        $this->passwordRecoveryWrap = $passwordRecoveryWrap;
-        $this->passwordRecoveryBlob = $passwordRecoveryBlob;
     }
 
     /**

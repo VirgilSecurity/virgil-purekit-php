@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,15 +37,25 @@
 
 namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
+/**
+ * @method static NONROTABLE_MASTER_SECRET_INVALID_LENGTH()
+ * @method static INVALID_PASSWORD()
+ * @method static GRANT_INVALID_PROTOBUF()
+ * @method static GRANT_IS_EXPIRED()
+ * @method static USER_HAS_NO_ACCESS_TO_DATA()
+ * @method static KEYS_VERSION_MISMATCH()
+ * @method static CREDENTIALS_PARSING_ERROR()
+ * @method static UPDATE_TOKEN_VERSION_MISMATCH()
+ */
 class PureLogicErrorStatus extends BaseErrorStatus
 {
-    private const KEYS_VERSION_MISMATCH = [1, "Keys version mismatch"];
-    private const UPDATE_TOKEN_VERSION_MISMATCH = [2, "Update token version mismatch"];
-    private const NONROTABLE_MASTER_SECRET_INVALID_LENGTH = [3, "Nonrotatable master secret invalid length"];
-    private const CREDENTIALS_PARSING_ERROR = [4, "Credentials parsing error"];
-    private const INVALID_PASSWORD = [5, "Invalid password"];
-    private const USER_HAS_NO_ACCESS_TO_DATA = [6, "User has no access to data"];
-    private const GRANT_INVALID_PROTOBUF = [7, "Grant invalid protobuf"];
-    private const GRANT_IS_EXPIRED = [8, "Grant is expired"];
-    private const PASSWORD_RECOVER_REQUEST_THROTTLED = [9, "Password recover request was throttled"];
+    private const array KEYS_VERSION_MISMATCH = [1, "Keys version mismatch"];
+    private const array UPDATE_TOKEN_VERSION_MISMATCH = [2, "Update token version mismatch"];
+    private const array NONROTABLE_MASTER_SECRET_INVALID_LENGTH = [3, "Nonrotatable master secret invalid length"];
+    private const array CREDENTIALS_PARSING_ERROR = [4, "Credentials parsing error"];
+    private const array INVALID_PASSWORD = [5, "Invalid password"];
+    private const array USER_HAS_NO_ACCESS_TO_DATA = [6, "User has no access to data"];
+    private const array GRANT_INVALID_PROTOBUF = [7, "Grant invalid protobuf"];
+    private const array GRANT_IS_EXPIRED = [8, "Grant is expired"];
+    private const array PASSWORD_RECOVER_REQUEST_THROTTLED = [9, "Password recover request was throttled"];
 }

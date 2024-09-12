@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,10 +37,15 @@
 
 namespace Virgil\PureKit\Http;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Purekit\EnrollmentResponse as ProtoEnrollmentResponse;
 use Purekit\VerifyPasswordResponse as ProtoVerifyPasswordResponse;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
@@ -49,15 +54,14 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  */
 class HttpPheClient extends HttpBaseClient
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1/";
+    public const string SERVICE_ADDRESS = "https://api.virgilsecurity.com/phe/v1/";
 
     /**
      * HttpPheClient constructor.
      * @param string $appToken
      * @param string $serviceBaseUrl
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS)
     {
@@ -70,7 +74,7 @@ class HttpPheClient extends HttpBaseClient
     /**
      * @param EnrollRequest $request
      * @return ProtoEnrollmentResponse
-     * @throws \Exception
+     * @throws Exception|GuzzleException
      */
     public function enrollAccount(EnrollRequest $request): ProtoEnrollmentResponse
     {
@@ -87,7 +91,7 @@ class HttpPheClient extends HttpBaseClient
     /**
      * @param VerifyPasswordRequest $request
      * @return ProtoVerifyPasswordResponse
-     * @throws \Exception
+     * @throws Exception|GuzzleException
      */
     public function verifyPassword(VerifyPasswordRequest $request): ProtoVerifyPasswordResponse
     {

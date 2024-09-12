@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,11 +37,16 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use PheException;
 use PurekitV3Client\DecryptRequest as ProtoDecryptRequest;
 use Virgil\CryptoWrapper\Phe\UokmsClient;
 use Virgil\CryptoWrapper\Phe\UokmsWrapRotation;
+use Virgil\PureKit\Http\HttpKmsClient;
 use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
 use Virgil\PureKit\Pure\Exception\KmsClientException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Exception\ProtocolHttpException;
@@ -56,57 +61,53 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  */
 class KmsManager
 {
-    public const RECOVER_PWD_ALIAS = "RECOVERY_PASSWORD";
+    public const string RECOVER_PWD_ALIAS = "RECOVERY_PASSWORD";
 
     /**
      * @var int
      */
-    private $currentVersion;
+    private int $currentVersion;
     /**
      * @var PureCrypto
      */
-    private $pureCrypto;
+    private PureCrypto $pureCrypto;
     /**
      * @var UokmsClient
      */
-    private $pwdCurrentClient;
+    private UokmsClient $pwdCurrentClient;
     /**
-     * @var null
+     * @var UokmsClient|null
      */
-    private $pwdPreviousClient;
+    private ?UokmsClient $pwdPreviousClient = null;
     /**
      * @var UokmsClient
      */
-    private $grantCurrentClient;
+    private UokmsClient $grantCurrentClient;
     /**
-     * @var null
+     * @var UokmsClient|null
      */
-    private $grantPreviousClient;
+    private ?UokmsClient $grantPreviousClient = null;
     /**
-     * @var \Virgil\PureKit\Http\HttpKmsClient
+     * @var HttpKmsClient
      */
-    private $httpClient;
+    private HttpKmsClient $httpClient;
     /**
-     * @var null
+     * @var UokmsWrapRotation|null
      */
-    private $pwdKmsRotation;
+    private ?UokmsWrapRotation $pwdKmsRotation = null;
     /**
-     * @var null
+     * @var UokmsWrapRotation|null
      */
-    private $grantKmsRotation;
-
-    public $context;
+    private ?UokmsWrapRotation $grantKmsRotation = null;
 
     /**
      * KmsManager constructor.
      * @param PureContext $context
      * @throws PureCryptoException
      */
-    public function __construct(PureContext $context)
+    public function __construct(public PureContext $context)
     {
         try {
-            $this->context = $context;
-
             $this->pureCrypto = new PureCrypto($context->getCrypto());
             $this->pwdCurrentClient = new UokmsClient();
             $this->pwdCurrentClient->useOperationRandom($context->getCrypto()->getRng());
@@ -125,8 +126,10 @@ class KmsManager
                 $this->pwdPreviousClient = new UokmsClient();
                 $this->pwdPreviousClient->useOperationRandom($context->getCrypto()->getRng());
                 $this->pwdPreviousClient->useRandom($context->getCrypto()->getRng());
-                $this->pwdPreviousClient->setKeys($context->getSecretKey()->getPayload2(),
-                    $context->getPublicKey()->getPayload2());
+                $this->pwdPreviousClient->setKeys(
+                    $context->getSecretKey()->getPayload2(),
+                    $context->getPublicKey()->getPayload2()
+                );
 
                 $grantUpdateToken = $context->getUpdateToken()->getPayload3();
                 $this->grantKmsRotation = new UokmsWrapRotation();
@@ -154,8 +157,7 @@ class KmsManager
             }
 
             $this->httpClient = $context->getKmsClient();
-        }
-        catch (\PheException $exception) {
+        } catch (PheException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -196,8 +198,7 @@ class KmsManager
      * @param UserRecord $userRecord
      * @return string
      * @throws KmsClientException
-     * @throws NullPointerException
-     * @throws PureCryptoException
+     * @throws PureCryptoException|GuzzleException
      */
     private function recoverPwdSecret(UserRecord $userRecord): string
     {
@@ -206,7 +207,8 @@ class KmsManager
 
             // [deblind_factor, decrypt_request]
             $uokmsClientGenerateDecryptRequestResult = $kmsClient->generateDecryptRequest(
-                $userRecord->getPasswordRecoveryWrap());
+                $userRecord->getPasswordRecoveryWrap()
+            );
 
             $decryptRequest = (new ProtoDecryptRequest)
                 ->setVersion($userRecord->getRecordVersion())
@@ -217,16 +219,17 @@ class KmsManager
 
             $decryptResponse = $this->httpClient->decrypt($request);
 
-            return $kmsClient->processDecryptResponse($userRecord->getPasswordRecoveryWrap(),
+            return $kmsClient->processDecryptResponse(
+                $userRecord->getPasswordRecoveryWrap(),
                 $uokmsClientGenerateDecryptRequestResult[1],
                 $decryptResponse->getResponse(),
                 $uokmsClientGenerateDecryptRequestResult[0],
-                PureCrypto::DERIVED_SECRET_LENGTH);
-        } catch (\PheException $exception) {
+                PureCrypto::DERIVED_SECRET_LENGTH
+            );
+        } catch (PheException $exception) {
             throw new PureCryptoException($exception);
-        } catch (ProtocolException $exception) {
-            throw new KmsClientException($exception);
-        } catch (ProtocolHttpException $exception) {
+            //todo: check ProtocolHttpException - possibility of catch it
+        } catch (ProtocolException|ProtocolHttpException|Exception $exception) {
             throw new KmsClientException($exception);
         }
     }
@@ -234,17 +237,17 @@ class KmsManager
     /**
      * @param GrantKey $grantKey
      * @return string
-     * @throws NullPointerException
      * @throws PureCryptoException
      */
     private function recoverGrantKeySecret(GrantKey $grantKey): string
     {
         try {
             $kmsClient = $this->getGrantClient($grantKey->getRecordVersion());
-            return $kmsClient->decryptOneparty($grantKey->getEncryptedGrantKeyWrap(),
-                PureCrypto::DERIVED_SECRET_LENGTH);
-        }
-        catch (\PheException $exception) {
+            return $kmsClient->decryptOneparty(
+                $grantKey->getEncryptedGrantKeyWrap(),
+                PureCrypto::DERIVED_SECRET_LENGTH
+            );
+        } catch (PheException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -252,8 +255,6 @@ class KmsManager
     /**
      * @param string $wrap
      * @return string
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     public function performPwdRotation(string $wrap): string
@@ -263,7 +264,7 @@ class KmsManager
             ValidationUtils::checkNull($wrap, "wrap");
 
             return $this->pwdKmsRotation->updateWrap($wrap);
-        } catch (\PheException $exception) {
+        } catch (PheException|Exception  $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -271,8 +272,6 @@ class KmsManager
     /**
      * @param string $wrap
      * @return string
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     public function performGrantRotation(string $wrap): string
@@ -282,8 +281,7 @@ class KmsManager
             ValidationUtils::checkNull($wrap, "wrap");
 
             return $this->grantKmsRotation->updateWrap($wrap);
-        }
-        catch (\PheException $exception) {
+        } catch (PheException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -292,49 +290,49 @@ class KmsManager
      * @param UserRecord $userRecord
      * @return string
      * @throws KmsClientException
-     * @throws NullPointerException
-     * @throws PureCryptoException
+     * @throws PureCryptoException|GuzzleException
      */
     public function recoverPwd(UserRecord $userRecord): string
     {
         $derivedSecret = $this->recoverPwdSecret($userRecord);
 
-        return $this->pureCrypto->decryptSymmetricWithOneTimeKey($userRecord->getPasswordRecoveryBlob(), "",
-            $derivedSecret);
+        return $this->pureCrypto->decryptSymmetricWithOneTimeKey(
+            $userRecord->getPasswordRecoveryBlob(),
+            "",
+            $derivedSecret
+        );
     }
 
     /**
      * @param GrantKey $grantKey
      * @param string $header
      * @return string
-     * @throws NullPointerException
      * @throws PureCryptoException
      */
     public function recoverGrantKey(GrantKey $grantKey, string $header): string
     {
         $derivedSecret = $this->recoverGrantKeySecret($grantKey);
-        return $this->pureCrypto->decryptSymmetricWithOneTimeKey($grantKey->getEncryptedGrantKeyBlob(), $header,
-                $derivedSecret);
+        return $this->pureCrypto->decryptSymmetricWithOneTimeKey(
+            $grantKey->getEncryptedGrantKeyBlob(),
+            $header,
+            $derivedSecret
+        );
     }
 
     /**
      * @param string $passwordHash
      * @return KmsEncryptedData
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     public function generatePwdRecoveryData(string $passwordHash): KmsEncryptedData
     {
-        return $this->generateEncryptionData($passwordHash, "", true, false);
+        return $this->generateEncryptionData($passwordHash, "", true);
     }
 
     /**
      * @param string $grantKey
      * @param string $header
      * @return KmsEncryptedData
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     public function generateGrantKeyEncryptionData(string $grantKey, string $header): KmsEncryptedData
@@ -347,24 +345,21 @@ class KmsManager
      * @param string $header
      * @param bool $isPwd
      * @return KmsEncryptedData
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
      * @throws PureCryptoException
      */
     private function generateEncryptionData(string $data, string $header, bool $isPwd): KmsEncryptedData
     {
         try {
-
             // [wrap, encryptionKey]
-            $kmsResult = ($isPwd ? $this->pwdCurrentClient : $this->grantCurrentClient)->generateEncryptWrap
-            (PureCrypto::DERIVED_SECRET_LENGTH);
+            $uokmsClient = $isPwd ? $this->pwdCurrentClient : $this->grantCurrentClient;
+            $kmsResult = $uokmsClient->generateEncryptWrap(PureCrypto::DERIVED_SECRET_LENGTH);
 
             $derivedSecret = $kmsResult[1];
 
             $resetPwdBlob = $this->pureCrypto->encryptSymmetricWithOneTimeKey($data, $header, $derivedSecret);
 
             return new KmsEncryptedData($kmsResult[0], $resetPwdBlob);
-        } catch (\PheException $exception) {
+        } catch (PheException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }

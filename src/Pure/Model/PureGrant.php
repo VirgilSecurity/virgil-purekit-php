@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,60 +37,39 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use DateTime;
 use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class PureGrant
  * @package Virgil\PureKit\Pure\Model
  */
-class PureGrant
+readonly class PureGrant
 {
-    /**
-     * @var VirgilKeyPair
-     */
-    private $ukp;
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $sessionId;
-    /**
-     * @var \DateTime
-     */
-    private $creationDate;
-    /**
-     * @var \DateTime
-     */
-    private $expirationDate;
-
     /**
      * PureGrant constructor.
      * @param VirgilKeyPair $ukp
      * @param string $userId
      * @param string|null $sessionId
-     * @param \DateTime $creationDate
-     * @param \DateTime $expirationDate
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @param DateTime $creationDate
+     * @param DateTime $expirationDate
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(VirgilKeyPair $ukp, string $userId, string $sessionId = null, \DateTime $creationDate,
-                                \DateTime $expirationDate)
-    {
+    public function __construct(
+        private VirgilKeyPair $ukp,
+        private string $userId,
+        private DateTime $creationDate,
+        private DateTime $expirationDate,
+        private ?string $sessionId = null
+    ) {
         ValidationUtils::checkNull($ukp, "ukp");
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNull($creationDate, "creationDate");
         ValidationUtils::checkNull($expirationDate, "expirationDate");
-
-        $this->ukp = $ukp;
-        $this->userId = $userId;
-        $this->sessionId = $sessionId;
-        $this->creationDate = $creationDate;
-        $this->expirationDate = $expirationDate;
     }
 
     /**
@@ -118,17 +97,17 @@ class PureGrant
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getCreationDate(): \DateTime
+    public function getCreationDate(): DateTime
     {
         return $this->creationDate;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getExpirationDate(): \DateTime
+    public function getExpirationDate(): DateTime
     {
         return $this->expirationDate;
     }

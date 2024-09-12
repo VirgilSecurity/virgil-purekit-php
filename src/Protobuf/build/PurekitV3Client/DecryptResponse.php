@@ -27,7 +27,8 @@ class DecryptResponse extends \Google\Protobuf\Internal\Message
      *     @type string $response
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -48,11 +49,9 @@ class DecryptResponse extends \Google\Protobuf\Internal\Message
      */
     public function setResponse($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->response = $var;
 
         return $this;
     }
-
 }
-

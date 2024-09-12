@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
 /**
  * Class PureStorageGrantKeyNotFoundException
  * @package Virgil\PureKit\Pure\Exception
@@ -47,20 +46,15 @@ class PureStorageGrantKeyNotFoundException extends PureStorageException
     /**
      * @var string
      */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $keyId;
+    private string $keyId;
 
     /**
      * PureStorageGrantKeyNotFoundException constructor.
      * @param string $userId
      * @param string $keyId
      */
-    public function __construct(string $userId, string $keyId)
+    public function __construct(private readonly string $userId, string $keyId)
     {
-        $this->userId = $userId;
         $this->keyId = base64_encode($keyId);
         parent::__construct();
     }

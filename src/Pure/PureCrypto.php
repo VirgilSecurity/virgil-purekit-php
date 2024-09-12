@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,12 +37,17 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Exception;
+use FoundationException;
+use InvalidArgumentException;
+use PheException;
 use Virgil\Crypto\Core\Enum\HashAlgorithms;
 use Virgil\Crypto\Core\Enum\KeyPairType;
 use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKey;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
+use Virgil\Crypto\Exceptions\VirgilCryptoException;
 use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Phe\PheCipher;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
@@ -59,75 +64,101 @@ use Virgil\CryptoWrapper\Foundation\Sha512;
  */
 class PureCrypto
 {
-    /**
-     * @var VirgilCrypto
-     */
-    private $crypto;
 
     /**
      * @var PheCipher
      */
-    private $pheCipher;
+    private PheCipher $pheCipher;
 
-    public const DERIVED_SECRET_LENGTH = 44;
+    public const int DERIVED_SECRET_LENGTH = 44;
 
     /**
      * PureCrypto constructor.
      * @param VirgilCrypto $crypto
      * @throws PureCryptoException
      */
-    public function __construct(VirgilCrypto $crypto)
+    public function __construct(private readonly VirgilCrypto $crypto)
     {
-        $this->crypto = $crypto;
-
         try {
             $this->pheCipher = new PheCipher();
             $this->pheCipher->useRandom($crypto->getRng());
-        } catch (\PheException $exception) {
+        } catch (PheException $exception) {
             throw new PureCryptoException($exception);
         }
     }
 
     /**
-     * @param string $plainTextData
-     * @param VirgilPublicKeyCollection $recipients
-     * @param VirgilPrivateKey $signingKey
-     * @return PureCryptoData
-     * @throws PureCryptoException
+     * Encrypts the cell key using AES-GCM and signs it with the provided private key.
+     *
+     * @param string $plainTextData The plaintext data to encrypt.
+     * @param VirgilPublicKeyCollection $recipients The collection of recipient public keys.
+     * @param VirgilPrivateKey $signingKey The private key used for signing.
+     * @return PureCryptoData The encrypted data along with metadata.
+     * @throws PureCryptoException If encryption or signing fails.
      */
-    public function encryptCellKey(string $plainTextData, VirgilPublicKeyCollection $recipients, VirgilPrivateKey $signingKey): PureCryptoData
-    {
+    public function encryptCellKey(
+        string $plainTextData,
+        VirgilPublicKeyCollection $recipients,
+        VirgilPrivateKey $signingKey
+    ): PureCryptoData {
+        // Validate inputs
+        $this->validateInputs($plainTextData, $recipients);
+
         try {
+            // Initialize encryption and signing components
             $aesGsm = new Aes256Gcm();
             $cipher = new RecipientCipher();
             $sha512 = new Sha512();
 
+            // Configure cipher for encryption
             $cipher->useEncryptionCipher($aesGsm);
             $cipher->useRandom($this->crypto->getRng());
-
             $cipher->addSigner($signingKey->getIdentifier(), $signingKey->getPrivateKey());
 
+            // Add recipients to the cipher
             foreach ($recipients->getAsArray() as $key) {
                 $cipher->addKeyRecipient($key->getIdentifier(), $key->getPublicKey());
             }
 
+            // Set hash function for signing
             $cipher->useSignerHash($sha512);
+
+            // Start encryption process
             $cipher->startSignedEncryption(strlen($plainTextData));
 
+            // Process encryption and pack message info
             $cms = $cipher->packMessageInfo();
             $body1 = $cipher->processEncryption($plainTextData);
             $body2 = $cipher->finishEncryption();
             $body3 = $cipher->packMessageInfoFooter();
 
+            // Concatenate all parts into final encrypted body
             $body = $this->concat($this->concat($body1, $body2), $body3);
 
             return new PureCryptoData($cms, $body);
-
-
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
+            // Wrap and throw a specific exception
             throw new PureCryptoException($exception);
         }
     }
+
+    /**
+     * Validates the input parameters for the encryption process.
+     *
+     * @param string $plainTextData The plaintext data to encrypt.
+     * @param VirgilPublicKeyCollection $recipients The collection of recipient public keys.
+     */
+    private function validateInputs(string $plainTextData, VirgilPublicKeyCollection $recipients): void
+    {
+        if (empty($plainTextData)) {
+            throw new InvalidArgumentException('Plain text data cannot be empty.');
+        }
+
+        if ($recipients->isEmpty()) {
+            throw new InvalidArgumentException('At least one recipient must be provided.');
+        }
+    }
+
 
     /**
      * @param PureCryptoData $data
@@ -144,31 +175,38 @@ class PureCrypto
 
             $cipher->useRandom($this->crypto->getRng());
 
-            $cipher->startVerifiedDecryptionWithKey($privateKey->getIdentifier(), $privateKey->getPrivateKey(),
-                $data->getCms(), "");
+            $cipher->startVerifiedDecryptionWithKey(
+                $privateKey->getIdentifier(),
+                $privateKey->getPrivateKey(),
+                $data->getCms(),
+                ""
+            );
 
             $body1 = $cipher->processDecryption($data->getBody());
             $body2 = $cipher->finishDecryption();
 
-            if (!$cipher->isDataSigned())
+            if (!$cipher->isDataSigned()) {
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_IS_ABSENT());
+            }
 
             $signerInfoList = $cipher->signerInfos();
 
-            if (!$signerInfoList->hasItem() && $signerInfoList->hasNext())
+            if (!$signerInfoList->hasItem() && $signerInfoList->hasNext()) {
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNER_IS_ABSENT());
+            }
 
             $signerInfo = $signerInfoList->item();
 
-            if ($signerInfo->signerId() != $verifyingKey->getIdentifier())
+            if ($signerInfo->signerId() != $verifyingKey->getIdentifier()) {
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNER_IS_ABSENT());
+            }
 
-            if (!$cipher->verifySignerInfo($signerInfo, $verifyingKey->getPublicKey()))
+            if (!$cipher->verifySignerInfo($signerInfo, $verifyingKey->getPublicKey())) {
                 throw new PureCryptoException(PureCryptoErrorStatus::SIGNATURE_VERIFICATION_FAILED());
+            }
 
             return $this->concat($body1, $body2);
-
-        } catch (\FoundationException $exception) {
+        } catch (FoundationException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -180,8 +218,11 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function addRecipientsToCellKey(string $cms, VirgilPrivateKey $privateKey, VirgilPublicKeyCollection $publicKeys): string
-    {
+    public function addRecipientsToCellKey(
+        string $cms,
+        VirgilPrivateKey $privateKey,
+        VirgilPublicKeyCollection $publicKeys
+    ): string {
         try {
             $infoEditor = new MessageInfoEditor();
             $infoEditor->useRandom($this->crypto->getRng());
@@ -194,8 +235,7 @@ class PureCrypto
             }
 
             return $infoEditor->pack();
-
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -219,8 +259,7 @@ class PureCrypto
             }
 
             return $infoEditor->pack();
-
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -242,7 +281,6 @@ class PureCrypto
             $keyRecipientInfoList = $messageInfo->keyRecipientInfoList();
 
             while ($keyRecipientInfoList != null && $keyRecipientInfoList->hasItem()) {
-
                 $keyRecipientInfo = $keyRecipientInfoList->item();
                 $publicKeysIds[] = $keyRecipientInfo->recipientId();
 
@@ -254,15 +292,14 @@ class PureCrypto
             }
 
             return $publicKeysIds;
-
-        } catch (\FoundationException $exception) {
+        } catch (FoundationException $exception) {
             throw new PureCryptoException($exception);
         }
     }
 
     /**
      * @return string
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function generateSymmetricOneTimeKey(): string
     {
@@ -296,7 +333,7 @@ class PureCrypto
             $authEncryptAuthEncryptResult = $aes256Gcm->authEncrypt($plainText, $ad);
 
             return $this->concat($authEncryptAuthEncryptResult[0], $authEncryptAuthEncryptResult[1]);
-        } catch (\FoundationException $exception) {
+        } catch (FoundationException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -316,7 +353,7 @@ class PureCrypto
             $aes256Gcm->setNonce(substr($key, $aes256Gcm::KEY_LEN, $aes256Gcm::KEY_LEN + $aes256Gcm::NONCE_LEN));
 
             return $aes256Gcm->authDecrypt($cipherText, $ad, "");
-        } catch (\FoundationException $exception) {
+        } catch (FoundationException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -328,11 +365,11 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function encryptSymmetricWithNewNonce(string $plainText, string $ad, string $key)
+    public function encryptSymmetricWithNewNonce(string $plainText, string $ad, string $key): string
     {
         try {
             return $this->pheCipher->authEncrypt($plainText, $ad, $key);
-        } catch (\PheException $exception) {
+        } catch (PheException|Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -344,11 +381,11 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function decryptSymmetricWithNewNonce(string $cipherText, string $ad, string $key)
+    public function decryptSymmetricWithNewNonce(string $cipherText, string $ad, string $key): string
     {
         try {
             return $this->pheCipher->authDecrypt($cipherText, $ad, $key);
-        } catch (\PheException $exception) {
+        } catch (PheException | Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -371,7 +408,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->generateKeyPair(KeyPairType::ED25519());
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -384,7 +421,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->generateKeyPair(KeyPairType::ED25519());
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -397,7 +434,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->generateKeyPair(KeyPairType::ED25519());
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -411,7 +448,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->importPrivateKey($privateKey);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -425,7 +462,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->importPublicKey($publicKey);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -439,7 +476,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->exportPublicKey($publicKey);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -454,7 +491,7 @@ class PureCrypto
     {
         try {
             return $this->crypto->exportPrivateKey($privateKey);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -473,7 +510,7 @@ class PureCrypto
             $recipients = new VirgilPublicKeyCollection($encryptKey);
 
             return $this->crypto->authEncrypt($plainText, $signingKey, $recipients);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -491,10 +528,8 @@ class PureCrypto
             $recipients = new VirgilPublicKeyCollection($verifyKey);
 
             return $this->crypto->authDecrypt($cipherText, $decryptKey, $recipients);
-        } catch (VerificationException | DecryptionException $exception) {
+        } catch (VerificationException | DecryptionException | VirgilCryptoException $exception) {
             throw new PureCryptoException($exception);
-        } catch (\Exception $exception) {
-            throw $exception;
         }
     }
 
@@ -505,8 +540,11 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function encryptData(string $plainText, VirgilPublicKeyCollection $publicKeys, VirgilPrivateKey $privateKey): string
-    {
+    public function encryptData(
+        string $plainText,
+        VirgilPublicKeyCollection $publicKeys,
+        VirgilPrivateKey $privateKey
+    ): string {
         try {
             $recipients = new VirgilPublicKeyCollection();
 
@@ -515,7 +553,7 @@ class PureCrypto
             }
 
             return $this->crypto->authEncrypt($plainText, $privateKey, $recipients);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -533,7 +571,7 @@ class PureCrypto
             $recipients = new VirgilPublicKeyCollection($publicKey);
 
             return $this->crypto->authDecrypt($cipherText, $privateKey, $recipients);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -545,13 +583,16 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function encryptRolePrivateKey(string $plainText, VirgilPublicKey $publicKey, VirgilPrivateKey $privateKey): string
-    {
+    public function encryptRolePrivateKey(
+        string $plainText,
+        VirgilPublicKey $publicKey,
+        VirgilPrivateKey $privateKey
+    ): string {
         try {
             $recipients = new VirgilPublicKeyCollection($publicKey);
 
             return $this->crypto->authEncrypt($plainText, $privateKey, $recipients);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -563,13 +604,16 @@ class PureCrypto
      * @return string
      * @throws PureCryptoException
      */
-    public function decryptRolePrivateKey(string $plainText, VirgilPrivateKey $privateKey, VirgilPublicKey $publicKey): string
-    {
+    public function decryptRolePrivateKey(
+        string $plainText,
+        VirgilPrivateKey $privateKey,
+        VirgilPublicKey $publicKey
+    ): string {
         try {
             $recipients = new VirgilPublicKeyCollection($publicKey);
 
             return $this->crypto->authDecrypt($plainText, $privateKey, $recipients);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -578,7 +622,7 @@ class PureCrypto
      * @param string $password
      * @return null|string
      */
-    public function computePasswordHash(string $password)
+    public function computePasswordHash(string $password): ?string
     {
         return $this->crypto->computeHash($password, HashAlgorithms::SHA512());
     }

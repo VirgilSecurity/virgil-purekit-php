@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -43,31 +43,18 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  * Class KmsEncryptedData
  * @package Virgil\PureKit\Pure
  */
-class KmsEncryptedData
+readonly class KmsEncryptedData
 {
-    /**
-     * @var string
-     */
-    private $blob;
-    /**
-     * @var string
-     */
-    private $wrap;
-
     /**
      * KmsEncryptedData constructor.
      * @param string $wrap
      * @param string $blob
-     * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      */
-    public function __construct(string $wrap, string $blob)
+    public function __construct(private string $wrap, private string $blob)
     {
         ValidationUtils::checkNull($wrap, "wrap");
         ValidationUtils::checkNull($blob, "blob");
-
-        $this->blob = $blob;
-        $this->wrap = $wrap;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (C) 2015-2020 Virgil Security Inc.
+ * Copyright (C) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -42,11 +42,12 @@ use MyCLabs\Enum\Enum;
 /**
  * Class HttpMethod
  * @package Virgil\PureKit\Http\_
+ * @method static POST()
  */
 class HttpMethod extends Enum
 {
-    private const GET = "GET";
-    private const POST = "POST";
-    private const PUT = "PUT";
-    private const DELETE = "DELETE";
+    private const string GET = "GET";
+    private const string POST = "POST";
+    private const string PUT = "PUT";
+    private const string DELETE = "DELETE";
 }

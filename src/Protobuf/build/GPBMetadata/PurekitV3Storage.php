@@ -8,11 +8,12 @@ class PurekitV3Storage
 {
     public static $is_initialized = false;
 
-    public static function initOnce() {
+    public static function initOnce()
+    {
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
 
         if (static::$is_initialized == true) {
-          return;
+            return;
         }
         $pool->internalAddGeneratedFile(hex2bin(
             "0ac30b0a17707572656b697456335f73746f726167652e70726f746f1210" .
@@ -70,4 +71,3 @@ class PurekitV3Storage
         static::$is_initialized = true;
     }
 }
-

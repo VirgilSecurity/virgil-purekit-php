@@ -27,7 +27,8 @@ class GetUsersRequest extends \Google\Protobuf\Internal\Message
      *     @type string[]|\Google\Protobuf\Internal\RepeatedField $user_ids
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -53,6 +54,4 @@ class GetUsersRequest extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,23 +47,12 @@ use PurekitV3Client\GetCellKeyRequest as ProtoGetCellKeyRequest;
 class GetCellKeyRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $dataId;
-
-    /**
      * GetCellKeyRequest constructor.
      * @param string $userId
      * @param string $dataId
      */
-    public function __construct(string $userId, string $dataId)
+    public function __construct(private readonly string $userId, private readonly string $dataId)
     {
-        $this->userId = $userId;
-        $this->dataId = $dataId;
     }
 
     /**

@@ -47,7 +47,8 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      *     @type int|string $expiration_date
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Grant::initOnce();
         parent::__construct($data);
     }
@@ -68,7 +69,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
@@ -90,7 +91,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      */
     public function setSessionId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->session_id = $var;
 
         return $this;
@@ -112,7 +113,7 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
      */
     public function setKeyId($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->key_id = $var;
 
         return $this;
@@ -161,6 +162,4 @@ class EncryptedGrantHeader extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

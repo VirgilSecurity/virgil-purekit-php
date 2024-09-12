@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -41,25 +41,8 @@ namespace Virgil\PureKit\Pure;
  * Class Credentials
  * @package Virgil\PureKit\Pure
  */
-class Credentials
+readonly class Credentials
 {
-    /**
-     * @var string
-     */
-    private $payload1;
-    /**
-     * @var
-     */
-    private $payload2;
-    /**
-     * @var null|string
-     */
-    private $payload3;
-    /**
-     * @var int
-     */
-    private $version;
-
     /**
      * Credentials constructor.
      * @param string $payload1
@@ -67,12 +50,12 @@ class Credentials
      * @param string|null $payload3
      * @param int $version
      */
-    public function __construct(string $payload1, string $payload2 = null, string $payload3 = null, int $version)
-    {
-        $this->payload1 = $payload1;
-        $this->payload2 = $payload2;
-        $this->payload3 = $payload3;
-        $this->version = $version;
+    public function __construct(
+        private int $version,
+        private string $payload1,
+        private ?string $payload2 = null,
+        private ?string $payload3 = null
+    ) {
     }
 
     /**

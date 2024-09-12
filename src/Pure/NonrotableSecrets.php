@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,31 +44,18 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  * Class NonrotableSecrets
  * @package Virgil\PureKit\Pure
  */
-class NonrotableSecrets
+readonly class NonrotableSecrets
 {
-    /**
-     * @var VirgilKeyPair
-     */
-    private $vskp;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $oskp;
-
     /**
      * NonrotableSecrets constructor.
      * @param VirgilKeyPair $vskp
      * @param VirgilKeyPair $oskp
-     * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      */
-    public function __construct(VirgilKeyPair $vskp, VirgilKeyPair $oskp)
+    public function __construct(private VirgilKeyPair $vskp, private VirgilKeyPair $oskp)
     {
         ValidationUtils::checkNull($vskp, "vskp");
         ValidationUtils::checkNull($oskp, "oskp");
-
-        $this->vskp = $vskp;
-        $this->oskp = $oskp;
     }
 
     /**

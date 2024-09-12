@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,24 +44,12 @@ namespace Virgil\PureKit\Pure\Exception;
 class MariaDbSqlException extends PureStorageException
 {
     /**
-     * @var string
-     */
-    protected $message;
-    /**
-     * @var int
-     */
-    protected $code;
-
-    /**
      * MariaDbSqlException constructor.
      * @param string $message
      * @param int $code
      */
-    public function __construct(string $message, int $code)
+    public function __construct(protected $message, protected $code)
     {
-        $this->message = $message;
-        $this->code = $code;
-
         parent::__construct($message);
     }
 }

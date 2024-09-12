@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -45,8 +45,8 @@ use Virgil\PureKit\Pure\Util\FileUtils;
  */
 class HttpVirgilAgent
 {
-    const PRODUCT = 'purekit';
-    const FAMILY = 'php';
+    const string PRODUCT = 'purekit';
+    const string FAMILY = 'php';
 
     /**
      * @return string

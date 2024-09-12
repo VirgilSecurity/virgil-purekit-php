@@ -67,7 +67,8 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      *     @type string $password_recovery_blob
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -110,7 +111,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
@@ -132,7 +133,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setPheRecordNs($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->phe_record_ns = $var;
 
         return $this;
@@ -154,7 +155,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setPheRecordNc($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->phe_record_nc = $var;
 
         return $this;
@@ -176,7 +177,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setUpk($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->upk = $var;
 
         return $this;
@@ -198,7 +199,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedUsk($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_usk = $var;
 
         return $this;
@@ -220,7 +221,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedUskBackup($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_usk_backup = $var;
 
         return $this;
@@ -242,7 +243,7 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setBackupPwdHash($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->backup_pwd_hash = $var;
 
         return $this;
@@ -264,11 +265,9 @@ class UserRecordSigned extends \Google\Protobuf\Internal\Message
      */
     public function setPasswordRecoveryBlob($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->password_recovery_blob = $var;
 
         return $this;
     }
-
 }
-

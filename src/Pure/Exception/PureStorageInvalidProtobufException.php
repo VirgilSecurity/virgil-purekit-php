@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Throwable;
+
 /**
  * Class PureStorageInvalidProtobufException
  * @package Virgil\PureKit\Pure\Exception
@@ -45,9 +47,9 @@ class PureStorageInvalidProtobufException extends PureStorageException
 {
     /**
      * PureStorageInvalidProtobufException constructor.
-     * @param \Throwable $exception
+     * @param Throwable $exception
      */
-    public function __construct(\Throwable $exception)
+    public function __construct(Throwable $exception)
     {
         parent::__construct($exception);
     }

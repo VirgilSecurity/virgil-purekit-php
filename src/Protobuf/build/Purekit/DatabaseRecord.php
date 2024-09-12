@@ -32,7 +32,8 @@ class DatabaseRecord extends \Google\Protobuf\Internal\Message
      *     @type string $record
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Purekit::initOnce();
         parent::__construct($data);
     }
@@ -75,11 +76,9 @@ class DatabaseRecord extends \Google\Protobuf\Internal\Message
      */
     public function setRecord($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->record = $var;
 
         return $this;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,9 +46,9 @@ use Virgil\PureKit\Http\_\HttpVirgilAgent;
 abstract class BaseRequest
 {
     /**
-     * @var null
+     * @var string|null
      */
-    protected $params = null;
+    protected ?string $params = null;
 
     /**
      * @param string $appToken
@@ -62,7 +62,7 @@ abstract class BaseRequest
     /**
      * @param array $params
      */
-    public function setParams(array $params)
+    public function setParams(array $params): void
     {
         $this->params = "?".http_build_query($params);
     }
@@ -78,5 +78,5 @@ abstract class BaseRequest
     /**
      * @return string
      */
-    abstract function getOptionsBody(): string;
+    abstract public function getOptionsBody(): string;
 }

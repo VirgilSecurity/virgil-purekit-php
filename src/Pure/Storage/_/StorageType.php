@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -45,6 +45,6 @@ use MyCLabs\Enum\Enum;
  */
 class StorageType extends Enum
 {
-    private const VIRGIL_CLOUD = "VirgilCloud";
-    private const MARIADB = "MariaDB";
+    private const string VIRGIL_CLOUD = "VirgilCloud";
+    private const string MARIADB = "MariaDB";
 }

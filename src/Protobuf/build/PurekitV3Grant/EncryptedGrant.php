@@ -37,7 +37,8 @@ class EncryptedGrant extends \Google\Protobuf\Internal\Message
      *     @type string $header
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Grant::initOnce();
         parent::__construct($data);
     }
@@ -80,7 +81,7 @@ class EncryptedGrant extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedPhek($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_phek = $var;
 
         return $this;
@@ -102,11 +103,9 @@ class EncryptedGrant extends \Google\Protobuf\Internal\Message
      */
     public function setHeader($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->header = $var;
 
         return $this;
     }
-
 }
-

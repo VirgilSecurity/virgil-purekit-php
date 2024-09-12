@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Exception;
+
 /**
  * Class ClientException
  * @package Virgil\PureKit\Pure\Exception
@@ -44,29 +46,29 @@ namespace Virgil\PureKit\Pure\Exception;
 class ClientException extends PureException
 {
     /**
-     * @var ProtocolException
+     * @var ProtocolException|null
      */
-    private $protocolException;
+    private ?ProtocolException $protocolException = null;
     /**
-     * @var ProtocolHttpException
+     * @var ProtocolHttpException|null
      */
-    private $protocolHttpException;
+    private ?ProtocolHttpException $protocolHttpException = null;
 
     /**
      * ClientException constructor.
-     * @param \Exception $exception
-     * @throws \Exception
+     * @param Exception $exception
+     * @throws Exception
      */
-    public function __construct(\Exception $exception)
+    public function __construct(Exception $exception)
     {
-        parent::__construct($e);
+        parent::__construct($exception);
 
         $this->protocolException = null;
         $this->protocolHttpException = null;
 
         if ($exception instanceof ProtocolException) {
             $this->protocolException = $exception;
-         } else if ($exception instanceof ProtocolHttpException) {
+        } elseif ($exception instanceof ProtocolHttpException) {
             $this->protocolHttpException = $exception;
         } else {
             throw $exception;

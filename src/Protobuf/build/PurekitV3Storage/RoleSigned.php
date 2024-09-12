@@ -37,7 +37,8 @@ class RoleSigned extends \Google\Protobuf\Internal\Message
      *     @type string $rpk
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -80,7 +81,7 @@ class RoleSigned extends \Google\Protobuf\Internal\Message
      */
     public function setName($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->name = $var;
 
         return $this;
@@ -102,11 +103,9 @@ class RoleSigned extends \Google\Protobuf\Internal\Message
      */
     public function setRpk($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->rpk = $var;
 
         return $this;
     }
-
 }
-

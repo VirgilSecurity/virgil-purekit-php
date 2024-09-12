@@ -32,7 +32,8 @@ class DeleteRoleAssignmentsRequest extends \Google\Protobuf\Internal\Message
      *     @type string[]|\Google\Protobuf\Internal\RepeatedField $user_ids
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -53,7 +54,7 @@ class DeleteRoleAssignmentsRequest extends \Google\Protobuf\Internal\Message
      */
     public function setRoleName($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->role_name = $var;
 
         return $this;
@@ -80,6 +81,4 @@ class DeleteRoleAssignmentsRequest extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

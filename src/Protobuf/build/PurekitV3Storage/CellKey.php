@@ -37,7 +37,8 @@ class CellKey extends \Google\Protobuf\Internal\Message
      *     @type string $signature
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -80,7 +81,7 @@ class CellKey extends \Google\Protobuf\Internal\Message
      */
     public function setCellKeySigned($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->cell_key_signed = $var;
 
         return $this;
@@ -102,11 +103,9 @@ class CellKey extends \Google\Protobuf\Internal\Message
      */
     public function setSignature($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->signature = $var;
 
         return $this;
     }
-
 }
-

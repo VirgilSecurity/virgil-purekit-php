@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,13 +37,14 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Exception;
 use Throwable;
 
 /**
  * Class ProtocolException
  * @package Virgil\PureKit\Pure\Exception
  */
-class ProtocolException extends \Exception
+class ProtocolException extends Exception
 {
     /**
      * ProtocolException constructor.

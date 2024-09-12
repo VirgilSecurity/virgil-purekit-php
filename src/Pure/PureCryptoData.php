@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -43,32 +43,20 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  * Class PureCryptoData
  * @package Virgil\PureKit\Pure
  */
-class PureCryptoData
+readonly class PureCryptoData
 {
-    /**
-     * @var string
-     */
-    private $cms;
-    /**
-     * @var string
-     */
-    private $body;
 
     /**
      * PureCryptoData constructor.
      * @param string $cms
      * @param string $body
      * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      */
-    public function __construct(string $cms, string $body)
+    public function __construct(private string $cms, private string $body)
     {
         ValidationUtils::checkNullOrEmpty($cms, "cms");
         ValidationUtils::checkNullOrEmpty($body, "body");
-
-        $this->cms = $cms;
-        $this->body = $body;
     }
 
     /**

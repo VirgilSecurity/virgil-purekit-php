@@ -42,7 +42,8 @@ class EnrollmentRecord extends \Google\Protobuf\Internal\Message
      *     @type string $t1
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Crypto::initOnce();
         parent::__construct($data);
     }
@@ -63,7 +64,7 @@ class EnrollmentRecord extends \Google\Protobuf\Internal\Message
      */
     public function setNs($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->ns = $var;
 
         return $this;
@@ -85,7 +86,7 @@ class EnrollmentRecord extends \Google\Protobuf\Internal\Message
      */
     public function setNc($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->nc = $var;
 
         return $this;
@@ -107,7 +108,7 @@ class EnrollmentRecord extends \Google\Protobuf\Internal\Message
      */
     public function setT0($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->t0 = $var;
 
         return $this;
@@ -129,11 +130,9 @@ class EnrollmentRecord extends \Google\Protobuf\Internal\Message
      */
     public function setT1($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->t1 = $var;
 
         return $this;
     }
-
 }
-

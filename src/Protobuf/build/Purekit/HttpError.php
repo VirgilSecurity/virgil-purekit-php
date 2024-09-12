@@ -32,7 +32,8 @@ class HttpError extends \Google\Protobuf\Internal\Message
      *     @type string $message
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Purekit::initOnce();
         parent::__construct($data);
     }
@@ -75,11 +76,9 @@ class HttpError extends \Google\Protobuf\Internal\Message
      */
     public function setMessage($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->message = $var;
 
         return $this;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,52 +37,35 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class RoleAssignment
  * @package Virgil\PureKit\Pure\Model
  */
-class RoleAssignment
+readonly class RoleAssignment
 {
-    /**
-     * @var string
-     */
-    private $roleName;
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $publicKeyId;
-    /**
-     * @var string
-     */
-    private $encryptedRsk;
-
     /**
      * RoleAssignment constructor.
      * @param string $roleName
      * @param string $userId
      * @param string $publicKeyId
      * @param string $encryptedRsk
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(string $roleName, string $userId, string $publicKeyId, string $encryptedRsk)
-    {
+    public function __construct(
+        private string $roleName,
+        private string $userId,
+        private string $publicKeyId,
+        private string $encryptedRsk
+    ) {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNullOrEmpty($publicKeyId, "publicKeyId");
         ValidationUtils::checkNullOrEmpty($encryptedRsk, "encryptedRsk");
-
-        $this->roleName = $roleName;
-        $this->userId = $userId;
-        $this->publicKeyId = $publicKeyId;
-        $this->encryptedRsk = $encryptedRsk;
     }
 
     /**

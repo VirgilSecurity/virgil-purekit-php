@@ -27,7 +27,8 @@ class UserRecords extends \Google\Protobuf\Internal\Message
      *     @type \PurekitV3Storage\UserRecord[]|\Google\Protobuf\Internal\RepeatedField $user_records
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -53,6 +54,4 @@ class UserRecords extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

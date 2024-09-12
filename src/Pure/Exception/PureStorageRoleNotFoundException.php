@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
 /**
  * Class PureStorageRoleNotFoundException
  * @package Virgil\PureKit\Pure\Exception
@@ -45,17 +44,11 @@ namespace Virgil\PureKit\Pure\Exception;
 class PureStorageRoleNotFoundException extends PureStorageException
 {
     /**
-     * @var array
-     */
-    private $roleNames;
-
-    /**
      * PureStorageRoleNotFoundException constructor.
      * @param array $roleNames
      */
-    public function __construct(array $roleNames)
+    public function __construct(private readonly array $roleNames)
     {
-        $this->roleNames = $roleNames;
         parent::__construct();
     }
 

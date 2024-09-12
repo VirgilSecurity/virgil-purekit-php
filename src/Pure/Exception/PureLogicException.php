@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,17 +46,11 @@ use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
 class PureLogicException extends PureException
 {
     /**
-     * @var PureLogicErrorStatus
-     */
-    private $errorStatus;
-
-    /**
      * PureLogicException constructor.
      * @param PureLogicErrorStatus $errorStatus
      */
-    public function __construct(PureLogicErrorStatus $errorStatus)
+    public function __construct(private readonly PureLogicErrorStatus $errorStatus)
     {
-        $this->errorStatus = $errorStatus;
         parent::__construct($errorStatus->getMessage());
     }
 

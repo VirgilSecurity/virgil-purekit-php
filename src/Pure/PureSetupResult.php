@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -43,20 +43,8 @@ use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
  * Class PureSetupResult
  * @package Virgil\PureKit\Pure
  */
-class PureSetupResult
+readonly class PureSetupResult
 {
-    /**
-     * @var PureContext
-     */
-    private $context;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $bupkp;
-    /**
-     * @var
-     */
-    private $nmsData;
 
     /**
      * PureSetupResult constructor.
@@ -64,11 +52,11 @@ class PureSetupResult
      * @param VirgilKeyPair $bupkp
      * @param string $nmsData
      */
-    public function __construct(PureContext $context, VirgilKeyPair $bupkp, string $nmsData)
-    {
-        $this->context = $context;
-        $this->bupkp = $bupkp;
-        $this->nmsData = $nmsData;
+    public function __construct(
+        private PureContext $context,
+        private VirgilKeyPair $bupkp,
+        private string $nmsData
+    ) {
     }
 
     /**

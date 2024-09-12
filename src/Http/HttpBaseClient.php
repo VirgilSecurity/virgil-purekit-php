@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,8 +37,10 @@
 
 namespace Virgil\PureKit\Http;
 
+use Exception;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use Purekit\HttpError as ProtoHttpError;
 use Psr\Http\Message\ResponseInterface;
 use Virgil\PureKit\Http\_\HttpMethod;
@@ -54,27 +56,15 @@ class HttpBaseClient
     /**
      * @var GuzzleClient
      */
-    private $httpClient;
-    /**
-     * @var string
-     */
-    private $serviceBaseUrl;
-    /**
-     * @var string
-     */
-    private $appToken;
+    private GuzzleClient $httpClient;
 
     /**
      * BaseHttpClient constructor.
      * @param string $serviceBaseUrl
      * @param string $appToken
-     * @param bool $debug
      */
-    public function __construct(string $serviceBaseUrl, string $appToken)
+    public function __construct(private readonly string $serviceBaseUrl, private readonly string $appToken)
     {
-        $this->serviceBaseUrl = $serviceBaseUrl;
-        $this->appToken = $appToken;
-
         $this->httpClient = new GuzzleClient(['base_uri' => $this->_getServiceBaseUrl()]);
     }
 
@@ -83,7 +73,8 @@ class HttpBaseClient
      * @param string $endpoint
      * @param HttpMethod|null $method
      * @return ResponseInterface
-     * @throws ProtocolException
+     * @throws ProtocolException|GuzzleException
+     * @throws Exception
      */
     protected function _send(BaseRequest $request, string $endpoint, HttpMethod $method = null):
     ResponseInterface
@@ -91,14 +82,16 @@ class HttpBaseClient
         $method = $method ?: HttpMethod::POST();
 
         try {
-            return $this->httpClient->request($method->getValue(), "." . $endpoint .
+            return $this->httpClient->request(
+                $method->getValue(),
+                "." . $endpoint .
                 $request->getParams(),
                 [
                     "headers" => $request->getOptionsHeader($this->appToken),
                     "body" => $request->getOptionsBody(),
-                ]);
+                ]
+            );
         } catch (ClientException $exception) {
-
             $protoBody =  $exception->getResponse()->getBody()->getContents();
 
             $protoHttpErr = new ProtoHttpError();

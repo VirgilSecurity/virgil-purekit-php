@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,23 +47,12 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class DeleteRoleAssignmentsRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $roleName;
-    /**
-     * @var array
-     */
-    private $userIds;
-
-    /**
      * DeleteRoleAssignmentsRequest constructor.
      * @param string $roleName
      * @param array $userIds
      */
-    public function __construct(string $roleName, array $userIds)
+    public function __construct(private string $roleName, private array $userIds)
     {
-        $this->roleName = $roleName;
-        $this->userIds = $userIds;
     }
 
     /**

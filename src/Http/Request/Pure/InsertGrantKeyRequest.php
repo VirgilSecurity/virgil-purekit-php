@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,17 +47,11 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertGrantKeyRequest extends BaseRequest
 {
     /**
-     * @var GrantKey
-     */
-    private $grantKey;
-
-    /**
      * InsertGrantKeyRequest constructor.
      * @param GrantKey $grantKey
      */
-    public function __construct(GrantKey $grantKey)
+    public function __construct(private readonly GrantKey $grantKey)
     {
-        $this->grantKey = $grantKey;
     }
 
     /**

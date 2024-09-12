@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -43,24 +43,14 @@ namespace Virgil\PureKit\Pure;
  */
 class PureSessionParams
 {
-    /**
-     * @var string
-     */
-    private $sessionId;
-    /**
-     * @var int
-     */
-    private $ttl;
 
     /**
      * PureSessionParams constructor.
      * @param string|null $sessionId
-     * @param int $ttl
+     * @param int|null $ttl
      */
-    public function __construct(string $sessionId = null, int $ttl = Pure::DEFAULT_GRANT_TTL)
+    public function __construct(private ?string $sessionId = null, private ?int $ttl = Pure::DEFAULT_GRANT_TTL)
     {
-        $this->sessionId = $sessionId;
-        $this->ttl = $ttl;
     }
 
     /**

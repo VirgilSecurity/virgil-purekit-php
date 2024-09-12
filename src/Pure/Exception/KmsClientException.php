@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Exception;
+
 /**
  * Class KmsClientException
  * @package Virgil\PureKit\Pure\Exception
@@ -45,10 +47,10 @@ class KmsClientException extends ClientException
 {
     /**
      * KmsClientException constructor.
-     * @param \Exception $exception
-     * @throws \Exception
+     * @param Exception $exception
+     * @throws Exception
      */
-    public function __construct(\Exception $exception)
+    public function __construct(Exception $exception)
     {
         if (($exception instanceof ProtocolException) | ($exception instanceof ProtocolHttpException)) {
             parent::__construct($exception);

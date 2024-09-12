@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,24 +37,44 @@
 
 namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
+/**
+ * @method static USER_ALREADY_EXISTS()
+ * @method static USER_ID_MISMATCH()
+ * @method static CELL_KEY_ID_MISMATCH()
+ * @method static ROLE_ALREADY_EXISTS()
+ * @method static RECORD_VERSION_MISMATCH()
+ * @method static ROLE_NAME_MISMATCH()
+ * @method static ROLE_ASSIGNMENT_ALREADY_EXISTS()
+ * @method static ROLE_USER_ID_MISMATCH()
+ * @method static ROLE_NAME_USER_ID_MISMATCH()
+ * @method static GRANT_KEY_ALREADY_EXISTS()
+ * @method static GRANT_KEY_ID_MISMATCH()
+ * @method static USER_COUNT_MISMATCH()
+ * @method static DUPLICATE_ROLE_NAME()
+ * @method static KEY_ID_MISMATCH()
+ * @method static SIGNING_EXCEPTION()
+ * @method static VERIFICATION_EXCEPTION()
+ * @method static STORAGE_SIGNATURE_VERIFICATION_FAILED()
+ * @method static INVALID_PROTOBUF()
+ */
 class PureStorageGenericErrorStatus extends BaseErrorStatus
 {
-    private const STORAGE_SIGNATURE_VERIFICATION_FAILED = [2, "Storage signature verification has been failed"];
-    private const USER_ID_MISMATCH = [3, "User Id mismatch"];
-    private const CELL_KEY_ID_MISMATCH = [4, "Cell key id mismatch"];
-    private const RECORD_VERSION_MISMATCH = [5, "Record version mismatch"];
-    private const ROLE_NAME_MISMATCH = [6, "Role name mismatch"];
-    private const ROLE_USER_ID_MISMATCH = [7, "Role user id mismatch"];
-    private const ROLE_NAME_USER_ID_MISMATCH = [8, "Role name and user id mismatch"];
-    private const USER_COUNT_MISMATCH = [9, "User count mismatch"];
-    private const DUPLICATE_ROLE_NAME = [10, "Duplicate role name"];
-    private const GRANT_KEY_ID_MISMATCH = [12, "Grant key id mismatch"];
-    private const INVALID_PROTOBUF = [13, "Invalid protobuf"];
-    private const SIGNING_EXCEPTION = [14, "Signing exception"];
-    private const VERIFICATION_EXCEPTION = [15, "Verification exception"];
-    private const KEY_ID_MISMATCH = [16, "Key id mismatch"];
-    private const USER_ALREADY_EXISTS = [19, "User already exists"];
-    private const ROLE_ALREADY_EXISTS = [20, "Role already exists"];
-    private const ROLE_ASSIGNMENT_ALREADY_EXISTS = [21, "Role assignment already exists"];
-    private const GRANT_KEY_ALREADY_EXISTS = [22, "Grant key already exists"];
+    private const array STORAGE_SIGNATURE_VERIFICATION_FAILED = [2, "Storage signature verification has been failed"];
+    private const array USER_ID_MISMATCH = [3, "User Id mismatch"];
+    private const array CELL_KEY_ID_MISMATCH = [4, "Cell key id mismatch"];
+    private const array RECORD_VERSION_MISMATCH = [5, "Record version mismatch"];
+    private const array ROLE_NAME_MISMATCH = [6, "Role name mismatch"];
+    private const array ROLE_USER_ID_MISMATCH = [7, "Role user id mismatch"];
+    private const array ROLE_NAME_USER_ID_MISMATCH = [8, "Role name and user id mismatch"];
+    private const array USER_COUNT_MISMATCH = [9, "User count mismatch"];
+    private const array DUPLICATE_ROLE_NAME = [10, "Duplicate role name"];
+    private const array GRANT_KEY_ID_MISMATCH = [12, "Grant key id mismatch"];
+    private const array INVALID_PROTOBUF = [13, "Invalid protobuf"];
+    private const array SIGNING_EXCEPTION = [14, "Signing exception"];
+    private const array VERIFICATION_EXCEPTION = [15, "Verification exception"];
+    private const array KEY_ID_MISMATCH = [16, "Key id mismatch"];
+    private const array USER_ALREADY_EXISTS = [19, "User already exists"];
+    private const array ROLE_ALREADY_EXISTS = [20, "Role already exists"];
+    private const array ROLE_ASSIGNMENT_ALREADY_EXISTS = [21, "Role assignment already exists"];
+    private const array GRANT_KEY_ALREADY_EXISTS = [22, "Grant key already exists"];
 }

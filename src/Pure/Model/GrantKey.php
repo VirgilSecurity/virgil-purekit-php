@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,43 +37,17 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use DateTime;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class GrantKey
  * @package Virgil\PureKit\Pure\Model
  */
-class GrantKey
+readonly class GrantKey
 {
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $keyId;
-    /**
-     * @var int
-     */
-    private $recordVersion;
-    /**
-     * @var string
-     */
-    private $encryptedGrantKeyWrap;
-    /**
-     * @var string
-     */
-    private $encryptedGrantKeyBlob;
-    /**
-     * @var \DateTime
-     */
-    private $creationDate;
-    /**
-     * @var \DateTime
-     */
-    private $expirationDate;
-
     /**
      * GrantKey constructor.
      * @param string $userId
@@ -81,29 +55,26 @@ class GrantKey
      * @param int $recordVersion
      * @param string $encryptedGrantKeyWrap
      * @param string $encryptedGrantKeyBlob
-     * @param \DateTime $creationDate
-     * @param \DateTime $expirationDate
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @param DateTime $creationDate
+     * @param DateTime $expirationDate
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(string $userId, string $keyId, int $recordVersion, string $encryptedGrantKeyWrap, string
-    $encryptedGrantKeyBlob, \DateTime $creationDate, \DateTime $expirationDate)
-    {
+    public function __construct(
+        private string $userId,
+        private string $keyId,
+        private int $recordVersion,
+        private string $encryptedGrantKeyWrap,
+        private string $encryptedGrantKeyBlob,
+        private DateTime $creationDate,
+        private DateTime $expirationDate
+    ) {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNullOrEmpty($keyId, "keyId");
         ValidationUtils::checkNullOrEmpty($encryptedGrantKeyWrap, "encryptedGrantKeyWrap");
         ValidationUtils::checkNullOrEmpty($encryptedGrantKeyBlob, "encryptedGrantKeyBlob");
         ValidationUtils::checkNull($creationDate, "creationDate");
         ValidationUtils::checkNull($expirationDate, "expirationDate");
-
-        $this->userId = $userId;
-        $this->keyId = $keyId;
-        $this->recordVersion = $recordVersion;
-        $this->encryptedGrantKeyWrap = $encryptedGrantKeyWrap;
-        $this->encryptedGrantKeyBlob = $encryptedGrantKeyBlob;
-        $this->creationDate = $creationDate;
-        $this->expirationDate = $expirationDate;
     }
 
     /**
@@ -147,19 +118,18 @@ class GrantKey
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getCreationDate(): \DateTime
+    public function getCreationDate(): DateTime
     {
         return $this->creationDate;
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getExpirationDate(): \DateTime
+    public function getExpirationDate(): DateTime
     {
         return $this->expirationDate;
     }
-
 }

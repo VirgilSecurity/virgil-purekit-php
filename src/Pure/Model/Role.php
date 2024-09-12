@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,38 +37,27 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class Role
  * @package Virgil\PureKit\Pure\model
  */
-class Role
+readonly class Role
 {
-    /**
-     * @var string
-     */
-    private $roleName;
-    /**
-     * @var string
-     */
-    private $rpk;
-
     /**
      * Role constructor.
      * @param string $roleName
      * @param string $rpk
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(string $roleName, string $rpk)
+    public function __construct(private string $roleName, private string $rpk)
     {
         ValidationUtils::checkNullOrEmpty($roleName, "roleName");
         ValidationUtils::checkNullOrEmpty($rpk, "rpk");
-
-        $this->roleName = $roleName;
-        $this->rpk = $rpk;
     }
 
     /**

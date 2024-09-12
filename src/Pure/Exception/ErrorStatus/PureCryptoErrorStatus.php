@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,13 +37,21 @@
 
 namespace Virgil\PureKit\Pure\Exception\ErrorStatus;
 
+/**
+ * @method static UNDERLYING_FOUNDATION_EXCEPTION()
+ * @method static UNDERLYING_PHE_EXCEPTION()
+ * @method static UNDERLYING_CRYPTO_EXCEPTION()
+ * @method static SIGNATURE_IS_ABSENT()
+ * @method static SIGNER_IS_ABSENT()
+ * @method static SIGNATURE_VERIFICATION_FAILED()
+ */
 class PureCryptoErrorStatus extends BaseErrorStatus
 {
-    private const UNDEFINED_EXCEPTION = [-1, "Undefined exception"];
-    private const UNDERLYING_FOUNDATION_EXCEPTION = [1, "Underlying foundation exception"];
-    private const UNDERLYING_PHE_EXCEPTION = [2, "Underlying phe exception"];
-    private const UNDERLYING_CRYPTO_EXCEPTION= [3, "Underlying crypto exception"];
-    private const SIGNER_IS_ABSENT= [3, "Signer is absent"];
-    private const SIGNATURE_IS_ABSENT= [4, "Signature is absent"];
-    private const SIGNATURE_VERIFICATION_FAILED= [5, "Signature verification failed"];
+    private const array UNDEFINED_EXCEPTION = [-1, "Undefined exception"];
+    private const array UNDERLYING_FOUNDATION_EXCEPTION = [1, "Underlying foundation exception"];
+    private const array UNDERLYING_PHE_EXCEPTION = [2, "Underlying phe exception"];
+    private const array UNDERLYING_CRYPTO_EXCEPTION= [3, "Underlying crypto exception"];
+    private const array SIGNER_IS_ABSENT= [3, "Signer is absent"];
+    private const array SIGNATURE_IS_ABSENT= [4, "Signature is absent"];
+    private const array SIGNATURE_VERIFICATION_FAILED= [5, "Signature verification failed"];
 }

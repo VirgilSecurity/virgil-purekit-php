@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,9 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Exception;
+use FoundationException;
+use PheException;
 use RuntimeException;
 use Virgil\Crypto\Exceptions\VirgilCryptoException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
@@ -48,33 +51,36 @@ use Virgil\PureKit\Pure\Exception\ErrorStatus\PureCryptoErrorStatus;
 class PureCryptoException extends PureException
 {
     /**
-     * @var VirgilCryptoException
+     * @var VirgilCryptoException|null
      */
-    private $cryptoException;
+    private ?VirgilCryptoException $cryptoException;
     /**
-     * @var \FoundationException
+     * todo: find FoundationException
+     * @var FoundationException|null
      */
-    private $foundationException;
+    private ?FoundationException $foundationException;
     /**
-     * @var \PheException
+     * todo: ask about PheException
+     * @var PheException|null
      */
-    private $pheException;
+    private ?PheException $pheException;
     /**
-     * @var
+     * @var PureCryptoErrorStatus|null
      */
-    private $errorStatus;
+    private ?PureCryptoErrorStatus $errorStatus;
 
     /**
      * PureCryptoException constructor.
-     * @param $e
+     * @param Exception|PureCryptoErrorStatus $exception
      */
-    public function __construct(\Exception $exception)
+    public function __construct(Exception|PureCryptoErrorStatus $exception)
     {
         $this->errorStatus = null;
         $this->cryptoException = null;
         $this->foundationException = null;
         $this->pheException = null;
 
+        /** todo: is it possible that $exception had class PureCryptoErrorStatus (look to __construct()) */
         if ($exception instanceof PureCryptoErrorStatus) {
             parent::__construct($exception->getMessage());
             if ($exception == PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION()
@@ -82,15 +88,15 @@ class PureCryptoException extends PureException
                 throw new RuntimeException("Underlying foundation/phe exception");
             }
             $this->errorStatus = $exception;
-        } else if ($exception instanceof VirgilCryptoException) {
+        } elseif ($exception instanceof VirgilCryptoException) {
             parent::__construct($exception);
             $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_CRYPTO_EXCEPTION();
             $this->cryptoException = $exception;
-        } else if ($exception instanceof \FoundationException) {
+        } elseif ($exception instanceof FoundationException) {
             parent::__construct($exception);
             $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION();
             $this->foundationException = $exception;
-        } else if ($exception instanceof \PheException) {
+        } elseif ($exception instanceof PheException) {
             parent::__construct($exception);
             $this->errorStatus = PureCryptoErrorStatus::UNDERLYING_PHE_EXCEPTION();
             $this->pheException = $exception;
@@ -114,17 +120,17 @@ class PureCryptoException extends PureException
     }
 
     /**
-     * @return null|\FoundationException
+     * @return null|FoundationException
      */
-    public function getFoundationException(): ?\FoundationException
+    public function getFoundationException(): ?FoundationException
     {
         return $this->foundationException;
     }
 
     /**
-     * @return null|\PheException
+     * @return null|PheException
      */
-    public function getPheException(): ?\PheException
+    public function getPheException(): ?PheException
     {
         return $this->pheException;
     }

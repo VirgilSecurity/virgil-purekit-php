@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure;
 
+use DateTime;
+use Exception;
 use PurekitV3Crypto\EnrollmentRecord as ProtoEnrollmentRecord;
 use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\GrantKeySigned as ProtoGrantKeySigned;
@@ -49,9 +51,13 @@ use PurekitV3Storage\RoleAssignmentSigned as ProtoRoleAssignmentSigned;
 use PurekitV3Storage\RoleSigned as ProtoRoleSigned;
 use PurekitV3Storage\UserRecordSigned as ProtoUserRecordSigned;
 use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
+use Virgil\Crypto\Exceptions\VirgilCryptoException;
 use Virgil\Crypto\VirgilCrypto;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
 use Virgil\PureKit\Pure\Exception\InvalidProtocolBufferException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Exception\PureStorageGenericException;
 use Virgil\PureKit\Pure\Exception\PureStorageInvalidProtobufException;
 use Virgil\PureKit\Pure\Model\CellKey;
@@ -67,54 +73,41 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  */
 class PureModelSerializer
 {
-    private const CURRENT_USER_VERSION = 1;
-    private const CURRENT_USER_SIGNED_VERSION = 1;
-    private const CURRENT_CELL_KEY_VERSION = 1;
-    private const CURRENT_CELL_KEY_SIGNED_VERSION = 1;
-    private const CURRENT_ROLE_VERSION = 1;
-    private const CURRENT_ROLE_SIGNED_VERSION = 1;
-    private const CURRENT_ROLE_ASSIGNMENT_VERSION = 1;
-    private const CURRENT_ROLE_ASSIGNMENT_SIGNED_VERSION = 1;
-    private const CURRENT_GRANT_KEY_VERSION = 1;
-    private const CURRENT_GRANT_KEY_SIGNED_VERSION = 1;
-
-    /**
-     * @var VirgilCrypto
-     */
-    private $crypto;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $signingKey;
+    private const int CURRENT_USER_VERSION = 1;
+    private const int CURRENT_USER_SIGNED_VERSION = 1;
+    private const int CURRENT_CELL_KEY_VERSION = 1;
+    private const int CURRENT_CELL_KEY_SIGNED_VERSION = 1;
+    private const int CURRENT_ROLE_VERSION = 1;
+    private const int CURRENT_ROLE_SIGNED_VERSION = 1;
+    private const int CURRENT_ROLE_ASSIGNMENT_VERSION = 1;
+    private const int CURRENT_ROLE_ASSIGNMENT_SIGNED_VERSION = 1;
+    private const int CURRENT_GRANT_KEY_VERSION = 1;
+    private const int CURRENT_GRANT_KEY_SIGNED_VERSION = 1;
 
     /**
      * PureModelSerializer constructor.
      * @param VirgilCrypto $crypto
      * @param VirgilKeyPair $signingKey
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(VirgilCrypto $crypto, VirgilKeyPair $signingKey)
+    public function __construct(private readonly VirgilCrypto $crypto, private readonly VirgilKeyPair $signingKey)
     {
         ValidationUtils::checkNull($crypto, "crypto");
         ValidationUtils::checkNull($signingKey, "signingKey");
-
-        $this->crypto = $crypto;
-        $this->signingKey = $signingKey;
     }
 
     /**
      * @param string $model
      * @return string
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     private function generateSignature(string $model): string
     {
         try {
             return $this->crypto->generateSignature($model, $this->signingKey->getPrivateKey());
-        } catch (SigningException $exception) {
-            throw new PureStorageGenericException(PureStorageGenericErrorStatus::SIGNING_EXCEPTION());
+        } catch (SigningException) {
+            $this->throwErrorStatus(PureStorageGenericErrorStatus::SIGNING_EXCEPTION());
         }
     }
 
@@ -122,27 +115,37 @@ class PureModelSerializer
      * @param string $signature
      * @param string $model
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     private function verifySignature(string $signature, string $model): void
     {
         try {
             $verified = $this->crypto->verifySignature($signature, $model, $this->signingKey->getPublicKey());
-        } catch (VerificationException $exception) {
-            throw new PureStorageGenericException(PureStorageGenericErrorStatus::VERIFICATION_EXCEPTION());
+        } catch (VerificationException) {
+            $this->throwErrorStatus(PureStorageGenericErrorStatus::VERIFICATION_EXCEPTION());
         }
 
-        if (!$verified)
-            throw new PureStorageGenericException(PureStorageGenericErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
+        if (!$verified) {
+            $this->throwErrorStatus(PureStorageGenericErrorStatus::STORAGE_SIGNATURE_VERIFICATION_FAILED());
+        }
+    }
+
+    /**
+     * @param $status
+     * @return void
+     * @throws PureStorageGenericException
+     */
+    private function throwErrorStatus($status): void
+    {
+        throw new PureStorageGenericException($status);
     }
 
     /**
      * @param UserRecord $userRecord
      * @return ProtoUserRecord
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function serializeUserRecord(UserRecord $userRecord): ProtoUserRecord
     {
@@ -151,8 +154,8 @@ class PureModelSerializer
         try {
             $enrollmentRecord = new ProtoEnrollmentRecord();
             $enrollmentRecord->mergeFromString($userRecord->getPheRecord());
-        } catch (\Exception $exception) {
-            throw new PureStorageGenericException(PureStorageGenericErrorStatus::INVALID_PROTOBUF());
+        } catch (Exception) {
+            $this->throwErrorStatus(PureStorageGenericErrorStatus::INVALID_PROTOBUF());
         }
 
         $userRecordSigned = (new ProtoUserRecordSigned)
@@ -182,12 +185,10 @@ class PureModelSerializer
     /**
      * @param ProtoUserRecord $protobufRecord
      * @return UserRecord
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
      * @throws PureStorageInvalidProtobufException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException|EmptyArgumentException
      */
     public function parseUserRecord(ProtoUserRecord $protobufRecord): UserRecord
     {
@@ -198,7 +199,7 @@ class PureModelSerializer
         try {
             $recordSigned = new ProtoUserRecordSigned();
             $recordSigned->mergeFromString($protobufRecord->getUserRecordSigned());
-        } catch (\Exception $exception) {
+        } catch (Exception) {
             throw new PureStorageInvalidProtobufException(new InvalidProtocolBufferException());
         }
 
@@ -208,6 +209,7 @@ class PureModelSerializer
             ->setT0($protobufRecord->getPheRecordT0())
             ->setT1($protobufRecord->getPheRecordT1())
             ->serializeToString();
+
 
         return new UserRecord(
             $recordSigned->getUserId(),
@@ -225,10 +227,9 @@ class PureModelSerializer
     /**
      * @param CellKey $cellKey
      * @return ProtoCellKey
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function serializeCellKey(CellKey $cellKey): ProtoCellKey
     {
@@ -254,12 +255,12 @@ class PureModelSerializer
     /**
      * @param ProtoCellKey $protobufRecord
      * @return CellKey
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
      * @throws PureStorageInvalidProtobufException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function parseCellKey(ProtoCellKey $protobufRecord): CellKey
     {
@@ -270,11 +271,13 @@ class PureModelSerializer
         try {
             $keySigned = new ProtoCellKeySigned();
             $keySigned->mergeFromString($protobufRecord->getCellKeySigned());
-        } catch (InvalidProtocolBufferException | \Exception $exception) {
+        } catch (InvalidProtocolBufferException | Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 
-        return new CellKey($keySigned->getUserId(), $keySigned->getDataId(),
+        return new CellKey(
+            $keySigned->getUserId(),
+            $keySigned->getDataId(),
             $keySigned->getCpk(),
             $keySigned->getEncryptedCskCms(),
             $keySigned->getEncryptedCskBody()
@@ -284,10 +287,9 @@ class PureModelSerializer
     /**
      * @param Role $role
      * @return ProtoRole
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function serializeRole(Role $role): ProtoRole
     {
@@ -310,11 +312,11 @@ class PureModelSerializer
     /**
      * @param ProtoRole $protobufRecord
      * @return Role
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws PureStorageInvalidProtobufException
+     * @throws PureStorageInvalidProtobufException|VirgilCryptoException
      */
     public function parseRole(ProtoRole $protobufRecord): Role
     {
@@ -325,7 +327,7 @@ class PureModelSerializer
         try {
             $roleSigned = new ProtoRoleSigned();
             $roleSigned->mergeFromString($protobufRecord->getRoleSigned());
-        } catch (InvalidProtocolBufferException | \Exception $exception) {
+        } catch (InvalidProtocolBufferException | Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 
@@ -335,10 +337,9 @@ class PureModelSerializer
     /**
      * @param RoleAssignment $roleAssignment
      * @return ProtoRoleAssignment
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function serializeRoleAssignment(RoleAssignment $roleAssignment): ProtoRoleAssignment
     {
@@ -363,12 +364,12 @@ class PureModelSerializer
     /**
      * @param ProtoRoleAssignment $protobufRecord
      * @return RoleAssignment
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
      * @throws PureStorageInvalidProtobufException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function parseRoleAssignment(ProtoRoleAssignment $protobufRecord): RoleAssignment
     {
@@ -379,23 +380,24 @@ class PureModelSerializer
         try {
             $roleAssignmentSigned = new ProtoRoleAssignmentSigned();
             $roleAssignmentSigned->mergeFromString($protobufRecord->getRoleAssignmentSigned());
-        } catch (InvalidProtocolBufferException | \Exception $exception) {
+        } catch (InvalidProtocolBufferException | Exception $exception) {
             throw new PureStorageInvalidProtobufException($exception);
         }
 
         return new RoleAssignment(
             $roleAssignmentSigned->getRoleName(),
             $roleAssignmentSigned->getUserId(),
-            $roleAssignmentSigned->getPublicKeyId(), $roleAssignmentSigned->getEncryptedRsk());
+            $roleAssignmentSigned->getPublicKeyId(),
+            $roleAssignmentSigned->getEncryptedRsk()
+        );
     }
 
     /**
      * @param GrantKey $grantKey
      * @return ProtoGrantKey
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function serializeGrantKey(GrantKey $grantKey): ProtoGrantKey
     {
@@ -423,12 +425,12 @@ class PureModelSerializer
     /**
      * @param ProtoGrantKey $protobufRecord
      * @return GrantKey
-     * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureStorageGenericException
      * @throws PureStorageInvalidProtobufException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function parseGrantKey(ProtoGrantKey $protobufRecord): GrantKey
     {
@@ -439,7 +441,7 @@ class PureModelSerializer
         try {
             $grantKeySigned = new ProtoGrantKeySigned();
             $grantKeySigned->mergeFromString($protobufRecord->getGrantKeySigned());
-        } catch (\Exception $exception) {
+        } catch (Exception) {
             throw new PureStorageInvalidProtobufException(new InvalidProtocolBufferException());
         }
 
@@ -452,7 +454,8 @@ class PureModelSerializer
             $protobufRecord->getRecordVersion(),
             $protobufRecord->getEncryptedGrantKeyWrap(),
             $grantKeySigned->getEncryptedGrantKeyBlob(),
-            new \DateTime("@$cd"),
-            new \DateTime("@$ed"));
+            new DateTime("@$cd"),
+            new DateTime("@$ed")
+        );
     }
 }

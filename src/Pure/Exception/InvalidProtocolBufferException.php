@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -36,7 +36,6 @@
  */
 
 namespace Virgil\PureKit\Pure\Exception;
-
 
 /**
  * Class InvalidProtocolBufferException

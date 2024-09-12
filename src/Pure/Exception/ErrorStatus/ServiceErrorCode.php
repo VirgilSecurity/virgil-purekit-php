@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -42,16 +42,21 @@ use MyCLabs\Enum\Enum;
 /**
  * Class ServiceErrorCode
  * @package Virgil\PureKit\Pure\Exception
+ * @method static USER_NOT_FOUND()
+ * @method static CELL_KEY_NOT_FOUND()
+ * @method static ROLE_ASSIGNMENT_NOT_FOUND()
+ * @method static GRANT_KEY_NOT_FOUND()
+ * @method static CELL_KEY_ALREADY_EXISTS()
  */
 class ServiceErrorCode extends Enum
 {
-    private const USER_NOT_FOUND = 50003;
-    private const CELL_KEY_NOT_FOUND = 50004;
-    private const CELL_KEY_ALREADY_EXISTS = 50006;
-    private const GRANT_KEY_NOT_FOUND = 50023;
-    private const ROLE_ASSIGNMENT_NOT_FOUND = 50015;
-    private const THROTTLING = 50070;
-    private const UNDEFINED = 0;
+    private const int USER_NOT_FOUND = 50003;
+    private const int CELL_KEY_NOT_FOUND = 50004;
+    private const int CELL_KEY_ALREADY_EXISTS = 50006;
+    private const int GRANT_KEY_NOT_FOUND = 50023;
+    private const int ROLE_ASSIGNMENT_NOT_FOUND = 50015;
+    private const int THROTTLING = 50070;
+    private const int UNDEFINED = 0;
 
     /**
      * @return int

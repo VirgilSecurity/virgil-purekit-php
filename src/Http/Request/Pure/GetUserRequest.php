@@ -1,7 +1,7 @@
 <?php
 /**
  * *
- *  * Copyright (c) 2015-2020 Virgil Security Inc.
+ *  * Copyright (c) 2015-2024 Virgil Security Inc.
  *  *
  *  * All rights reserved.
  *  *
@@ -45,17 +45,11 @@ use PurekitV3Client\GetUserRequest as ProtoGetUserRequest;
 class GetUserRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $userId;
-
-    /**
      * GetUserRequest constructor.
      * @param string $userId
      */
-    public function __construct(string $userId)
+    public function __construct(private readonly string $userId)
     {
-        $this->userId = $userId;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,31 +37,20 @@
 
 namespace Virgil\PureKit\Pure;
 
-
 /**
  * Class RotationResults
  * @package Virgil\PureKit\Pure
  */
-class RotationResults
+readonly class RotationResults
 {
-    /**
-     * @var int
-     */
-    private $usersRotated;
-    /**
-     * @var int
-     */
-    private $grantKeysRotated;
 
     /**
      * RotationResults constructor.
      * @param int $usersRotated
      * @param int $grantKeysRotated
      */
-    public function __construct(int $usersRotated, int $grantKeysRotated)
+    public function __construct(private int $usersRotated, private int $grantKeysRotated)
     {
-        $this->usersRotated = $usersRotated;
-        $this->grantKeysRotated = $grantKeysRotated;
     }
 
     /**

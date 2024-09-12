@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,8 +37,14 @@
 
 namespace Virgil\PureKit\Http;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use PurekitV3Client\DecryptResponse as ProtoDecryptResponse;
 use Virgil\PureKit\Http\Request\Kms\DecryptRequest;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
@@ -47,15 +53,14 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  */
 class HttpKmsClient extends HttpBaseClient
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
+    public const string SERVICE_ADDRESS = "https://api.virgilsecurity.com/kms/v1";
 
     /**
      * HttpKmsClient constructor.
      * @param string $appToken
      * @param string $serviceBaseUrl
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS)
     {
@@ -68,7 +73,7 @@ class HttpKmsClient extends HttpBaseClient
     /**
      * @param DecryptRequest $request
      * @return ProtoDecryptResponse
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws ProtocolException | Exception|GuzzleException
      */
     public function decrypt(DecryptRequest $request): ProtoDecryptResponse
     {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,18 +46,13 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class DecryptRequest extends BaseRequest
 {
-    /**
-     * @var \PurekitV3Client\DecryptRequest
-     */
-    private $decryptRequest;
 
     /**
      * DecryptRequest constructor.
      * @param ProtoDecryptRequest $decryptRequest
      */
-    public function __construct(ProtoDecryptRequest $decryptRequest)
+    public function __construct(private readonly ProtoDecryptRequest $decryptRequest)
     {
-        $this->decryptRequest = $decryptRequest;
     }
 
     /**

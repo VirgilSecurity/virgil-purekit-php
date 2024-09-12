@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,34 +37,16 @@
 
 namespace Virgil\PureKit\Pure\Model;
 
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
  * Class CellKey
  * @package Virgil\PureKit\Pure\Model
  */
-class CellKey
+readonly class CellKey
 {
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $dataId;
-    /**
-     * @var string
-     */
-    private $cpk;
-    /**
-     * @var string
-     */
-    private $encryptedCskCms;
-    /**
-     * @var string
-     */
-    private $encryptedCskBody;
 
     /**
      * CellKey constructor.
@@ -73,23 +55,21 @@ class CellKey
      * @param string $cpk
      * @param string $encryptedCskCms
      * @param string $encryptedCskBody
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
-    public function __construct(string $userId, string $dataId, string $cpk, string $encryptedCskCms, string $encryptedCskBody)
-    {
+    public function __construct(
+        private string $userId,
+        private string $dataId,
+        private string $cpk,
+        private string $encryptedCskCms,
+        private string $encryptedCskBody
+    ) {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNullOrEmpty($dataId, "dataId");
         ValidationUtils::checkNullOrEmpty($cpk, "cpk");
         ValidationUtils::checkNullOrEmpty($encryptedCskCms, "encryptedCskCms");
         ValidationUtils::checkNullOrEmpty($encryptedCskBody, "encryptedCskBody");
-
-        $this->userId = $userId;
-        $this->dataId = $dataId;
-        $this->cpk = $cpk;
-        $this->encryptedCskCms = $encryptedCskCms;
-        $this->encryptedCskBody = $encryptedCskBody;
     }
 
     /**

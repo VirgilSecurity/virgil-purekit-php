@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,11 +37,17 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use PheException;
 use Virgil\Crypto\Core\Enum\HashAlgorithms;
+use Virgil\Crypto\VirgilCrypto;
 use Virgil\CryptoWrapper\Phe\PheClient;
+use Virgil\PureKit\Http\HttpPheClient;
 use Virgil\PureKit\Http\Request\Phe\EnrollRequest;
 use Virgil\PureKit\Http\Request\Phe\VerifyPasswordRequest;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Exception\NullPointerException;
 use Virgil\PureKit\Pure\Exception\PheClientException;
 use Virgil\PureKit\Pure\Exception\ProtocolException;
@@ -58,29 +64,29 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
 class PheManager
 {
     /**
-     * @var \Virgil\Crypto\VirgilCrypto
+     * @var VirgilCrypto
      */
-    private $crypto;
+    private VirgilCrypto $crypto;
     /**
      * @var int
      */
-    private $currentVersion;
+    private int $currentVersion;
     /**
      * @var PheClient
      */
-    private $currentClient;
+    private PheClient $currentClient;
     /**
-     * @var null
+     * @var string|null
      */
-    private $updateToken;
+    private ?string $updateToken = null;
     /**
-     * @var null
+     * @var PheClient|null
      */
-    private $previousClient;
+    private ?PheClient $previousClient = null;
     /**
-     * @var \Virgil\PureKit\Http\HttpPheClient
+     * @var HttpPheClient
      */
-    private $httpClient;
+    private HttpPheClient $httpClient;
 
     /**
      * PheManager constructor.
@@ -102,14 +108,17 @@ class PheManager
                 $this->previousClient = new PheClient();
                 $this->previousClient->useOperationRandom($this->crypto->getRng());
                 $this->previousClient->useRandom($this->crypto->getRng());
-                $this->previousClient->setKeys($context->getSecretKey()->getPayload1(),
-                    $context->getPublicKey()->getPayload1());
+                $this->previousClient->setKeys(
+                    $context->getSecretKey()->getPayload1(),
+                    $context->getPublicKey()->getPayload1()
+                );
 
                 // [new_client_private_key, new_server_public_key]
                 $rotateKeysResult = $this->previousClient->rotateKeys($context->getUpdateToken()->getPayload1());
-                $this->currentClient->setKeys($rotateKeysResult[0],
-                    $rotateKeysResult[1]);
-
+                $this->currentClient->setKeys(
+                    $rotateKeysResult[0],
+                    $rotateKeysResult[1]
+                );
             } else {
                 $this->currentVersion = $context->getPublicKey()->getVersion();
                 $this->updateToken = null;
@@ -119,7 +128,7 @@ class PheManager
             }
 
             $this->httpClient = $context->getPheClient();
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -144,10 +153,9 @@ class PheManager
      * @param UserRecord $userRecord
      * @param string $password
      * @return string
-     * @throws NullPointerException
      * @throws PheClientException
      * @throws PureCryptoException
-     * @throws PureLogicException
+     * @throws GuzzleException
      */
     public function computePheKey(UserRecord $userRecord, string $password): string
     {
@@ -160,36 +168,40 @@ class PheManager
      * @param UserRecord $userRecord
      * @param string $passwordHash
      * @return string
-     * @throws NullPointerException
      * @throws PheClientException
      * @throws PureCryptoException
-     * @throws PureLogicException
+     * @throws GuzzleException
      */
     public function computePheKey_(UserRecord $userRecord, string $passwordHash): string
     {
         try {
             $client = $this->getPheClient($userRecord->getRecordVersion());
 
-                $pheVerifyRequest = $client->createVerifyPasswordRequest($passwordHash,
-                    $userRecord->getPheRecord());
+                $pheVerifyRequest = $client->createVerifyPasswordRequest(
+                    $passwordHash,
+                    $userRecord->getPheRecord()
+                );
 
                 $request = new VerifyPasswordRequest($pheVerifyRequest, $userRecord->getRecordVersion());
 
                 $response = $this->httpClient->verifyPassword($request);
 
-                $phek = $client->checkResponseAndDecrypt($passwordHash,
+                $phek = $client->checkResponseAndDecrypt(
+                    $passwordHash,
                     $userRecord->getPheRecord(),
-                    $response->getResponse());
+                    $response->getResponse()
+                );
 
-                if (strlen($phek) == 0)
-                    throw new PureLogicException(PureLogicErrorStatus::INVALID_PASSWORD());
+            if (strlen($phek) == 0) {
+                throw new PureLogicException(PureLogicErrorStatus::INVALID_PASSWORD());
+            }
 
                 return $phek;
-            }
-        catch (\PheException $exception) {
+        } catch (PheException $exception) {
             throw new PureCryptoException($exception);
         }
-        catch (ProtocolException | ProtocolHttpException $exception) {
+        // todo: check possibility of catch ProtocolException and ProtocolHttpException
+        catch (ProtocolException | ProtocolHttpException | Exception $exception) {
             throw new PheClientException($exception);
         }
     }
@@ -197,27 +209,26 @@ class PheManager
     /**
      * @param string $enrollmentRecord
      * @return string
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      */
-    public function performRotation(string $enrollmentRecord): string {
+    public function performRotation(string $enrollmentRecord): string
+    {
 
         ValidationUtils::checkNull($this->updateToken, "pheUpdateToken");
 
         try {
             return $this->previousClient->updateEnrollmentRecord($enrollmentRecord, $this->updateToken);
-        } catch (\PheException $exception) {
+        } catch (PheException | Exception $exception) {
             throw new PureCryptoException($exception);
         }
-
     }
 
     /**
      * @param string $passwordHash
      * @return array
      * @throws PheClientException
-     * @throws PureCryptoException
+     * @throws PureCryptoException|GuzzleException
      */
     public function getEnrollment(string $passwordHash): array
     {
@@ -235,7 +246,7 @@ class PheManager
                 $response->getResponse(),
                 $passwordHash
             );
-        } catch (\PheException $exception) {
+        } catch (PheException | Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }

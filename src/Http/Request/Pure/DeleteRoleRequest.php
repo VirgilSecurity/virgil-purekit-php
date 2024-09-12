@@ -1,7 +1,7 @@
 <?php
 /**
  * *
- *  * Copyright (c) 2015-2020 Virgil Security Inc.
+ *  * Copyright (c) 2015-2024 Virgil Security Inc.
  *  *
  *  * All rights reserved.
  *  *
@@ -49,17 +49,11 @@ use PurekitV3Client\DeleteRoleRequest as ProtoDeleteRoleRequest;
 class DeleteRoleRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $roleName;
-
-    /**
      * DeleteCellKeyRequest constructor.
      * @param string $roleName
      */
-    public function __construct(string $roleName)
+    public function __construct(private string $roleName)
     {
-        $this->roleName = $roleName;
     }
 
     /**

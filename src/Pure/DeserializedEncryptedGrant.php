@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,26 +44,17 @@ use PurekitV3Grant\EncryptedGrantHeader;
  * Class DeserializedEncryptedGrant
  * @package Virgil\PureKit\Pure
  */
-class DeserializedEncryptedGrant
+readonly class DeserializedEncryptedGrant
 {
-    /**
-     * @var EncryptedGrant
-     */
-    private $encryptedGrant;
-    /**
-     * @var EncryptedGrantHeader
-     */
-    private $header;
-
     /**
      * DeserializedEncryptedGrant constructor.
      * @param EncryptedGrant $encryptedGrant
      * @param EncryptedGrantHeader $header
      */
-    public function __construct(EncryptedGrant $encryptedGrant, EncryptedGrantHeader $header)
-    {
-        $this->encryptedGrant = $encryptedGrant;
-        $this->header = $header;
+    public function __construct(
+        private EncryptedGrant $encryptedGrant,
+        private EncryptedGrantHeader $header
+    ) {
     }
 
     /**

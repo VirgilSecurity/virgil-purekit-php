@@ -27,7 +27,8 @@ class EnrollmentRequest extends \Google\Protobuf\Internal\Message
      *     @type int $version
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Purekit::initOnce();
         parent::__construct($data);
     }
@@ -53,6 +54,4 @@ class EnrollmentRequest extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

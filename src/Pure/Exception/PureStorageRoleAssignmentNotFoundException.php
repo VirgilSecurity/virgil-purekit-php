@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
 /**
  * Class PureStorageRoleAssignmentNotFoundException
  * @package Virgil\PureKit\Pure\Exception
@@ -45,23 +44,12 @@ namespace Virgil\PureKit\Pure\Exception;
 class PureStorageRoleAssignmentNotFoundException extends PureStorageException
 {
     /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $roleName;
-
-    /**
      * PureStorageRoleAssignmentNotFoundException constructor.
      * @param string $userId
      * @param string $roleName
      */
-    public function __construct(string $userId, string $roleName)
+    public function __construct(private readonly string $userId, private readonly string $roleName)
     {
-        $this->userId = $userId;
-        $this->roleName = $roleName;
         parent::__construct();
     }
 

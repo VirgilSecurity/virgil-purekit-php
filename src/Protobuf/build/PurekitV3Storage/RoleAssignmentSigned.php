@@ -47,7 +47,8 @@ class RoleAssignmentSigned extends \Google\Protobuf\Internal\Message
      *     @type string $encrypted_rsk
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -90,7 +91,7 @@ class RoleAssignmentSigned extends \Google\Protobuf\Internal\Message
      */
     public function setRoleName($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->role_name = $var;
 
         return $this;
@@ -112,7 +113,7 @@ class RoleAssignmentSigned extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
@@ -134,7 +135,7 @@ class RoleAssignmentSigned extends \Google\Protobuf\Internal\Message
      */
     public function setPublicKeyId($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->public_key_id = $var;
 
         return $this;
@@ -156,11 +157,9 @@ class RoleAssignmentSigned extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedRsk($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_rsk = $var;
 
         return $this;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,23 +47,12 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class GetRoleAssignmentRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $roleName;
-    /**
-     * @var string
-     */
-    private $userId;
-
-    /**
      * GetRoleAssignmentRequest constructor.
      * @param string $roleName
      * @param string $userId
      */
-    public function __construct(string $roleName, string $userId)
+    public function __construct(private readonly string $roleName, private readonly string $userId)
     {
-        $this->roleName = $roleName;
-        $this->userId = $userId;
     }
 
     /**

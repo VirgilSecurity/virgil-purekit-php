@@ -8,11 +8,12 @@ class PurekitV3Crypto
 {
     public static $is_initialized = false;
 
-    public static function initOnce() {
+    public static function initOnce()
+    {
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
 
         if (static::$is_initialized == true) {
-          return;
+            return;
         }
         $pool->internalAddGeneratedFile(hex2bin(
             "0a750a16707572656b697456335f63727970746f2e70726f746f120f7075" .
@@ -24,4 +25,3 @@ class PurekitV3Crypto
         static::$is_initialized = true;
     }
 }
-

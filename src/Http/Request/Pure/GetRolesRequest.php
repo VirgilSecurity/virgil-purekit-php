@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,17 +47,11 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class GetRolesRequest extends BaseRequest
 {
     /**
-     * @var array
-     */
-    private $roleNames;
-
-    /**
      * GetRolesRequest constructor.
      * @param array $roleNames
      */
-    public function __construct(array $roleNames)
+    public function __construct(private readonly array $roleNames)
     {
-        $this->roleNames = $roleNames;
     }
 
     /**

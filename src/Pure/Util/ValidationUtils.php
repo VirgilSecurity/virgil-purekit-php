@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -38,7 +38,6 @@
 namespace Virgil\PureKit\Pure\Util;
 
 use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
-use Virgil\PureKit\Pure\Exception\IllegalStateException;
 use Virgil\PureKit\Pure\Exception\NullArgumentException;
 
 /**
@@ -51,34 +50,29 @@ class ValidationUtils
      * @param mixed $argument
      * @param string $name
      * @throws EmptyArgumentException
-     * @throws IllegalStateException
      * @throws NullArgumentException
      */
-    public static function checkNullOrEmpty($argument, string $name)
+    public static function checkNullOrEmpty(mixed $argument, string $name): void
     {
-        if (is_null($name))
-            throw new IllegalStateException("\'name\' cannot be null");
-
-        if (is_null($argument))
+        if (is_null($argument)) {
             throw new NullArgumentException($name);
+        }
 
-        if (empty($argument))
+        if (empty($argument)) {
             throw new EmptyArgumentException($name);
+        }
     }
 
     /**
      * @param mixed $argument
      * @param string $name
-     * @throws IllegalStateException
      * @throws NullArgumentException
      */
-    public static function checkNull($argument, string $name)
+    public static function checkNull(mixed $argument, string $name): void
     {
-        if (is_null($name))
-            throw new IllegalStateException("\'name\' cannot be null");
-
-        if (is_null($argument))
+        if (is_null($argument)) {
             throw new NullArgumentException($name);
+        }
     }
 
     // TODO!

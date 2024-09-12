@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,20 +44,8 @@ use Virgil\PureKit\Pure\Model\UserRecord;
  * Class RegistrationResult
  * @package Virgil\PureKit\Pure
  */
-class RegistrationResult
+readonly class RegistrationResult
 {
-    /**
-     * @var UserRecord
-     */
-    private $userRecord;
-    /**
-     * @var VirgilKeyPair
-     */
-    private $ukp;
-    /**
-     * @var string
-     */
-    private $phek;
 
     /**
      * RegistrationResult constructor.
@@ -65,11 +53,11 @@ class RegistrationResult
      * @param VirgilKeyPair $ukp
      * @param string $phek
      */
-    public function __construct(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek)
-    {
-        $this->userRecord = $userRecord;
-        $this->ukp = $ukp;
-        $this->phek = $phek;
+    public function __construct(
+        private UserRecord $userRecord,
+        private VirgilKeyPair $ukp,
+        private string $phek
+    ) {
     }
 
     /**

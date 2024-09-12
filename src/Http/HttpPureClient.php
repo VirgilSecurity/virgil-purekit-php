@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Http;
 
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use PurekitV3Storage\CellKey as ProtoCellKey;
 use PurekitV3Storage\GrantKey as ProtoGrantKey;
 use PurekitV3Storage\RoleAssignment as ProtoRoleAssignment;
@@ -63,6 +65,10 @@ use Virgil\PureKit\Http\Request\Pure\InsertRoleRequest;
 use Virgil\PureKit\Http\Request\Pure\InsertUserRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateCellKeyRequest;
 use Virgil\PureKit\Http\Request\Pure\UpdateUserRequest;
+use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
+use Virgil\PureKit\Pure\Exception\ProtocolException;
 use Virgil\PureKit\Pure\Util\ValidationUtils;
 
 /**
@@ -71,15 +77,14 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  */
 class HttpPureClient extends HttpBaseClient
 {
-    public const SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
+    public const string SERVICE_ADDRESS = "https://api.virgilsecurity.com/pure/v1/";
 
     /**
      * HttpPureClient constructor.
      * @param string $appToken
      * @param string $serviceBaseUrl
-     * @throws \Virgil\PureKit\Pure\Exception\EmptyArgumentException
-     * @throws \Virgil\PureKit\Pure\Exception\IllegalStateException
-     * @throws \Virgil\PureKit\Pure\Exception\NullArgumentException
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
      */
     public function __construct(string $appToken, string $serviceBaseUrl = self::SERVICE_ADDRESS)
     {
@@ -91,7 +96,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertUserRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function insertUser(InsertUserRequest $request): void
     {
@@ -100,7 +105,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param UpdateUserRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function updateUser(UpdateUserRequest $request): void
     {
@@ -110,7 +115,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetUserRequest $request
      * @return ProtoUserRecord
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws ProtocolException | Exception|GuzzleException
      */
     public function getUser(GetUserRequest $request): ProtoUserRecord
     {
@@ -125,7 +130,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetUsersRequest $request
      * @return ProtoUserRecords
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws ProtocolException | Exception|GuzzleException
      */
     public function getUsers(GetUsersRequest $request): ProtoUserRecords
     {
@@ -139,7 +144,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteUserRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function deleteUser(DeleteUserRequest $request): void
     {
@@ -148,7 +153,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertCellKeyRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function insertCellKey(InsertCellKeyRequest $request): void
     {
@@ -157,7 +162,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param UpdateCellKeyRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function updateCellKey(UpdateCellKeyRequest $request): void
     {
@@ -167,7 +172,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetCellKeyRequest $request
      * @return ProtoCellKey
-     * @throws \Exception
+     * @throws Exception|GuzzleException
      */
     public function getCellKey(GetCellKeyRequest $request): ProtoCellKey
     {
@@ -181,7 +186,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteCellKeyRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function deleteCellKey(DeleteCellKeyRequest $request): void
     {
@@ -190,7 +195,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertRoleRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function insertRole(InsertRoleRequest $request): void
     {
@@ -200,7 +205,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetRolesRequest $request
      * @return ProtoRoles
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws ProtocolException | Exception|GuzzleException
      */
     public function getRoles(GetRolesRequest $request): ProtoRoles
     {
@@ -214,7 +219,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertRoleAssignmentsRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function insertRoleAssignments(InsertRoleAssignmentsRequest $request): void
     {
@@ -224,7 +229,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetRoleAssignmentsRequest $request
      * @return ProtoRoleAssignments
-     * @throws \Exception
+     * @throws Exception|GuzzleException
      */
     public function getRoleAssignments(GetRoleAssignmentsRequest $request): ProtoRoleAssignments
     {
@@ -239,7 +244,7 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetRoleAssignmentRequest $request
      * @return ProtoRoleAssignment
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException | \Exception
+     * @throws ProtocolException | Exception|GuzzleException
      */
     public function getRoleAssignment(GetRoleAssignmentRequest $request): ProtoRoleAssignment
     {
@@ -253,7 +258,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteRoleAssignmentsRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function deleteRoleAssignments(DeleteRoleAssignmentsRequest $request): void
     {
@@ -262,7 +267,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param InsertGrantKeyRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function insertGrantKey(InsertGrantKeyRequest $request): void
     {
@@ -272,8 +277,8 @@ class HttpPureClient extends HttpBaseClient
     /**
      * @param GetGrantKeyRequest $request
      * @return ProtoGrantKey
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
-     * @throws \Exception
+     * @throws ProtocolException
+     * @throws Exception|GuzzleException
      */
     public function getGrantKey(GetGrantKeyRequest $request): ProtoGrantKey
     {
@@ -287,7 +292,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteGrantKeyRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function deleteGrantKey(DeleteGrantKeyRequest $request): void
     {
@@ -296,7 +301,7 @@ class HttpPureClient extends HttpBaseClient
 
     /**
      * @param DeleteRoleRequest $request
-     * @throws \Virgil\PureKit\Pure\Exception\ProtocolException
+     * @throws ProtocolException|GuzzleException
      */
     public function deleteRole(DeleteRoleRequest $request): void
     {

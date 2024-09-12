@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -53,7 +53,7 @@ class PureException extends \Exception
     {
         if (is_string($e)) {
             parent::__construct($e);
-        } else if ($e instanceof Throwable) {
+        } elseif ($e instanceof Throwable) {
             parent::__construct($e->getMessage(), $e->getCode());
         }
     }

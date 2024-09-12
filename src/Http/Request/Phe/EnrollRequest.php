@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,18 +46,13 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class EnrollRequest extends BaseRequest
 {
-    /**
-     * @var int
-     */
-    private $version;
 
     /**
      * EnrollRequest constructor.
      * @param int $version
      */
-    public function __construct(int $version)
+    public function __construct(private readonly int $version)
     {
-        $this->version = $version;
     }
 
     /**

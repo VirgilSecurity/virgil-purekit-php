@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,23 +47,12 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class VerifyPasswordRequest extends BaseRequest
 {
     /**
-     * @var int
-     */
-    private $version;
-    /**
-     * @var string
-     */
-    private $verifyPasswordRequest;
-
-    /**
      * VerifyPasswordRequest constructor.
      * @param string $verifyPasswordRequest
      * @param int $version
      */
-    public function __construct(string $verifyPasswordRequest, int $version)
+    public function __construct(private readonly string $verifyPasswordRequest, private readonly int $version)
     {
-        $this->version = $version;
-        $this->verifyPasswordRequest = $verifyPasswordRequest;
     }
 
     /**

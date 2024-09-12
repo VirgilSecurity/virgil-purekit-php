@@ -32,7 +32,8 @@ class DeleteCellKeyRequest extends \Google\Protobuf\Internal\Message
      *     @type string $data_id
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -53,7 +54,7 @@ class DeleteCellKeyRequest extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
@@ -75,11 +76,9 @@ class DeleteCellKeyRequest extends \Google\Protobuf\Internal\Message
      */
     public function setDataId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->data_id = $var;
 
         return $this;
     }
-
 }
-

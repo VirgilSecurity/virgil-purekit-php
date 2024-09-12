@@ -57,7 +57,8 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      *     @type string $password_recovery_wrap
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -100,7 +101,7 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     public function setUserRecordSigned($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->user_record_signed = $var;
 
         return $this;
@@ -122,7 +123,7 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     public function setSignature($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->signature = $var;
 
         return $this;
@@ -144,7 +145,7 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     public function setPheRecordT0($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->phe_record_t0 = $var;
 
         return $this;
@@ -166,7 +167,7 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     public function setPheRecordT1($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->phe_record_t1 = $var;
 
         return $this;
@@ -210,11 +211,9 @@ class UserRecord extends \Google\Protobuf\Internal\Message
      */
     public function setPasswordRecoveryWrap($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->password_recovery_wrap = $var;
 
         return $this;
     }
-
 }
-

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,6 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
-
 /**
  * Class PureStorageUserNotFoundException
  * @package Virgil\PureKit\Pure\Exception
@@ -45,17 +44,11 @@ namespace Virgil\PureKit\Pure\Exception;
 class PureStorageUserNotFoundException extends PureStorageException
 {
     /**
-     * @var array
-     */
-    private $userIds;
-
-    /**
      * PureStorageUserNotFoundException constructor.
      * @param array $userIds
      */
-    public function __construct(array $userIds)
+    public function __construct(private readonly array $userIds)
     {
-        $this->userIds = $userIds;
         parent::__construct();
     }
 

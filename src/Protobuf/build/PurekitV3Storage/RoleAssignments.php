@@ -27,7 +27,8 @@ class RoleAssignments extends \Google\Protobuf\Internal\Message
      *     @type \PurekitV3Storage\RoleAssignment[]|\Google\Protobuf\Internal\RepeatedField $role_assignments
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -53,6 +54,4 @@ class RoleAssignments extends \Google\Protobuf\Internal\Message
 
         return $this;
     }
-
 }
-

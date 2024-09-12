@@ -52,7 +52,8 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      *     @type string $encrypted_csk_body
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -95,7 +96,7 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
@@ -117,7 +118,7 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     public function setDataId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->data_id = $var;
 
         return $this;
@@ -139,7 +140,7 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     public function setCpk($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->cpk = $var;
 
         return $this;
@@ -161,7 +162,7 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedCskCms($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_csk_cms = $var;
 
         return $this;
@@ -183,11 +184,9 @@ class CellKeySigned extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedCskBody($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_csk_body = $var;
 
         return $this;
     }
-
 }
-

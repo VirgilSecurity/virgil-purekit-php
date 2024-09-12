@@ -37,7 +37,8 @@ class DecryptRequest extends \Google\Protobuf\Internal\Message
      *     @type string $request
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -80,7 +81,7 @@ class DecryptRequest extends \Google\Protobuf\Internal\Message
      */
     public function setAlias($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->alias = $var;
 
         return $this;
@@ -102,11 +103,9 @@ class DecryptRequest extends \Google\Protobuf\Internal\Message
      */
     public function setRequest($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->request = $var;
 
         return $this;
     }
-
 }
-

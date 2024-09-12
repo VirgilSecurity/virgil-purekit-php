@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -53,8 +53,9 @@ class FileUtils
         $path = __DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . ".."
             . DIRECTORY_SEPARATOR . "VERSION";
 
-        if (is_file($path))
+        if (is_file($path)) {
             $v = trim(file_get_contents($path));
+        }
 
         return $v;
     }

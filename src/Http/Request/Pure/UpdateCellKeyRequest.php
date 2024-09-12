@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,30 +47,16 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class UpdateCellKeyRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $dataId;
-
-    /**
-     * @var ProtoCellKey
-     */
-    private $cellKey;
-
-    /**
      * UpdateCellKeyRequest constructor.
      * @param string $userId
      * @param string $dataId
      * @param ProtoCellKey $cellKey
      */
-    public function __construct(string $userId, string $dataId, ProtoCellKey $cellKey)
-    {
-        $this->cellKey = $cellKey;
-        $this->userId = $userId;
-        $this->dataId = $dataId;
+    public function __construct(
+        private readonly string $userId,
+        private readonly string $dataId,
+        private readonly ProtoCellKey $cellKey
+    ) {
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,7 +37,11 @@
 
 namespace Virgil\PureKit\Pure;
 
+use Exception;
+use Virgil\Crypto\Exceptions\VirgilCryptoException;
 use Virgil\Crypto\VirgilCrypto;
+use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
 use Virgil\PureKit\Pure\Exception\PureCryptoException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
 use Virgil\CryptoWrapper\Foundation\KeyMaterialRng;
@@ -48,21 +52,21 @@ use Virgil\CryptoWrapper\Foundation\KeyMaterialRng;
  */
 class NonrotatableSecretsGenerator
 {
-    private const NONROTATABLE_MASTER_SECRET_LENGTH = 32;
+    private const int NONROTATABLE_MASTER_SECRET_LENGTH = 32;
 
     /**
      * @param string $masterSecret
      * @return NonrotableSecrets
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws Exception
      */
     public static function generateSecrets(string $masterSecret): NonrotableSecrets
     {
-        if (self::NONROTATABLE_MASTER_SECRET_LENGTH != strlen($masterSecret))
-            throw new PureLogicException(ErrorStatus::NONROTABLE_MASTER_SECRET_INVALID_LENGTH());
+        if (self::NONROTATABLE_MASTER_SECRET_LENGTH != strlen($masterSecret)) {
+            throw new PureLogicException(PureLogicErrorStatus::NONROTABLE_MASTER_SECRET_INVALID_LENGTH());
+        }
 
         $rng = new KeyMaterialRng();
         $rng->resetKeyMaterial($masterSecret);
@@ -72,10 +76,9 @@ class NonrotatableSecretsGenerator
         try {
             $vskp = $crypto->generateKeyPair();
             $oskp = $crypto->generateKeyPair();
-        } catch (CryptoException $exception) {
+        } catch (VirgilCryptoException $exception) {
             throw new PureCryptoException($exception);
         }
-
 
         return new NonrotableSecrets($vskp, $oskp);
     }

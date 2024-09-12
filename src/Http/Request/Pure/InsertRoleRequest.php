@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,17 +47,11 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class InsertRoleRequest extends BaseRequest
 {
     /**
-     * @var ProtoRole
-     */
-    private $protoRole;
-
-    /**
      * InsertRoleRequest constructor.
      * @param ProtoRole $protoRole
      */
-    public function __construct(ProtoRole $protoRole)
+    public function __construct(private readonly ProtoRole $protoRole)
     {
-        $this->protoRole = $protoRole;
     }
 
     /**

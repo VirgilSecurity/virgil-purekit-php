@@ -27,7 +27,8 @@ class DeleteUserRequest extends \Google\Protobuf\Internal\Message
      *     @type string $user_id
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Client::initOnce();
         parent::__construct($data);
     }
@@ -48,11 +49,9 @@ class DeleteUserRequest extends \Google\Protobuf\Internal\Message
      */
     public function setUserId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkString($var, true);
         $this->user_id = $var;
 
         return $this;
     }
-
 }
-

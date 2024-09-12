@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,24 +46,14 @@ use Virgil\PureKit\Http\Request\BaseRequest;
  */
 class DeleteGrantKeyRequest extends BaseRequest
 {
-    /**
-     * @var string
-     */
-    private $userId;
-    /**
-     * @var string
-     */
-    private $keyId;
 
     /**
      * DeleteGrantKeyRequest constructor.
      * @param string $userId
      * @param string $keyId
      */
-    public function __construct(string $userId, string $keyId)
+    public function __construct(private readonly string $userId, private readonly string $keyId)
     {
-        $this->userId = $userId;
-        $this->keyId = $keyId;
     }
 
     /**

@@ -32,7 +32,8 @@ class EnrollmentResponse extends \Google\Protobuf\Internal\Message
      *     @type string $response
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Purekit::initOnce();
         parent::__construct($data);
     }
@@ -75,11 +76,9 @@ class EnrollmentResponse extends \Google\Protobuf\Internal\Message
      */
     public function setResponse($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->response = $var;
 
         return $this;
     }
-
 }
-

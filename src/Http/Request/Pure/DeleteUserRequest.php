@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,19 +47,13 @@ use PurekitV3Client\DeleteUserRequest as ProtoDeleteUserRequest;
 class DeleteUserRequest extends BaseRequest
 {
     /**
-     * @var string
-     */
-    private $userId;
-
-    /**
      * DeleteUserRequest constructor.
      * @param string $userId
      * @param bool $cascade
      */
-    public function __construct(string $userId, bool $cascade)
+    public function __construct(private readonly string $userId, bool $cascade)
     {
         $cascade = $cascade ? "true" : "false";
-        $this->userId = $userId;
         $this->setParams(["cascade" => $cascade]);
     }
 

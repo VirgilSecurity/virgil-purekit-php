@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,6 +37,8 @@
 
 namespace Virgil\PureKit\Pure\Exception;
 
+use Throwable;
+
 /**
  * Class PureStorageException
  * @package Virgil\PureKit\Pure\Exception
@@ -51,7 +53,7 @@ class PureStorageException extends PureException
     {
         if (is_string($exception)) {
             parent::__construct($exception);
-        } else if ($exception instanceof \Throwable) {
+        } elseif ($exception instanceof Throwable) {
             parent::__construct($exception->getMessage(), $exception->getCode());
         }
     }

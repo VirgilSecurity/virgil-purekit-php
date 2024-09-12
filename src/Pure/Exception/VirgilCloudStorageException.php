@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,13 +44,13 @@ namespace Virgil\PureKit\Pure\Exception;
 class VirgilCloudStorageException extends PureStorageException
 {
     /**
-     * @var ProtocolException
+     * @var ProtocolException|null
      */
-    private $protocolException;
+    private ?ProtocolException $protocolException;
     /**
-     * @var ProtocolHttpException
+     * @var ProtocolHttpException|null
      */
-    private $protocolHttpException;
+    private ?ProtocolHttpException $protocolHttpException;
 
     /**
      * VirgilCloudStorageException constructor.
@@ -65,7 +65,7 @@ class VirgilCloudStorageException extends PureStorageException
 
         if ($e instanceof ProtocolException) {
             $this->protocolException = $e;
-        } else if ($e instanceof ProtocolHttpException) {
+        } elseif ($e instanceof ProtocolHttpException) {
             $this->protocolHttpException = $e;
         } else {
             throw $e;

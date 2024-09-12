@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,13 +47,13 @@ use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
 class VirgilPublicKeyMap
 {
     /**
-     * @var
+     * @var array|null
      */
-    private $collection;
+    private ?array $collection = null;
     /**
      * @var VirgilPublicKeyCollection
      */
-    private $virgilPublicKeyCollection;
+    private VirgilPublicKeyCollection $virgilPublicKeyCollection;
 
     /**
      * VirgilPublicKeyMap constructor.
@@ -77,7 +77,8 @@ class VirgilPublicKeyMap
      * @param string $key
      * @return null|VirgilPublicKeyCollection
      */
-    public function get(string $key): ?VirgilPublicKeyCollection {
+    public function get(string $key): ?VirgilPublicKeyCollection
+    {
         if (!is_null($this->collection)) {
             return $this->collection[$key];
         }

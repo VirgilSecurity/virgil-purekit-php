@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -46,18 +46,12 @@ use Virgil\PureKit\Pure\Exception\ErrorStatus\PureStorageGenericErrorStatus;
 class PureStorageGenericException extends PureStorageException
 {
     /**
-     * @var PureStorageGenericErrorStatus
-     */
-    private $errorStatus;
-
-    /**
      * PureStorageGenericException constructor.
      * @param PureStorageGenericErrorStatus $errorStatus
      */
-    public function __construct(PureStorageGenericErrorStatus $errorStatus)
+    public function __construct(private readonly PureStorageGenericErrorStatus $errorStatus)
     {
         parent::__construct($errorStatus->getMessage());
-        $this->errorStatus = $errorStatus;
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -44,32 +44,19 @@ use Virgil\PureKit\Pure\Util\ValidationUtils;
  * Class AuthResult
  * @package Virgil\PureKit\Pure
  */
-class AuthResult
+readonly class AuthResult
 {
-    /**
-     * @var PureGrant
-     */
-    private $grant;
-    /**
-     * @var string
-     */
-    private $encryptedGrant;
-
     /**
      * AuthResult constructor.
      * @param PureGrant $grant
      * @param string $encryptedGrant
      * @throws Exception\EmptyArgumentException
-     * @throws Exception\IllegalStateException
      * @throws Exception\NullArgumentException
      */
-    public function __construct(PureGrant $grant, string $encryptedGrant)
+    public function __construct(private PureGrant $grant, private string $encryptedGrant)
     {
         ValidationUtils::checkNull($grant, "grant");
         ValidationUtils::checkNullOrEmpty($encryptedGrant, "encryptedGrant");
-
-        $this->grant = $grant;
-        $this->encryptedGrant = $encryptedGrant;
     }
 
     /**
@@ -87,5 +74,4 @@ class AuthResult
     {
         return $this->encryptedGrant;
     }
-
 }

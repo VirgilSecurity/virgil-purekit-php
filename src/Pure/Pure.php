@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -37,20 +37,27 @@
 
 namespace Virgil\PureKit\Pure;
 
+use DateTime;
+use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use PurekitV3Grant\EncryptedGrant as ProtoEncryptedGrant;
 use PurekitV3Grant\EncryptedGrantHeader as ProtoEncryptedGrantHeader;
 use Virgil\Crypto\Core\VirgilKeys\VirgilKeyPair;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPrivateKey;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKey;
 use Virgil\Crypto\Core\VirgilKeys\VirgilPublicKeyCollection;
+use Virgil\Crypto\Exceptions\VirgilCryptoException;
 use Virgil\PureKit\Pure\Collection\GrantKeyCollection;
 use Virgil\PureKit\Pure\Collection\RoleAssignmentCollection;
 use Virgil\PureKit\Pure\Collection\UserRecordCollection;
 use Virgil\PureKit\Pure\Collection\VirgilPublicKeyMap;
 use Virgil\PureKit\Pure\Exception\EmptyArgumentException;
 use Virgil\PureKit\Pure\Exception\ErrorStatus\PureLogicErrorStatus;
+use Virgil\PureKit\Pure\Exception\IllegalStateException;
+use Virgil\PureKit\Pure\Exception\KmsClientException;
+use Virgil\PureKit\Pure\Exception\NullArgumentException;
+use Virgil\PureKit\Pure\Exception\PheClientException;
 use Virgil\PureKit\Pure\Exception\PureLogicException;
-use Virgil\PureKit\Pure\Exception\PureStorageCellKEyAlreadyExistsException;
 use Virgil\PureKit\Pure\Exception\PureStorageCellKeyNotFoundException;
 use Virgil\PureKit\Pure\Model\CellKey;
 use Virgil\PureKit\Pure\Model\GrantKey;
@@ -68,51 +75,50 @@ use Virgil\PureKit\Pure\Exception\PureCryptoException;
  */
 class Pure
 {
-    public const DEFAULT_GRANT_TTL = 60 * 60;
+    public const int|float DEFAULT_GRANT_TTL = 60 * 60;
 
     /**
      * @var int
      */
-    private $currentGrantVersion = 1;
+    private int $currentGrantVersion = 1;
 
     /**
      * @var int
      */
-    private $currentVersion;
+    private int $currentVersion;
     /**
      * @var PureCrypto
      */
-    private $pureCrypto;
+    private PureCrypto $pureCrypto;
     /**
      * @var PureStorage
      */
-    private $storage;
+    private PureStorage $storage;
     /**
      * @var VirgilPublicKey
      */
-    private $buppk;
+    private VirgilPublicKey $buppk;
     /**
      * @var VirgilKeyPair
      */
-    private $oskp;
+    private VirgilKeyPair $oskp;
     /**
      * @var VirgilPublicKeyMap
      */
-    private $externalPublicKeys;
+    private VirgilPublicKeyMap $externalPublicKeys;
     /**
      * @var PheManager
      */
-    private $pheManager;
+    private PheManager $pheManager;
     /**
      * @var KmsManager
      */
-    private $kmsManager;
+    private KmsManager $kmsManager;
 
     /**
      * Pure constructor.
      * @param PureContext $context
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      */
     public function __construct(PureContext $context)
@@ -138,11 +144,10 @@ class Pure
      * @param string $userId
      * @param string $password
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\PheClientException
+     * @throws GuzzleException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function registerUser(string $userId, string $password): void
     {
@@ -155,11 +160,11 @@ class Pure
      * @param PureSessionParams $pureSessionParams
      * @return AuthResult
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\PheClientException
+     * @throws GuzzleException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function registerUser_(string $userId, string $password, PureSessionParams $pureSessionParams):
     AuthResult
@@ -170,8 +175,13 @@ class Pure
 
         $registrationResult = $this->_registerUserInternal($userId, $password);
 
-        return $this->_authenticateUserInternal($registrationResult->getUserRecord(), $registrationResult->getUkp(),
-            $registrationResult->getPhek(), $pureSessionParams->getSessionId(), $pureSessionParams->getTtl());
+        return $this->_authenticateUserInternal(
+            $registrationResult->getUserRecord(),
+            $registrationResult->getUkp(),
+            $registrationResult->getPhek(),
+            $pureSessionParams->getTtl(),
+            $pureSessionParams->getSessionId()
+        );
     }
 
     /**
@@ -180,19 +190,17 @@ class Pure
      * @param PureSessionParams|null $pureSessionParams
      * @return AuthResult
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\NullPointerException
-     * @throws Exception\PheClientException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException|GuzzleException
      */
     public function authenticateUser(string $userId, string $password, PureSessionParams $pureSessionParams = null):
     AuthResult
     {
-        if (is_null($pureSessionParams))
+        if (is_null($pureSessionParams)) {
             $pureSessionParams = new PureSessionParams();
+        }
 
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNullOrEmpty($password, "password");
@@ -205,16 +213,15 @@ class Pure
 
         $ukp = $this->pureCrypto->importPrivateKey($uskData);
 
-        return $this->_authenticateUserInternal($userRecord, $ukp, $phek, $pureSessionParams->getSessionId(),
-            $pureSessionParams->getTtl());
+        $ttl = $pureSessionParams->getTtl();
+        $sessionId = $pureSessionParams->getSessionId();
+        return $this->_authenticateUserInternal($userRecord, $ukp, $phek, $ttl, $sessionId);
     }
 
     /**
      * @param string $encryptedGrantString
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\NullPointerException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      * @throws PureLogicException
      */
@@ -225,8 +232,10 @@ class Pure
         // Just to check that grant was valid
         $this->decryptPheKeyFromEncryptedGrant($deserializedEncryptedGrant);
 
-        $this->getStorage()->deleteGrantKey($deserializedEncryptedGrant->getHeader()->getUserId(),
-        $deserializedEncryptedGrant->getHeader()->getKeyId());
+        $this->getStorage()->deleteGrantKey(
+            $deserializedEncryptedGrant->getHeader()->getUserId(),
+            $deserializedEncryptedGrant->getHeader()->getKeyId()
+        );
     }
 
     /**
@@ -235,35 +244,37 @@ class Pure
      * @param int $ttl
      * @return PureGrant
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
-    public function createUserGrantAsAdmin(string $userId, VirgilPrivateKey $bupsk, int $ttl = self::DEFAULT_GRANT_TTL): PureGrant
-    {
+    public function createUserGrantAsAdmin(
+        string $userId,
+        VirgilPrivateKey $bupsk,
+        int $ttl = self::DEFAULT_GRANT_TTL
+    ): PureGrant {
         ValidationUtils::checkNullOrEmpty($userId, "userId");
         ValidationUtils::checkNull($bupsk, "bupsk");
 
         $userRecord = $this->storage->selectUser($userId);
 
-        $usk = $this->pureCrypto->decryptBackup($userRecord->getEncryptedUskBackup(), $bupsk, $this->oskp->getPublicKey());
+        $cipherText = $userRecord->getEncryptedUskBackup();
+        $verifyKey = $this->oskp->getPublicKey();
+        $usk = $this->pureCrypto->decryptBackup($cipherText, $bupsk, $verifyKey);
 
         $upk = $this->pureCrypto->importPrivateKey($usk);
 
-        $creationDate = new \DateTime("now");
+        $creationDate = new DateTime("now");
         $ts = $creationDate->getTimestamp() + ($ttl * 1000);
-        $expirationDate = new \DateTime("@$ts");
+        $expirationDate = new DateTime("@$ts");
 
-        return new PureGrant($upk, $userId, null, $creationDate, $expirationDate);
+        return new PureGrant($upk, $userId, $creationDate, $expirationDate);
     }
 
     /**
      * @param string $encryptedGrantString
      * @return DeserializedEncryptedGrant
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureLogicException
      */
     private function deserializeEncryptedGrant(string $encryptedGrantString): DeserializedEncryptedGrant
@@ -275,14 +286,14 @@ class Pure
         try {
             $encryptedGrant = new ProtoEncryptedGrant();
             $encryptedGrant->mergeFromString($encryptedGrantData);
-        } catch (\Exception $exception) {
+        } catch (Exception) {
             throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
         }
 
         try {
             $header = new ProtoEncryptedGrantHeader();
             $header->mergeFromString($encryptedGrant->getHeader());
-        } catch (\Exception $exception) {
+        } catch (Exception) {
             throw new PureLogicException(PureLogicErrorStatus::GRANT_INVALID_PROTOBUF());
         }
 
@@ -292,7 +303,6 @@ class Pure
     /**
      * @param DeserializedEncryptedGrant $deserializedEncryptedGrant
      * @return string
-     * @throws Exception\NullPointerException
      * @throws PureCryptoException
      * @throws PureLogicException
      */
@@ -300,11 +310,14 @@ class Pure
     {
         $encryptedData = $deserializedEncryptedGrant->getEncryptedGrant()->getEncryptedPhek();
 
-        $grantKey = $this->storage->selectGrantKey($deserializedEncryptedGrant->getHeader()->getUserId(),
-            $deserializedEncryptedGrant->getHeader()->getKeyId());
+        $grantKey = $this->storage->selectGrantKey(
+            $deserializedEncryptedGrant->getHeader()->getUserId(),
+            $deserializedEncryptedGrant->getHeader()->getKeyId()
+        );
 
-        if ($grantKey->getExpirationDate() < new \DateTime("now"))
+        if ($grantKey->getExpirationDate() < new DateTime("now")) {
             throw new PureLogicException(PureLogicErrorStatus::GRANT_IS_EXPIRED());
+        }
 
         $header = $deserializedEncryptedGrant->getEncryptedGrant()->getHeader();
         $grantKeyRaw = $this->kmsManager->recoverGrantKey($grantKey, $header);
@@ -316,9 +329,7 @@ class Pure
      * @param string $encryptedGrantString
      * @return PureGrant
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\NullPointerException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      * @throws PureLogicException
      */
@@ -336,15 +347,20 @@ class Pure
 
         $sessionId = $deserializedEncryptedGrant->getHeader()->getSessionId();
 
-        if (empty($sessionId))
+        if (empty($sessionId)) {
             $sessionId = null;
+        }
 
         $cd = $deserializedEncryptedGrant->getHeader()->getCreationDate() * 1000;
         $ed = $deserializedEncryptedGrant->getHeader()->getExpirationDate() * 1000;
 
-        return new PureGrant($ukp, $deserializedEncryptedGrant->getHeader()->getUserId(), $sessionId,
-            new \DateTime("@$cd"),
-            new \DateTime("@$ed"));
+        return new PureGrant(
+            $ukp,
+            $deserializedEncryptedGrant->getHeader()->getUserId(),
+            new DateTime("@$cd"),
+            new DateTime("@$ed"),
+            $sessionId
+        );
     }
 
     /**
@@ -352,12 +368,10 @@ class Pure
      * @param string $oldPassword
      * @param string $newPassword
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\NullPointerException
-     * @throws Exception\PheClientException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws PureLogicException
+     * @throws GuzzleException
      */
     public function changeUserPassword(string $userId, string $oldPassword, string $newPassword): void
     {
@@ -369,7 +383,8 @@ class Pure
 
         $oldPhek = $this->pheManager->computePheKey($userRecord, $oldPassword);
 
-        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
+        $cipherText = $userRecord->getEncryptedUsk();
+        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($cipherText, "", $oldPhek);
 
         $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
@@ -378,9 +393,8 @@ class Pure
      * @param PureGrant $grant
      * @param string $newPassword
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws PureCryptoException
+     * @throws NullArgumentException
+     * @throws PureCryptoException|NullArgumentException|GuzzleException
      */
     public function changeUserPassword_(PureGrant $grant, string $newPassword): void
     {
@@ -398,13 +412,11 @@ class Pure
      * @param string $userId
      * @param string $newPassword
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\KmsClientException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\NullPointerException
-     * @throws Exception\PheClientException
+     * @throws KmsClientException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws PureLogicException
+     * @throws GuzzleException
      */
     public function recoverUser(string $userId, string $newPassword): void
     {
@@ -417,7 +429,8 @@ class Pure
 
         $oldPhek = $this->pheManager->computePheKey_($userRecord, $pwdHash);
 
-        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($userRecord->getEncryptedUsk(), "", $oldPhek);
+        $cipherText = $userRecord->getEncryptedUsk();
+        $privateKeyData = $this->pureCrypto->decryptSymmetricWithNewNonce($cipherText, "", $oldPhek);
 
         $this->_changeUserPasswordInternal($userRecord, $privateKeyData, $newPassword);
     }
@@ -427,16 +440,15 @@ class Pure
      * @param string $newPassword
      * @param bool $cascade
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\PheClientException
+     * @throws GuzzleException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
     public function resetUserPassword(string $userId, string $newPassword, bool $cascade): void
     {
         $this->deleteUser($userId, $cascade);
-        $this->_registerUserInternal($userId, $newPassword, false);
+        $this->_registerUserInternal($userId, $newPassword);
     }
 
     /**
@@ -451,28 +463,30 @@ class Pure
     /**
      * @return RotationResults
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
+     * @throws Exception
      */
     public function performRotation(): RotationResults
     {
-        if ($this->currentVersion <= 1)
+        if ($this->currentVersion <= 1) {
             return new RotationResults(0, 0);
+        }
 
         $usersRotated = 0;
         $grantKeysRotated = 0;
 
         while (true) {
+            /** todo - check is it correct work or not */
             $userRecords = $this->storage->selectUsers_($this->currentVersion - 1);
             $newUserRecords = new UserRecordCollection();
 
             if (!empty($userRecords->getAsArray())) {
                 foreach ($userRecords->getAsArray() as $userRecord) {
-
                     // TODO! Need to be checked
                     if ($userRecord->getRecordVersion() != $this->currentVersion - 1) {
-                        throw new \Exception("Assertion err: userRecordVersion != currentVersion");
+                        throw new Exception("Assertion err: userRecordVersion != currentVersion");
                     }
 
                     $newRecord = $this->pheManager->performRotation($userRecord->getPheRecord());
@@ -494,6 +508,7 @@ class Pure
                 }
             }
 
+            /** todo: check it */
             $this->storage->updateUsers($newUserRecords, $this->currentVersion - 1);
 
             if (empty($newUserRecords->getAsArray())) {
@@ -504,16 +519,16 @@ class Pure
         }
 
         while (true) {
+            /** todo: check it */
             $grantKeys = $this->getStorage()->selectGrantKeys($this->currentVersion - 1);
 
             $newGrantKeys = new GrantKeyCollection();
 
             if (!empty($grantKeys->getAsArray())) {
                 foreach ($grantKeys->getAsArray() as $grantKey) {
-
                     // TODO! Need to be checked
                     if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
-                        throw new \Exception("Assertion err: grantKeyVersion != currentVersion");
+                        throw new Exception("Assertion err: grantKeyVersion != currentVersion");
                     }
 
                     $newWrap = $this->kmsManager->performGrantRotation($grantKey->getEncryptedGrantKeyWrap());
@@ -532,12 +547,12 @@ class Pure
                 }
             }
 
+            /** todo: check it */
             $this->getStorage()->updateGrantKeys($newGrantKeys);
 
             if (empty($newGrantKeys->getAsArray())) {
                 break;
-            }
-            else {
+            } else {
                 $grantKeysRotated += count($newGrantKeys->getAsArray());
             }
         }
@@ -554,14 +569,18 @@ class Pure
      * @param string $plainText
      * @return string
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
-    public function encrypt(string $userId, string $dataId, array $otherUserIds, array $roleNames,
-                            VirgilPublicKeyCollection $publicKeys, string $plainText): string
-    {
+    public function encrypt(
+        string $userId,
+        string $dataId,
+        array $otherUserIds,
+        array $roleNames,
+        VirgilPublicKeyCollection $publicKeys,
+        string $plainText
+    ): string {
+        /** todo: check it bcz before structure was bad */
         ValidationUtils::checkNull($otherUserIds, "otherUserIds");
         ValidationUtils::checkNull($publicKeys, "publicKeys");
         ValidationUtils::checkNull($plainText, "plainText");
@@ -570,60 +589,157 @@ class Pure
         ValidationUtils::checkNullOrEmpty($dataId, "dataId");
 
         try {
-            $cellKey = $this->storage->selectCellKey($userId, $dataId);
-            $cpk = $this->pureCrypto->importPublicKey($cellKey->getCpk());
+            return $this->handleExistingCellKey($userId, $dataId, $plainText);
+            /** todo: check possibility catch this exception */
         } catch (PureStorageCellKeyNotFoundException $exception) {
+            return $this->handleNewCellKey($userId, $dataId, $plainText, $publicKeys, $otherUserIds, $roleNames);
+        }
+    }
 
-            $vpkc = new VirgilPublicKeyCollection();
-            try {
-                $recipientList = new VirgilPublicKeyCollection();
+    /**
+     * Handles the case of an existing CellKey.
+     * @throws PureCryptoException
+     */
+    private function handleExistingCellKey(string $userId, string $dataId, string $plainText): string
+    {
+        $cellKey = $this->storage->selectCellKey($userId, $dataId);
+        $cpk = $this->pureCrypto->importPublicKey($cellKey->getCpk());
 
-                $recipientList->addCollection($publicKeys);
+        // Create a collection of public keys for data encryption
+        return $this->encryptDataWithPublicKeyCollection($plainText, [$cpk]);
+    }
 
-                $userIds[] = $userId;
-                $userIds = array_merge($userIds, $otherUserIds);
+    /**
+     * Handles the case of a new CellKey.
+     * @param string $userId
+     * @param string $dataId
+     * @param string $plainText
+     * @param VirgilPublicKeyCollection $publicKeys
+     * @param array $otherUserIds
+     * @param array $roleNames
+     * @return string
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
+     * @throws PureCryptoException
+     */
+    private function handleNewCellKey(
+        string $userId,
+        string $dataId,
+        string $plainText,
+        VirgilPublicKeyCollection $publicKeys,
+        array $otherUserIds,
+        array $roleNames
+    ): string {
+        $recipientList = new VirgilPublicKeyCollection();
+        $recipientList->addCollection($publicKeys);
 
-                $userRecords = $this->storage->selectUsers($userIds);
+        // Collect users' public keys
+        $this->addUserPublicKeysToRecipientList($recipientList, array_merge([$userId], $otherUserIds));
 
-                foreach ($userRecords->getAsArray() as $record) {
-                    $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
-                    $recipientList->addPublicKey($otherUpk);
-                }
+        // Collect public role keys
+        $this->addRolePublicKeysToRecipientList($recipientList, $roleNames);
 
-                $roles = $this->storage->selectRoles($roleNames);
+        // Add external public keys
+        $this->addExternalPublicKeysToRecipientList($recipientList, $dataId);
 
-                if ($roles->getAsArray()) {
-                    foreach ($roles->getAsArray() as $role) {
-                        $rpk = $this->pureCrypto->importPublicKey($role->getRpk());
-                        $recipientList->addPublicKey($rpk);
-                    }
-                }
+        // Generate a new CellKey and encrypt it
+        return $this->generateAndStoreCellKey($userId, $dataId, $recipientList, $plainText);
+    }
 
-                $externalPublicKeys = $this->externalPublicKeys->get($dataId);
+    /**
+     * Adds users' public keys to the recipient list.
+     * @throws PureCryptoException
+     */
+    private function addUserPublicKeysToRecipientList(VirgilPublicKeyCollection $recipientList, array $userIds): void
+    {
+        $userRecords = $this->storage->selectUsers($userIds);
+        foreach ($userRecords->getAsArray() as $record) {
+            $otherUpk = $this->pureCrypto->importPublicKey($record->getUpk());
+            $recipientList->addPublicKey($otherUpk);
+        }
+    }
 
-                if (!is_null($externalPublicKeys)) {
-                    $recipientList->addCollection($externalPublicKeys);
-                }
+    /**
+     * Adds public role keys to the recipient list.
+     * @throws PureCryptoException
+     */
+    private function addRolePublicKeysToRecipientList(VirgilPublicKeyCollection $recipientList, array $roleNames): void
+    {
+        if (!empty($roleNames)) {
+            $roles = $this->storage->selectRoles($roleNames);
+            foreach ($roles->getAsArray() as $role) {
+                $rpk = $this->pureCrypto->importPublicKey($role->getRpk());
+                $recipientList->addPublicKey($rpk);
+            }
+        }
+    }
 
-                $ckp = $this->pureCrypto->generateCellKey();
-                $cpkData = $this->pureCrypto->exportPublicKey($ckp->getPublicKey());
-                $cskData = $this->pureCrypto->exportPrivateKey($ckp->getPrivateKey());
+    /**
+     * Adds external public keys to the recipient list.
+     */
+    private function addExternalPublicKeysToRecipientList(
+        VirgilPublicKeyCollection $recipientList,
+        string $dataId
+    ): void {
+        $externalPublicKeys = $this->externalPublicKeys->get($dataId);
+        if (!is_null($externalPublicKeys)) {
+            $recipientList->addCollection($externalPublicKeys);
+        }
+    }
 
-                $encryptedCskData = $this->pureCrypto->encryptCellKey($cskData, $recipientList, $this->oskp->getPrivateKey());
+    /**
+     * Generates and saves a new CellKey.
+     * @param string $userId
+     * @param string $dataId
+     * @param VirgilPublicKeyCollection $recipientList
+     * @param string $plainText
+     * @return string
+     * @throws EmptyArgumentException
+     * @throws NullArgumentException
+     * @throws PureCryptoException
+     */
+    private function generateAndStoreCellKey(
+        string $userId,
+        string $dataId,
+        VirgilPublicKeyCollection $recipientList,
+        string $plainText
+    ): string {
+        // Generating a new CellKey
+        $ckp = $this->pureCrypto->generateCellKey();
+        $cpkData = $this->pureCrypto->exportPublicKey($ckp->getPublicKey());
+        $cskData = $this->pureCrypto->exportPrivateKey($ckp->getPrivateKey());
 
-                $cellKey = new CellKey($userId, $dataId, $cpkData, $encryptedCskData->getCms(),
-                    $encryptedCskData->getBody());
+        // CellKey encryption
+        $encryptedCskData = $this->pureCrypto->encryptCellKey($cskData, $recipientList, $this->oskp->getPrivateKey());
 
-                $this->storage->insertCellKey($cellKey);
+        // Saving CellKey to storage
+        $cellKey = new CellKey(
+            $userId,
+            $dataId,
+            $cpkData,
+            $encryptedCskData->getCms(),
+            $encryptedCskData->getBody()
+        );
 
-                $cpk = $ckp->getPublicKey();
-                $vpkc->addPublicKey($cpk);
+        // Inserting CellKey into the storage
+        $this->storage->insertCellKey($cellKey);
 
-            } catch (PureStorageCellKeyAlreadyExistsException $exception) {
-                $cellKey = $this->storage->selectCellKey($userId, $dataId);
+        // Return encrypted data
+        return $this->encryptDataWithPublicKeyCollection($plainText, [$ckp->getPublicKey()]);
+    }
 
-                $cpk = $this->pureCrypto->importPublicKey($cellKey->getCpk());
-                $vpkc->addPublicKey($cpk);
+    /**
+     * Шифрует данные с использованием коллекции публичных ключей.
+     * @throws PureCryptoException
+     */
+    private function encryptDataWithPublicKeyCollection(string $plainText, array $publicKeys): string
+    {
+        // Create a collection of public keys for data encryption
+        $vpkc = new VirgilPublicKeyCollection();
+
+        foreach ($publicKeys as $key) {
+            if ($key instanceof VirgilPublicKey) {
+                $vpkc->addPublicKey($key);
             }
         }
 
@@ -637,13 +753,13 @@ class Pure
      * @param string $cipherText
      * @return string
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
      * @throws PureLogicException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
-    public function decrypt(PureGrant $grant, string $ownerUserId = null, string $dataId, string $cipherText): string
+    public function decrypt(PureGrant $grant, ?string $ownerUserId, string $dataId, string $cipherText): string
     {
         ValidationUtils::checkNull($grant, "grant");
         ValidationUtils::checkNull($cipherText, "cipherText");
@@ -651,13 +767,16 @@ class Pure
 
         $userId = $ownerUserId;
 
-        if (is_null($userId))
+        if (is_null($userId)) {
             $userId = $grant->getUserId();
+        }
 
         $cellKey = $this->storage->selectCellKey($userId, $dataId);
 
-        $pureCryptoData = new PureCryptoData($cellKey->getEncryptedCskCms(),
-            $cellKey->getEncryptedCskBody());
+        $pureCryptoData = new PureCryptoData(
+            $cellKey->getEncryptedCskCms(),
+            $cellKey->getEncryptedCskBody()
+        );
 
         $csk = null;
 
@@ -665,10 +784,9 @@ class Pure
             $csk = $this->pureCrypto->decryptCellKey(
                 $pureCryptoData,
                 $grant->getUkp()->getPrivateKey(),
-                $this->oskp->getPublicKey());
-
+                $this->oskp->getPublicKey()
+            );
         } catch (PureCryptoException $exception) {
-
             if (is_null($exception->getFoundationException()) ||
                 // TODO! Add Error code enum!
                 ($exception->getFoundationException()->getCode() != -303)) {
@@ -684,21 +802,27 @@ class Pure
                     $publicKeyId = $roleAssignment->getPublicKeyId();
 
                     if (in_array($publicKeyId, $publicKeysIds)) {
-
-                        $rskData = $this->pureCrypto->decryptRolePrivateKey($roleAssignment->getEncryptedRsk(),
-                            $grant->getUkp()->getPrivateKey(), $this->oskp->getPublicKey());
+                        $rskData = $this->pureCrypto->decryptRolePrivateKey(
+                            $roleAssignment->getEncryptedRsk(),
+                            $grant->getUkp()->getPrivateKey(),
+                            $this->oskp->getPublicKey()
+                        );
 
                         $rkp = $this->pureCrypto->importPrivateKey($rskData);
 
-                        $csk = $this->pureCrypto->decryptCellKey($pureCryptoData, $rkp->getPrivateKey(),
-                            $this->oskp->getPublicKey());
+                        $csk = $this->pureCrypto->decryptCellKey(
+                            $pureCryptoData,
+                            $rkp->getPrivateKey(),
+                            $this->oskp->getPublicKey()
+                        );
                         break;
                     }
                 }
             }
 
-            if (is_null($csk))
+            if (is_null($csk)) {
                 throw new PureLogicException(PureLogicErrorStatus::USER_HAS_NO_ACCESS_TO_DATA());
+            }
         }
 
         $ckp = $this->pureCrypto->importPrivateKey($csk);
@@ -713,22 +837,25 @@ class Pure
      * @param string $cipherText
      * @return string
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
      */
-    public function decrypt_(VirgilPrivateKey $privateKey, string $ownerUserId, string $dataId,
-                             string $cipherText): string
-    {
+    public function decrypt_(
+        VirgilPrivateKey $privateKey,
+        string $ownerUserId,
+        string $dataId,
+        string $cipherText
+    ): string {
         ValidationUtils::checkNull($privateKey, "privateKey");
         ValidationUtils::checkNullOrEmpty($dataId, "dataId");
         ValidationUtils::checkNullOrEmpty($ownerUserId, "ownerUserId");
 
         $cellKey = $this->storage->selectCellKey($ownerUserId, $dataId);
 
-        $pureCryptoData = new PureCryptoData($cellKey->getEncryptedCskCms(),
-            $cellKey->getEncryptedCskBody());
+        $pureCryptoData = new PureCryptoData(
+            $cellKey->getEncryptedCskCms(),
+            $cellKey->getEncryptedCskBody()
+        );
 
         $csk = $this->pureCrypto->decryptCellKey($pureCryptoData, $privateKey, $this->oskp->getPublicKey());
 
@@ -742,10 +869,10 @@ class Pure
      * @param string $dataId
      * @param array $roleNames
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException|NullArgumentException
      */
     public function shareToRole(PureGrant $grant, string $dataId, array $roleNames): void
     {
@@ -775,10 +902,9 @@ class Pure
      * @param string $dataId
      * @param string $otherUserId
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function share(PureGrant $grant, string $dataId, string $otherUserId): void
     {
@@ -795,14 +921,16 @@ class Pure
      * @param array $otherUserIds
      * @param VirgilPublicKeyCollection $publicKeys
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
-    public function share_(PureGrant $grant, string $dataId, array $otherUserIds,
-                           VirgilPublicKeyCollection $publicKeys): void
-    {
+    public function share_(
+        PureGrant $grant,
+        string $dataId,
+        array $otherUserIds,
+        VirgilPublicKeyCollection $publicKeys
+    ): void {
         ValidationUtils::checkNull($grant, "grant");
         ValidationUtils::checkNull($otherUserIds, "otherUserIds");
         ValidationUtils::checkNull($publicKeys, "publicKeys");
@@ -812,13 +940,19 @@ class Pure
         $keys = $this->keysWithOthers($publicKeys, $otherUserIds);
         $cellKey = $this->storage->selectCellKey($grant->getUserId(), $dataId);
 
-        $encryptedCskCms = $this->pureCrypto->addRecipientsToCellKey($cellKey->getEncryptedCskCms(),
+        $encryptedCskCms = $this->pureCrypto->addRecipientsToCellKey(
+            $cellKey->getEncryptedCskCms(),
             $grant->getUkp()->getPrivateKey(),
-            $keys);
+            $keys
+        );
 
-        $cellKeyNew = new CellKey($cellKey->getUserId(), $cellKey->getDataId(),
-            $cellKey->getCpk(), $encryptedCskCms,
-            $cellKey->getEncryptedCskBody());
+        $cellKeyNew = new CellKey(
+            $cellKey->getUserId(),
+            $cellKey->getDataId(),
+            $cellKey->getCpk(),
+            $encryptedCskCms,
+            $cellKey->getEncryptedCskBody()
+        );
 
         $this->storage->updateCellKey($cellKeyNew);
     }
@@ -828,10 +962,9 @@ class Pure
      * @param string $dataId
      * @param string $otherUserId
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function unshare(string $ownerUserId, string $dataId, string $otherUserId): void
     {
@@ -844,14 +977,16 @@ class Pure
      * @param array $otherUserIds
      * @param VirgilPublicKeyCollection $publicKeys
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
-    public function unshare_(string $ownerUserId, string $dataId, array $otherUserIds,
-                             VirgilPublicKeyCollection $publicKeys): void
-    {
+    public function unshare_(
+        string $ownerUserId,
+        string $dataId,
+        array $otherUserIds,
+        VirgilPublicKeyCollection $publicKeys
+    ): void {
         ValidationUtils::checkNull($otherUserIds, "otherUserIds");
         ValidationUtils::checkNull($publicKeys, "publicKeys");
 
@@ -864,8 +999,13 @@ class Pure
 
         $encryptedCskCms = $this->pureCrypto->deleteRecipientsFromCellKey($cellKey->getEncryptedCskCms(), $keys);
 
-        $cellKeyNew = new CellKey($cellKey->getUserId(), $cellKey->getDataId(),
-            $cellKey->getCpk(), $encryptedCskCms, $cellKey->getEncryptedCskBody());
+        $cellKeyNew = new CellKey(
+            $cellKey->getUserId(),
+            $cellKey->getDataId(),
+            $cellKey->getCpk(),
+            $encryptedCskCms,
+            $cellKey->getEncryptedCskBody()
+        );
 
         $this->storage->updateCellKey($cellKeyNew);
     }
@@ -883,10 +1023,10 @@ class Pure
      * @param string $roleName
      * @param array $userIds
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function createRole(string $roleName, array $userIds): void
     {
@@ -914,17 +1054,19 @@ class Pure
      * @param PureGrant $grant
      * @param array $userIds
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     public function assignRole(string $roleName, PureGrant $grant, array $userIds): void
     {
         $roleAssignment = $this->storage->selectRoleAssignment($roleName, $grant->getUserId());
 
-        $rskData = $this->pureCrypto->decryptRolePrivateKey($roleAssignment->getEncryptedRsk(), $grant->getUkp()->getPrivateKey(),
-            $this->oskp->getPublicKey());
+        $plainText = $roleAssignment->getEncryptedRsk();
+        $privateKey = $grant->getUkp()->getPrivateKey();
+        $publicKey = $this->oskp->getPublicKey();
+        $rskData = $this->pureCrypto->decryptRolePrivateKey($plainText, $privateKey, $publicKey);
 
         $this->assignRole_($roleName, $roleAssignment->getPublicKeyId(), $rskData, $userIds);
     }
@@ -935,10 +1077,10 @@ class Pure
      * @param string $rskData
      * @param array $userIds
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws IllegalStateException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
     private function assignRole_(string $roleName, string $publicKeyId, string $rskData, array $userIds): void
     {
@@ -971,11 +1113,10 @@ class Pure
      * @param string $password
      * @return RegistrationResult
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
-     * @throws Exception\PheClientException
+     * @throws NullArgumentException
+     * @throws PheClientException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws GuzzleException
      */
     private function _registerUserInternal(string $userId, string $password): RegistrationResult
     {
@@ -984,8 +1125,8 @@ class Pure
 
         $passwordHash = $this->pureCrypto->computePasswordHash($password);
 
-        $encryptedPwdHash = $this->pureCrypto->encryptForBackup($passwordHash, $this->buppk, $this->oskp->getPrivateKey
-        ());
+        $encryptedPwdHash = $this->pureCrypto->encryptForBackup($passwordHash, $this->buppk, $this->oskp->getPrivateKey(
+        ));
 
         $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($passwordHash);
 
@@ -1027,19 +1168,22 @@ class Pure
      * @param int $ttl
      * @return AuthResult
      * @throws EmptyArgumentException
-     * @throws Exception\IllegalStateException
-     * @throws Exception\NullArgumentException
+     * @throws NullArgumentException
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
-    private function _authenticateUserInternal(UserRecord $userRecord, VirgilKeyPair $ukp, string $phek, string
-$sessionId = null, int $ttl): AuthResult
-    {
-        $creationDate = new \DateTime("now");
+    private function _authenticateUserInternal(
+        UserRecord $userRecord,
+        VirgilKeyPair $ukp,
+        string $phek,
+        int $ttl,
+        string $sessionId = null
+    ): AuthResult {
+        $creationDate = new DateTime("now");
         $ts = $creationDate->getTimestamp() + ($ttl * 1000);
-        $expirationDate = new \DateTime("@$ts");
+        $expirationDate = new DateTime("@$ts");
 
-        $grant = new PureGrant($ukp, $userRecord->getUserId(), $sessionId, $creationDate, $expirationDate);
+        $grant = new PureGrant($ukp, $userRecord->getUserId(), $creationDate, $expirationDate, $sessionId);
 
         $grantKeyRaw = $this->pureCrypto->generateSymmetricOneTimeKey();
         $keyId = $this->pureCrypto->computeSymmetricKeyId($grantKeyRaw);
@@ -1050,18 +1194,23 @@ $sessionId = null, int $ttl): AuthResult
             ->setUserId($grant->getUserId())
             ->setKeyId($keyId);
 
-        if (!is_null($sessionId))
+        if (!is_null($sessionId)) {
             $headerBuilder->setSessionId($sessionId);
+        }
 
         $headerBytes = $headerBuilder->serializeToString();
 
         $grantWrap = $this->kmsManager->generateGrantKeyEncryptionData($grantKeyRaw, $headerBytes);
 
-        $grantKey = new GrantKey($userRecord->getUserId(),
-        $keyId, $this->currentVersion,
-        $grantWrap->getWrap(),
-        $grantWrap->getBlob(),
-        $creationDate, $expirationDate);
+        $grantKey = new GrantKey(
+            $userRecord->getUserId(),
+            $keyId,
+            $this->currentVersion,
+            $grantWrap->getWrap(),
+            $grantWrap->getBlob(),
+            $creationDate,
+            $expirationDate
+        );
 
         $this->getStorage()->insertGrantKey($grantKey);
 
@@ -1081,7 +1230,7 @@ $sessionId = null, int $ttl): AuthResult
      * @param UserRecord $userRecord
      * @param string $privateKeyData
      * @param string $newPassword
-     * @throws PureCryptoException
+     * @throws PureCryptoException|GuzzleException
      */
     private function _changeUserPasswordInternal(UserRecord $userRecord, string $privateKeyData, string $newPassword):
     void
@@ -1096,11 +1245,17 @@ $sessionId = null, int $ttl): AuthResult
 
             $pwdRecoveryData = $this->kmsManager->generatePwdRecoveryData($newPasswordHash);
 
-            $newEncryptedUsk = $this->pureCrypto->encryptSymmetricWithNewNonce($privateKeyData, "",
-                $enrollResult[1]);
+            $newEncryptedUsk = $this->pureCrypto->encryptSymmetricWithNewNonce(
+                $privateKeyData,
+                "",
+                $enrollResult[1]
+            );
 
-            $encryptedPwdHash = $this->pureCrypto->encryptForBackup($newPasswordHash, $this->buppk,
-                $this->oskp->getPrivateKey());
+            $encryptedPwdHash = $this->pureCrypto->encryptForBackup(
+                $newPasswordHash,
+                $this->buppk,
+                $this->oskp->getPrivateKey()
+            );
 
             $newUserRecord = new UserRecord(
                 $userRecord->getUserId(),
@@ -1115,7 +1270,7 @@ $sessionId = null, int $ttl): AuthResult
             );
 
             $this->storage->updateUser($newUserRecord);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new PureCryptoException($exception);
         }
     }
@@ -1125,11 +1280,12 @@ $sessionId = null, int $ttl): AuthResult
      * @param array $otherUserIds
      * @return VirgilPublicKeyCollection
      * @throws PureCryptoException
-     * @throws \Virgil\Crypto\Exceptions\VirgilCryptoException
+     * @throws VirgilCryptoException
      */
-    private function keysWithOthers(VirgilPublicKeyCollection $publicKeys,
-                                    array $otherUserIds): VirgilPublicKeyCollection
-    {
+    private function keysWithOthers(
+        VirgilPublicKeyCollection $publicKeys,
+        array $otherUserIds
+    ): VirgilPublicKeyCollection {
         $otherUserRecords = $this->storage->selectUsers($otherUserIds);
 
         if (!empty($otherUserRecords->getAsArray())) {

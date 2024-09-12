@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2015-2020 Virgil Security Inc.
+ * Copyright (c) 2015-2024 Virgil Security Inc.
  *
  * All rights reserved.
  *
@@ -47,23 +47,12 @@ use Virgil\PureKit\Http\Request\BaseRequest;
 class UpdateUserRequest extends BaseRequest
 {
     /**
-     * @var ProtoUserRecord
-     */
-    private $userRecord;
-    /**
-     * @var string
-     */
-    private $userId;
-
-    /**
      * UpdateUserRequest constructor.
      * @param ProtoUserRecord $userRecord
      * @param string $userId
      */
-    public function __construct(ProtoUserRecord $userRecord, string $userId)
+    public function __construct(private ProtoUserRecord $userRecord, private string $userId)
     {
-        $this->userRecord = $userRecord;
-        $this->userId = $userId;
     }
 
     /**

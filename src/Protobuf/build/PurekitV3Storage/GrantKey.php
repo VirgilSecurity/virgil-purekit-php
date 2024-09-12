@@ -47,7 +47,8 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      *     @type string $encrypted_grant_key_wrap
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\PurekitV3Storage::initOnce();
         parent::__construct($data);
     }
@@ -90,7 +91,7 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      */
     public function setGrantKeySigned($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->grant_key_signed = $var;
 
         return $this;
@@ -112,7 +113,7 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      */
     public function setSignature($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->signature = $var;
 
         return $this;
@@ -156,11 +157,9 @@ class GrantKey extends \Google\Protobuf\Internal\Message
      */
     public function setEncryptedGrantKeyWrap($var)
     {
-        GPBUtil::checkString($var, False);
+        GPBUtil::checkString($var, false);
         $this->encrypted_grant_key_wrap = $var;
 
         return $this;
     }
-
 }
-
