@@ -55,12 +55,12 @@ class PureCryptoException extends PureException
      */
     private ?VirgilCryptoException $cryptoException;
     /**
-     * todo: find FoundationException
+     * this exception from php plugin
      * @var FoundationException|null
      */
     private ?FoundationException $foundationException;
     /**
-     * todo: ask about PheException
+     * this exception from php plugin
      * @var PheException|null
      */
     private ?PheException $pheException;
@@ -80,7 +80,6 @@ class PureCryptoException extends PureException
         $this->foundationException = null;
         $this->pheException = null;
 
-        /** todo: is it possible that $exception had class PureCryptoErrorStatus (look to __construct()) */
         if ($exception instanceof PureCryptoErrorStatus) {
             parent::__construct($exception->getMessage());
             if ($exception == PureCryptoErrorStatus::UNDERLYING_FOUNDATION_EXCEPTION()

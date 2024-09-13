@@ -200,7 +200,7 @@ class PheManager
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
         }
-        // todo: check possibility of catch ProtocolException and ProtocolHttpException
+        // ProtocolException and ProtocolHttpException must be here
         catch (ProtocolException | ProtocolHttpException | Exception $exception) {
             throw new PheClientException($exception);
         }

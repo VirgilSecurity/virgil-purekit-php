@@ -478,13 +478,11 @@ class Pure
         $grantKeysRotated = 0;
 
         while (true) {
-            /** todo - check is it correct work or not */
             $userRecords = $this->storage->selectUsers_($this->currentVersion - 1);
             $newUserRecords = new UserRecordCollection();
 
             if (!empty($userRecords->getAsArray())) {
                 foreach ($userRecords->getAsArray() as $userRecord) {
-                    // TODO! Need to be checked
                     if ($userRecord->getRecordVersion() != $this->currentVersion - 1) {
                         throw new Exception("Assertion err: userRecordVersion != currentVersion");
                     }
@@ -508,7 +506,6 @@ class Pure
                 }
             }
 
-            /** todo: check it */
             $this->storage->updateUsers($newUserRecords, $this->currentVersion - 1);
 
             if (empty($newUserRecords->getAsArray())) {
@@ -519,14 +516,12 @@ class Pure
         }
 
         while (true) {
-            /** todo: check it */
             $grantKeys = $this->getStorage()->selectGrantKeys($this->currentVersion - 1);
 
             $newGrantKeys = new GrantKeyCollection();
 
             if (!empty($grantKeys->getAsArray())) {
                 foreach ($grantKeys->getAsArray() as $grantKey) {
-                    // TODO! Need to be checked
                     if ($grantKey->getRecordVersion() != $this->currentVersion - 1) {
                         throw new Exception("Assertion err: grantKeyVersion != currentVersion");
                     }
@@ -547,7 +542,6 @@ class Pure
                 }
             }
 
-            /** todo: check it */
             $this->getStorage()->updateGrantKeys($newGrantKeys);
 
             if (empty($newGrantKeys->getAsArray())) {
@@ -580,7 +574,6 @@ class Pure
         VirgilPublicKeyCollection $publicKeys,
         string $plainText
     ): string {
-        /** todo: check it bcz before structure was bad */
         ValidationUtils::checkNull($otherUserIds, "otherUserIds");
         ValidationUtils::checkNull($publicKeys, "publicKeys");
         ValidationUtils::checkNull($plainText, "plainText");
@@ -590,7 +583,7 @@ class Pure
 
         try {
             return $this->handleExistingCellKey($userId, $dataId, $plainText);
-            /** todo: check possibility catch this exception */
+            // PureStorageCellKeyNotFoundException  must be here
         } catch (PureStorageCellKeyNotFoundException $exception) {
             return $this->handleNewCellKey($userId, $dataId, $plainText, $publicKeys, $otherUserIds, $roleNames);
         }

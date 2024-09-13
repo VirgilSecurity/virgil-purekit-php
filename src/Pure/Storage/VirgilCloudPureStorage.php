@@ -310,13 +310,13 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $request = new GetCellKeyRequest($userId, $dataId);
             $protobufRecord = $this->client->getCellKey($request);
         }
-        /** todo: check possibility ProtocolException */
+        // ProtocolException must be here
         catch (ProtocolException $exception) {
             if ($exception->getCode() == ServiceErrorCode::CELL_KEY_NOT_FOUND()->getCode()) {
                 throw new PureStorageCellKeyNotFoundException();
             }
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -383,7 +383,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $this->client->deleteCellKey($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -408,7 +408,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $this->client->insertRole($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -441,7 +441,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $protoRecords = $this->client->getRoles($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -483,7 +483,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $this->client->deleteRole($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -521,7 +521,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $this->client->insertRoleAssignments($request);
         } catch (ProtocolException $exception) {
             throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
@@ -545,14 +545,11 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         $roleAssignments = new RoleAssignmentCollection();
         $request = new GetRoleAssignmentsRequest($userId);
-        $protoRecords = null;
 
         try {
             $protoRecords = $this->client->getRoleAssignments($request);
-        } catch (ProtocolException $exception) {
-            throw new VirgilCloudStorageException($exception);
-            /** todo: check possibility ProtocolHttpException */
-        } catch (ProtocolHttpException $exception) {
+            // ProtocolException and ProtocolHttpException must be here
+        } catch (ProtocolException|ProtocolHttpException $exception) {
             throw new VirgilCloudStorageException($exception);
         }
 
@@ -598,7 +595,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             }
 
             throw new VirgilCloudStorageException($e);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
@@ -628,7 +625,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             $this->client->deleteRoleAssignments($request);
         } catch (ProtocolException $e) {
             throw new VirgilCloudStorageException($e);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
@@ -652,7 +649,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $this->client->insertGrantKey($request);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolException | ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
@@ -687,7 +684,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
             }
 
             throw new VirgilCloudStorageException($e);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
@@ -745,7 +742,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
 
         try {
             $this->client->deleteGrantKey($r);
-            /** todo: check possibility ProtocolHttpException */
+            // ProtocolHttpException must be here
         } catch (ProtocolException | ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
@@ -806,10 +803,7 @@ class VirgilCloudPureStorage implements PureStorage, PureModelSerializerDependen
                 );
                 $this->client->updateCellKey($request);
             }
-        } catch (ProtocolException $e) {
-            throw new VirgilCloudStorageException($e);
-            /** todo: check possibility ProtocolHttpException */
-        } catch (ProtocolHttpException $e) {
+        } catch (ProtocolException|ProtocolHttpException $e) {
             throw new VirgilCloudStorageException($e);
         }
     }

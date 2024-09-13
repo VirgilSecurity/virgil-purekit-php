@@ -228,7 +228,7 @@ class KmsManager
             );
         } catch (PheException $exception) {
             throw new PureCryptoException($exception);
-            //todo: check ProtocolHttpException - possibility of catch it
+            // ProtocolHttpException must be here
         } catch (ProtocolException|ProtocolHttpException|Exception $exception) {
             throw new KmsClientException($exception);
         }
