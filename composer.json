@@ -17,7 +17,7 @@
     "guzzlehttp/guzzle": "^7.8",
     "google/protobuf": "^3.6.1",
     "myclabs/php-enum": "^1.8",
-    "virgil/crypto": "^6.3.1",
+    "virgil/crypto": "^7.0.0",
     "ext-json": "*",
     "ext-pdo": "*"
   },
